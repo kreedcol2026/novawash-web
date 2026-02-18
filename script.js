@@ -2144,6 +2144,7 @@ function initKioskPage() {
   let cooldownUntil = 0;
   let cooldownInterval = null;
   let confirmHideTimeout = null;
+  let kioskNoticeToken = 0;
 
   function hideConfirmation() {
     if (confirmCard) confirmCard.hidden = true;
@@ -2183,6 +2184,19 @@ function initKioskPage() {
     }, 200);
   }
 
+  function kioskFeedback(text, type = '', seconds = 5) {
+    kioskNoticeToken += 1;
+    const myToken = kioskNoticeToken;
+    setResult(message, text, type);
+    startCooldown(seconds);
+    setTimeout(() => {
+      if (myToken !== kioskNoticeToken) return;
+      hideConfirmation();
+      setResult(message, '');
+      if (cooldownEl) cooldownEl.textContent = 'Listo para una nueva lectura.';
+    }, seconds * 1000);
+  }
+
   function stopScanner() {
     detecting = false;
     if (scanInterval) {
@@ -2205,7 +2219,7 @@ function initKioskPage() {
 
     const parsed = parseQrPayload(rawValue);
     if (!parsed) {
-      setResult(message, 'QR inválido. Usa el QR de cliente Nova Wash.', 'error');
+      kioskFeedback('QR inválido. Usa el QR de cliente Nova Wash.', 'error');
       return;
     }
 
@@ -2217,21 +2231,21 @@ function initKioskPage() {
     if (parsed.type === 'user_token') {
       user = findUserByQrToken(data, parsed.value);
       if (!user) {
-        setResult(message, 'No se encontró cliente para ese QR.', 'error');
+        kioskFeedback('No se encontró cliente para ese QR.', 'error');
         return;
       }
       plateToUse = user.plate || '';
     } else if (parsed.type === 'user_id') {
       user = data.users.find((u) => String(u.userId || '').toUpperCase() === String(parsed.value).toUpperCase()) || null;
       if (!user) {
-        setResult(message, 'No se encontró cliente para ese ID.', 'error');
+        kioskFeedback('No se encontró cliente para ese ID.', 'error');
         return;
       }
       plateToUse = user.plate || '';
     } else {
       const matches = data.users.filter((u) => normalizePlate(u.plate || '') === parsed.value);
       if (matches.length !== 1) {
-        setResult(message, 'No se pudo identificar un único cliente por placa.', 'error');
+        kioskFeedback('No se pudo identificar un único cliente por placa.', 'error');
         return;
       }
       user = matches[0];
@@ -2240,7 +2254,7 @@ function initKioskPage() {
     }
 
     if (!plateToUse || plateToUse.length < 5) {
-      setResult(message, 'El cliente no tiene placa registrada.', 'error');
+      kioskFeedback('El cliente no tiene placa registrada.', 'error');
       return;
     }
 
@@ -2248,7 +2262,7 @@ function initKioskPage() {
     const charge = getWashUnitPriceByPlan(user);
     const result = consumeWashByPlan(user, plateToUse);
     if (!result.ok) {
-      setResult(message, result.message, 'error');
+      kioskFeedback(result.message, 'error');
       return;
     }
 
@@ -2263,8 +2277,7 @@ function initKioskPage() {
     saveData(data);
     playScanBeep();
     showConfirmation(user, plateToUse, charge);
-    startCooldown(5);
-    setResult(message, `${result.message} Cliente: ${user.name}.`, 'success');
+    kioskFeedback(`${result.message} Cliente: ${user.name}.`, 'success');
   }
 
   async function startScanner() {
