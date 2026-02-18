@@ -2141,6 +2141,7 @@ function initKioskPage() {
   let stream = null;
   let scanInterval = null;
   let detecting = false;
+  let processingScan = false;
   let cooldownUntil = 0;
   let cooldownInterval = null;
   let confirmHideTimeout = null;
@@ -2197,6 +2198,14 @@ function initKioskPage() {
     }, seconds * 1000);
   }
 
+  async function refreshKioskStateFromRemote() {
+    const remoteData = await fetchRemoteStateAsync();
+    if (!remoteData) return null;
+    appDataCache = remoteData;
+    writeLocalState(remoteData);
+    return remoteData;
+  }
+
   function stopScanner() {
     detecting = false;
     if (scanInterval) {
@@ -2214,8 +2223,10 @@ function initKioskPage() {
     video.srcObject = null;
   }
 
-  function processKioskQr(rawValue) {
+  async function processKioskQr(rawValue) {
     if (Date.now() < cooldownUntil) return;
+
+    await refreshKioskStateFromRemote();
 
     const parsed = parseQrPayload(rawValue);
     if (!parsed) {
@@ -2307,14 +2318,19 @@ function initKioskPage() {
       detecting = true;
 
       scanInterval = setInterval(async () => {
-        if (!detecting || video.readyState < 2) return;
+        if (!detecting || processingScan || video.readyState < 2) return;
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         try {
           const codes = await detector.detect(canvas);
           if (codes.length > 0) {
-            processKioskQr(codes[0].rawValue);
+            processingScan = true;
+            try {
+              await processKioskQr(codes[0].rawValue);
+            } finally {
+              processingScan = false;
+            }
           }
         } catch {
           // No-op.
