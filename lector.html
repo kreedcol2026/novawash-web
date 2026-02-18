@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nova Wash | Lector QR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="kiosk-page" id="kioskPage">
+    <main class="kiosk-wrap">
+      <img class="kiosk-logo" src="Imagenes/logo_largo.png" onerror="this.onerror=null;this.src='logo-novawash.svg';" alt="Nova Wash" />
+      <h1>Pon tu código en la pantalla</h1>
+      <p>
+        Automáticamente se debitará de tu saldo según tu plan.
+      </p>
+
+      <div class="kiosk-scanner">
+        <video id="kioskQrVideo" class="qr-video" playsinline muted></video>
+        <canvas id="kioskQrCanvas" hidden></canvas>
+
+        <section id="kioskConfirmCard" class="kiosk-confirm-card" hidden>
+          <div class="kiosk-confirm-head">
+            <img class="kiosk-confirm-logo" src="Imagenes/logo_largo.png" onerror="this.onerror=null;this.src='logo-novawash.svg';" alt="Nova Wash" />
+            <div>
+              <strong class="kiosk-confirm-title">Confirmado: lava tu vehículo</strong>
+              <p class="kiosk-confirm-subtitle">Cobro aplicado exitosamente</p>
+            </div>
+          </div>
+          <div class="kiosk-confirm-grid">
+            <p><strong>Cliente:</strong> <span id="kioskConfirmClient">-</span></p>
+            <p><strong>Placa:</strong> <span id="kioskConfirmPlate">-</span></p>
+            <p><strong>Cobro:</strong> <span id="kioskConfirmCharge">-</span></p>
+            <p><strong>Saldo restante:</strong> <span id="kioskConfirmBalance">-</span></p>
+            <p><strong>Lavadas restantes:</strong> <span id="kioskConfirmWashes">-</span></p>
+          </div>
+        </section>
+      </div>
+
+      <div class="dash-actions kiosk-actions">
+        <button id="kioskStopBtn" class="btn btn-light" type="button">Detener</button>
+      </div>
+      <p id="kioskMessage" class="result" aria-live="polite"></p>
+      <p id="kioskCooldown" class="muted-note" aria-live="polite"></p>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>

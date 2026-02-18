@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nova Wash | Backoffice</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header scrolled">
+      <a class="logo" href="index.html" aria-label="Nova Wash">
+        <img class="logo-mark" src="Imagenes/logo_largo.png" onerror="this.onerror=null;this.src='logo-novawash.svg';" alt="Nova Wash" />
+      </a>
+      <nav class="main-nav" aria-label="Navegación personal">
+        <a href="#backofficePanel">Clientes</a>
+      </nav>
+      <a class="btn btn-light" href="index.html">Inicio</a>
+    </header>
+
+    <main class="dashboard-page">
+      <section class="section manage bo-section" aria-labelledby="bo-title">
+        <div class="panel-content reveal visible bo-full">
+          <h1 id="bo-title" class="dash-title">Backoffice Nova Wash</h1>
+          <p class="manage-subtitle">Gestión de clientes, suscripciones, lavadas y pagos manuales.</p>
+
+          <article id="boLoginCard" class="account-card bo-login">
+            <h3>Ingreso Personal</h3>
+            <form id="boLoginForm" class="stack-form">
+              <label>
+                Usuario
+                <input id="boUser" type="text" autocomplete="username" placeholder="personal" required />
+              </label>
+              <label>
+                Contraseña
+                <input id="boPass" type="password" autocomplete="current-password" required />
+              </label>
+              <button class="btn btn-dark" type="submit">Entrar</button>
+            </form>
+            <p id="boLoginMessage" class="result" aria-live="polite"></p>
+          </article>
+
+          <article id="backofficePanel" class="dashboard" hidden>
+            <div class="dashboard-top">
+              <h3>Clientes y Usuarios</h3>
+              <div class="dash-actions">
+                <button id="boAddUserBtn" class="btn btn-orange" type="button">Añadir usuario</button>
+                <button id="boLogoutBtn" class="btn btn-dark" type="button">Cerrar sesión personal</button>
+              </div>
+            </div>
+            <p class="manage-subtitle">Edita datos, plan, número de lavadas, y registra pagos en efectivo manuales.</p>
+            <p id="boPanelMessage" class="result" aria-live="polite"></p>
+
+            <section class="bo-top-layout">
+              <div class="bo-left-panel">
+                <section class="bo-metrics">
+                  <article class="bo-metric-card">
+                    <p>Usuarios</p>
+                    <strong id="boMetricUsers">0</strong>
+                  </article>
+                  <article class="bo-metric-card">
+                    <p>Ingresos de caja</p>
+                    <strong id="boMetricCash">$0</strong>
+                  </article>
+                  <article class="bo-metric-card">
+                    <p>Suscripciones activas</p>
+                    <strong id="boMetricSubs">0</strong>
+                  </article>
+                  <article class="bo-metric-card">
+                    <p>Resultados filtrados</p>
+                    <strong id="boMetricFiltered">0</strong>
+                  </article>
+                  <article class="bo-metric-card">
+                    <p>Lavadas realizadas</p>
+                    <strong id="boMetricWashesDone">0</strong>
+                  </article>
+                  <article class="bo-metric-card">
+                    <p>Lavadas disponibles</p>
+                    <strong id="boMetricWashesAvailable">0</strong>
+                  </article>
+                  <article class="bo-metric-card">
+                    <p>Total saldos en cuentas</p>
+                    <strong id="boMetricWallets">$0</strong>
+                  </article>
+                </section>
+
+                <section class="bo-filters">
+                  <label>
+                    Buscar cliente
+                    <input id="boSearchInput" type="text" placeholder="Nombre, correo o ID" />
+                  </label>
+                  <label>
+                    Fecha desde
+                    <input id="boDateFrom" type="date" />
+                  </label>
+                  <label>
+                    Fecha hasta
+                    <input id="boDateTo" type="date" />
+                  </label>
+                  <div class="bo-date-presets" aria-label="Atajos de fecha">
+                    <button id="boPresetToday" class="btn btn-light" type="button">Hoy</button>
+                    <button id="boPresetYesterday" class="btn btn-light" type="button">Ayer</button>
+                    <button id="boPresetLast7" class="btn btn-light" type="button">Últimos 7 días</button>
+                    <button id="boPresetMonth" class="btn btn-light" type="button">Este mes</button>
+                    <button id="boPresetYear" class="btn btn-light" type="button">Este año</button>
+                  </div>
+                  <button id="boResetFiltersBtn" class="btn btn-light" type="button">Limpiar filtros</button>
+                </section>
+              </div>
+
+              <section class="dash-card bo-qr-ops">
+                <div class="bo-qr-split">
+                  <div class="bo-qr-left">
+                    <h4>Lector QR de operación</h4>
+                    <p>Escanea el QR único del cliente o ingresa el ID para registrar una lavada.</p>
+                    <label>
+                      Código leído / ID usuario (fallback)
+                      <input id="boQrFallbackInput" type="text" placeholder="NOVAWASH-USER:Q... o NW-..." />
+                    </label>
+                    <button id="boProcessQrBtn" class="btn btn-dark" type="button">Procesar QR</button>
+                    <p id="boScanMessage" class="result" aria-live="polite"></p>
+                  </div>
+                  <div class="bo-qr-right">
+                    <div class="scanner-wrap bo-scanner-square">
+                      <video id="boQrVideo" class="qr-video bo-qr-video-square" playsinline muted></video>
+                      <canvas id="boQrCanvas" hidden></canvas>
+                    </div>
+                    <div class="dash-actions">
+                      <button id="boStartScanBtn" class="btn btn-orange" type="button">Iniciar lector</button>
+                      <button id="boStopScanBtn" class="btn btn-light" type="button">Detener</button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </section>
+
+            <div class="bo-table-wrap bo-users-wrap">
+              <table class="bo-table bo-users-table">
+                <thead>
+                  <tr>
+                    <th class="bo-col-id">ID</th>
+                    <th class="bo-col-name">Cliente</th>
+                    <th class="bo-col-cedula">Cédula</th>
+                    <th class="bo-col-email">Correo</th>
+                    <th class="bo-col-plate">Placa</th>
+                    <th>Teléfono</th>
+                    <th>Plan</th>
+                    <th class="bo-col-mini">Disp.</th>
+                    <th class="bo-col-mini">Realiz.</th>
+                    <th class="bo-col-wallet">Saldo</th>
+                    <th class="bo-col-payment">Pago</th>
+                    <th class="bo-col-recharge">Recarga</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="boUsersBody"></tbody>
+              </table>
+            </div>
+            <div class="bo-table-actions">
+              <button id="boSaveAllBtn" class="btn btn-dark" type="button">Guardar todos los cambios</button>
+            </div>
+
+            <section class="history-block bo-audit">
+              <h4>Registro de Auditoría</h4>
+              <div class="bo-audit-filters">
+                <label>
+                  Filtrar cliente
+                  <input id="boAuditClientInput" type="text" placeholder="Nombre, correo o ID" />
+                </label>
+                <div class="bo-audit-type-filters">
+                  <button id="boAuditTypeAllBtn" class="btn btn-light is-active" type="button">Todos</button>
+                  <button id="boAuditTypeRechargeBtn" class="btn btn-light" type="button">Recarga</button>
+                  <button id="boAuditTypeEditBtn" class="btn btn-light" type="button">Edición</button>
+                  <button id="boAuditTypeExpiryBtn" class="btn btn-light" type="button">Vencimiento</button>
+                </div>
+              </div>
+              <div class="bo-audit-toolbar">
+                <p id="boAuditCount">Mostrando 0 de 0</p>
+                <div class="bo-audit-pager">
+                  <button id="boAuditPrevBtn" class="btn btn-light" type="button">Anterior</button>
+                  <span id="boAuditPageText">Página 1</span>
+                  <button id="boAuditNextBtn" class="btn btn-light" type="button">Siguiente</button>
+                </div>
+              </div>
+              <div class="bo-table-wrap">
+                <table class="bo-table bo-audit-table">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Empleado</th>
+                      <th>Cliente</th>
+                      <th>Acción</th>
+                      <th>Detalle</th>
+                    </tr>
+                  </thead>
+                  <tbody id="boAuditBody"></tbody>
+                </table>
+              </div>
+            </section>
+          </article>
+
+          <div id="boModal" class="bo-modal" hidden>
+            <div class="bo-modal-backdrop" data-modal-close="1"></div>
+            <div class="bo-modal-card" role="dialog" aria-modal="true" aria-labelledby="boModalTitle">
+              <div class="bo-modal-header">
+                <h4 id="boModalTitle">Editar</h4>
+                <button id="boModalClose" class="btn btn-light" type="button">Cerrar</button>
+              </div>
+              <form id="boModalForm" class="stack-form">
+                <div id="boModalEditWrap" hidden>
+                  <div class="bo-modal-grid">
+                    <label>
+                      ID
+                      <input id="boModalUserId" type="text" disabled />
+                    </label>
+                    <label>
+                      Nombre
+                      <input id="boModalName" type="text" />
+                    </label>
+                    <label>
+                      Cédula
+                      <input id="boModalCedula" type="text" />
+                    </label>
+                    <label>
+                      Correo
+                      <input id="boModalEmail" type="email" />
+                    </label>
+                    <label>
+                      Placa
+                      <input id="boModalPlate" type="text" />
+                    </label>
+                    <label>
+                      Teléfono
+                      <input id="boModalPhone" type="text" />
+                    </label>
+                    <label>
+                      Plan
+                      <select id="boModalMode">
+                        <option value="basic_single">Básico</option>
+                        <option value="premium_monthly">Premium</option>
+                      </select>
+                    </label>
+                    <label>
+                      Saldo
+                      <input id="boModalWallet" type="number" min="0" />
+                    </label>
+                    <label>
+                      Pago
+                      <select id="boModalPaymentMethod">
+                        <option value="Efectivo en punto">Efectivo</option>
+                        <option value="Tarjeta Stripe">Stripe</option>
+                        <option value="Tarjeta crédito/débito">Tarjeta crédito/débito</option>
+                        <option value="Nequi">Nequi</option>
+                      </select>
+                    </label>
+                    <label>
+                      Inicio ciclo premium
+                      <input id="boModalCycleStart" type="text" disabled />
+                    </label>
+                    <label>
+                      Vencimiento ciclo premium
+                      <input id="boModalCycleEnd" type="text" disabled />
+                    </label>
+                    <label>
+                      Disponibles
+                      <input id="boModalWashesRemaining" type="number" disabled />
+                    </label>
+                    <label>
+                      Realizadas
+                      <input id="boModalWashesDone" type="number" disabled />
+                    </label>
+                  </div>
+                  <div class="dash-actions">
+                    <button id="boModalCancelSubBtn" class="btn btn-dark" type="button">Cancelar suscripción</button>
+                  </div>
+                </div>
+                <p id="boModalMessage" class="result" aria-live="polite"></p>
+                <div class="dash-actions bo-modal-actions">
+                  <button id="boModalCancel" class="btn btn-light" type="button">Cancelar</button>
+                  <button id="boModalDismiss" class="btn btn-light" type="button">Cerrar</button>
+                  <button class="btn btn-orange" type="submit">Guardar</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>

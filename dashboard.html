@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nova Wash | Gestión</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header scrolled">
+      <a class="logo" href="index.html" aria-label="Nova Wash">
+        <img class="logo-mark" src="Imagenes/logo_largo.png" onerror="this.onerror=null;this.src='logo-novawash.svg';" alt="Nova Wash" />
+      </a>
+      <nav class="main-nav" aria-label="Navegación gestión">
+        <a href="#suscripcion">Suscripción</a>
+        <a href="#historial">Histórico</a>
+      </nav>
+      <a class="btn btn-light" href="index.html">Inicio</a>
+    </header>
+
+    <main class="dashboard-page">
+      <section class="section manage" aria-labelledby="gestion-title">
+        <div class="panel-content reveal visible">
+          <h1 id="gestion-title" class="dash-title">Panel de Gestión</h1>
+          <p class="manage-subtitle">El registro de lavadas se realiza con lector QR del sistema.</p>
+
+          <article id="sessionGuard" class="account-card" hidden>
+            <h3>Sin sesión activa</h3>
+            <p>Inicia sesión para continuar.</p>
+            <a class="btn btn-orange" href="login.html">Ir a iniciar sesión</a>
+          </article>
+
+          <article id="dashboard" class="dashboard" hidden>
+            <div class="dashboard-top">
+              <h3 id="welcomeUser">Panel de usuario</h3>
+              <button id="logoutBtn" class="btn btn-dark" type="button">Cerrar sesión</button>
+            </div>
+
+            <div class="dashboard-grid">
+              <section class="dash-card">
+                <h4>Perfil</h4>
+                <div class="profile-details">
+                  <p class="sub-detail-row">
+                    <strong class="sub-detail-label">Nombre:</strong>
+                    <input id="profileNameInput" class="profile-input" type="text" disabled />
+                  </p>
+                  <p class="sub-detail-row">
+                    <strong class="sub-detail-label">Cédula:</strong>
+                    <input id="profileCedulaInput" class="profile-input" type="text" disabled />
+                  </p>
+                  <p class="sub-detail-row">
+                    <strong class="sub-detail-label">Correo:</strong>
+                    <input id="profileEmailInput" class="profile-input" type="email" disabled />
+                  </p>
+                  <p class="sub-detail-row">
+                    <strong class="sub-detail-label">Teléfono:</strong>
+                    <input id="profilePhoneInput" class="profile-input" type="text" disabled />
+                  </p>
+                  <p class="sub-detail-row">
+                    <strong class="sub-detail-label">Placa principal:</strong>
+                    <input id="profilePlateInput" class="profile-input" type="text" disabled />
+                  </p>
+                  <p class="sub-detail-row">
+                    <strong class="sub-detail-label">Marca y modelo:</strong>
+                    <input id="profileVehicleModelInput" class="profile-input" type="text" disabled placeholder="Opcional" />
+                  </p>
+                  <p class="sub-detail-row">
+                    <strong class="sub-detail-label">Lavadas realizadas:</strong>
+                    <span id="profileWashesDone" class="sub-detail-value">0</span>
+                  </p>
+                </div>
+                <div class="dash-actions">
+                  <button id="profileEditBtn" class="btn btn-dark" type="button">Editar</button>
+                  <button id="profileSaveBtn" class="btn btn-orange" type="button" hidden>Guardar cambios</button>
+                </div>
+                <p id="profileMessage" class="result" aria-live="polite"></p>
+              </section>
+
+              <section class="dash-card user-qr-card">
+                <h4>Mi QR único</h4>
+                <img id="userQrImage" class="user-qr-image" alt="QR único del cliente" />
+                <p class="user-qr-note">Escanéalo en máquina o en backoffice.</p>
+                <p id="userQrCode" class="user-qr-code"></p>
+              </section>
+
+              <section class="dash-card" id="suscripcion">
+                <h4>Tipo de suscripción</h4>
+                <div id="subscriptionBadge" class="sub-badge sub-basic">
+                  <span class="sub-icon"></span>
+                  <strong id="subscriptionType">Básico</strong>
+                </div>
+                <div class="sub-details">
+                  <p class="sub-detail-row">
+                    <strong class="sub-detail-label">Estado:</strong>
+                    <span id="subscriptionStatus" class="sub-detail-value">Sin suscripción activa.</span>
+                  </p>
+                  <p class="sub-detail-row">
+                    <strong class="sub-detail-label">Beneficios:</strong>
+                    <span id="subscriptionBenefits" class="sub-detail-value">Cobro por evento.</span>
+                  </p>
+                  <p class="sub-detail-row">
+                    <strong class="sub-detail-label">Lavadas disponibles:</strong>
+                    <span id="subscriptionWashesLeft" class="sub-detail-value">0</span>
+                  </p>
+                  <p class="sub-detail-row">
+                    <strong class="sub-detail-label">Saldo actual:</strong>
+                    <span id="subscriptionBalance" class="sub-detail-value">$0</span>
+                  </p>
+                  <p class="sub-detail-row">
+                    <strong class="sub-detail-label">Inicio:</strong>
+                    <span id="subscriptionCycleStart" class="sub-detail-value">-</span>
+                  </p>
+                  <p class="sub-detail-row">
+                    <strong class="sub-detail-label">Vencimiento:</strong>
+                    <span id="subscriptionCycleEnd" class="sub-detail-value">-</span>
+                  </p>
+                </div>
+                <div class="dash-actions">
+                  <button id="setPremiumMonthlyBtn" class="btn btn-orange" type="button">Suscribirse $50.000</button>
+                  <button id="cancelPremiumBtn" class="btn btn-dark" type="button">Cancelar plan</button>
+                </div>
+                <p class="muted-note">Premium: 2 lavadas al mes, no acumulables, con renovación automática del ciclo.</p>
+              </section>
+
+              <section class="dash-card">
+                <h4>Pagos</h4>
+                <p id="walletStatus">Saldo: $0 COP</p>
+                <p id="paymentStatus">Método: Efectivo en punto</p>
+                <div class="dash-actions">
+                  <button id="cashTopUpBtn" class="btn btn-dark" type="button">Recargar en efectivo</button>
+                  <button id="bankTopUpBtn" class="btn btn-orange" type="button">Recargar con transferencia</button>
+                </div>
+              </section>
+            </div>
+
+            <section class="history-block" id="historial">
+              <h4>Histórico de lavados</h4>
+              <p id="washMessage" class="result" aria-live="polite"></p>
+              <div id="historyList" class="history-list"></div>
+            </section>
+          </article>
+
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 300" role="img" aria-labelledby="title desc">
+  <title id="title">Nova Wash Logo</title>
+  <desc id="desc">Escudo negro y azul oscuro con acento naranja y texto NOVAWASH.</desc>
+  <defs>
+    <linearGradient id="gold" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#ffb100"/>
+      <stop offset="1" stop-color="#ff7a00"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Shield -->
+  <g transform="translate(18,18)">
+    <path d="M145 16 L268 54 L262 162 Q230 233 145 268 Q60 233 28 162 L22 54 Z" fill="#13161b"/>
+    <path d="M145 34 L247 66 L243 154 Q217 214 145 248 Q73 214 47 154 L43 66 Z" fill="#0b121b" stroke="#f5f7fa" stroke-width="7"/>
+
+    <!-- Wing arms -->
+    <path d="M43 66 L145 108 L145 123 L46 82 Z" fill="#f5f7fa"/>
+    <path d="M247 66 L145 108 L145 123 L244 82 Z" fill="#f5f7fa"/>
+
+    <!-- Center spear -->
+    <path d="M145 109 L167 100 L150 210 L145 231 L140 210 L123 100 Z" fill="#f5f7fa"/>
+    <path d="M145 111 L160 104 L148 194 L145 209 L142 194 L130 104 Z" fill="url(#gold)"/>
+
+    <!-- Orange accents -->
+    <path d="M145 109 L102 88 L122 101 L136 111 Z" fill="url(#gold)"/>
+    <path d="M145 109 L188 88 L168 101 L154 111 Z" fill="url(#gold)"/>
+  </g>
+
+  <!-- Wordmark -->
+  <g transform="translate(316,200)">
+    <text x="0" y="0" font-family="Montserrat, Arial, sans-serif" font-size="106" font-weight="800" letter-spacing="2" fill="#0b121b">NOVA</text>
+    <text x="285" y="0" font-family="Montserrat, Arial, sans-serif" font-size="106" font-weight="800" letter-spacing="2" fill="url(#gold)">WASH</text>
+  </g>
+</svg>

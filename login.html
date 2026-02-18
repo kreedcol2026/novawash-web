@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nova Wash | Iniciar Sesión</title>
+    <meta
+      name="description"
+      content="Inicia sesión en Nova Wash para gestionar tu suscripción, historial de lavadas y saldo."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header" id="top">
+      <a class="logo" href="index.html" aria-label="Nova Wash">
+        <img class="logo-mark" src="Imagenes/logo_largo.png" onerror="this.onerror=null;this.src='logo-novawash.svg';" alt="Nova Wash" />
+      </a>
+      <nav class="main-nav" aria-label="Navegación principal">
+        <a href="index.html#beneficios">Beneficios</a>
+        <a href="index.html#planes">Planes</a>
+        <a href="index.html#proceso">Proceso</a>
+        <a href="index.html#ciudad">Por qué Nova Wash</a>
+      </nav>
+      <a class="btn btn-light" href="index.html#registro">Registrarme</a>
+    </header>
+
+    <main>
+      <section class="section manage" id="acceso" aria-labelledby="acceso-title">
+        <div class="panel-content reveal visible manage-wrap">
+          <h1 id="acceso-title" class="dash-title">Iniciar Sesión</h1>
+          <p class="manage-subtitle">Accede para ver tu suscripción, saldo e historial de lavadas.</p>
+
+          <div class="account-grid single">
+            <article class="account-card">
+              <h3>Acceso de Cliente</h3>
+              <form id="loginForm" class="stack-form">
+                <label>
+                  Correo
+                  <input name="email" type="email" required />
+                </label>
+                <label>
+                  Contraseña
+                  <input name="password" type="password" required />
+                </label>
+                <button class="btn btn-dark" type="submit">Entrar al panel</button>
+              </form>
+              <p id="authMessage" class="result" aria-live="polite"></p>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-grid">
+        <article>
+          <h3>Nova Wash</h3>
+          <p>Cra 7D #145-51, Cedritos</p>
+          <p>Bogotá, Colombia</p>
+          <p><a href="tel:+573046040723">304 604 0723</a></p>
+          <p><a href="mailto:info@novawash.com.co">info@novawash.com.co</a></p>
+        </article>
+        <article>
+          <h3>Ubicación</h3>
+          <div class="map-wrap">
+            <iframe
+              title="Mapa Nova Wash Cedritos"
+              src="https://www.google.com/maps?q=Cedritos%20Cra%207D%20%23145-51%20Bogot%C3%A1%20Colombia&output=embed"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+            ></iframe>
+          </div>
+        </article>
+      </div>
+      <p class="staff-access"><a href="backoffice.html">Ingreso Personal</a></p>
+      <p class="copyright">© 2026 Nova Wash - Lavado automatizado con supervisión manual.</p>
+      <p class="copyright">Hecho por <a href="https://kreed.com.co" target="_blank" rel="noopener noreferrer">Kreed.com.co</a></p>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
