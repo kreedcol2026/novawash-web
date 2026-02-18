@@ -1285,8 +1285,11 @@ async function initWompiThankYouPage() {
   const txText = document.querySelector('#wompiThanksTx');
   const refText = document.querySelector('#wompiThanksRef');
   const amountText = document.querySelector('#wompiThanksAmount');
+  const helpText = document.querySelector('#wompiThanksHelp');
   const backBtn = document.querySelector('#wompiThanksBackBtn');
   const retryBtn = document.querySelector('#wompiThanksRetryBtn');
+  let autoRedirectTimer = null;
+  let autoRedirectCountdown = null;
 
   const params = new URLSearchParams(window.location.search);
   const txId = params.get('id') || params.get('transaction_id') || params.get('transactionId') || '';
@@ -1297,15 +1300,76 @@ async function initWompiThankYouPage() {
   if (refText) refText.textContent = reference;
   if (statusText) statusText.textContent = txId ? 'Validando pago con Wompi...' : 'No recibimos ID de transacción.';
   if (amountText) amountText.textContent = '-';
+  if (helpText) {
+    helpText.hidden = true;
+    helpText.textContent = '';
+  }
+
+  function setThankYouStatus(text, tone = 'neutral', help = '') {
+    if (!statusText) return;
+    statusText.textContent = text;
+    statusText.classList.remove('text-success', 'text-error');
+    if (tone === 'success') statusText.classList.add('text-success');
+    if (tone === 'error') statusText.classList.add('text-error');
+    if (helpText) {
+      helpText.textContent = help || '';
+      helpText.hidden = !help;
+    }
+  }
+
+  function clearAutoRedirect() {
+    if (autoRedirectTimer) {
+      clearTimeout(autoRedirectTimer);
+      autoRedirectTimer = null;
+    }
+    if (autoRedirectCountdown) {
+      clearInterval(autoRedirectCountdown);
+      autoRedirectCountdown = null;
+    }
+  }
+
+  function scheduleAutoRedirect(seconds = 5) {
+    clearAutoRedirect();
+    let remaining = Math.max(1, Number(seconds) || 5);
+    if (helpText) {
+      helpText.hidden = false;
+      helpText.textContent = `Redirigiendo a tu cuenta en ${remaining}s...`;
+    }
+
+    autoRedirectCountdown = setInterval(() => {
+      remaining -= 1;
+      if (remaining <= 0) return;
+      if (helpText) helpText.textContent = `Redirigiendo a tu cuenta en ${remaining}s...`;
+    }, 1000);
+
+    autoRedirectTimer = setTimeout(() => {
+      clearAutoRedirect();
+      window.location.href = 'dashboard.html';
+    }, remaining * 1000);
+  }
 
   async function runValidation() {
     if (!txId) {
-      if (statusText) statusText.textContent = `Estado Wompi: ${wompiStatus || 'SIN_DATO'}.`;
+      setThankYouStatus(`Estado Wompi: ${wompiStatus || 'SIN_DATO'}.`, 'error');
       return;
     }
     const resp = await postAppsAction('confirmWompiTransaction', { transactionId: txId });
     if (!resp?.ok) {
-      if (statusText) statusText.textContent = `Pago en proceso: ${resp?.error || 'pendiente de confirmación'}`;
+      clearAutoRedirect();
+      const reason = String(resp?.error || 'pendiente de confirmación');
+      const isPermissionError =
+        reason.includes('UrlFetchApp.fetch') ||
+        reason.includes('script.external_request') ||
+        reason.includes('permiso');
+      if (isPermissionError) {
+        setThankYouStatus(
+          'Pago recibido, validación temporalmente no disponible.',
+          'error',
+          'Estamos activando permisos del servidor. Tu pago está seguro. Presiona "Revalidar pago" en 30 segundos.'
+        );
+      } else {
+        setThankYouStatus('Pago en proceso de confirmación.', 'error', 'Puedes tocar "Revalidar pago" en unos segundos.');
+      }
       return;
     }
 
@@ -1319,10 +1383,12 @@ async function initWompiThankYouPage() {
       const currentUser = remote.users.find((u) => String(u.email || '').toLowerCase() === currentEmail);
       if (amountText && currentUser) amountText.textContent = formatCOP(currentUser.wallet || 0);
     }
-    if (statusText) statusText.textContent = 'Pago confirmado. Tu saldo fue actualizado correctamente.';
+    setThankYouStatus('Pago confirmado. Tu saldo fue actualizado correctamente.', 'success');
+    scheduleAutoRedirect(5);
   }
 
   backBtn?.addEventListener('click', () => {
+    clearAutoRedirect();
     window.location.href = 'dashboard.html';
   });
   retryBtn?.addEventListener('click', runValidation);

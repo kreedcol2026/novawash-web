@@ -1729,6 +1729,33 @@ tr.is-editing .bo-edit-field {
   color: #3f4959;
 }
 
+#wompiThanksStatus {
+  font-weight: 700;
+}
+
+#wompiThanksTx,
+#wompiThanksRef {
+  word-break: break-word;
+}
+
+.thankyou-help {
+  margin: 0.4rem 0 0.55rem !important;
+  padding: 0.55rem 0.7rem;
+  border-radius: 10px;
+  background: rgba(255, 122, 24, 0.1);
+  color: #9a4309 !important;
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.text-success {
+  color: #128247 !important;
+}
+
+.text-error {
+  color: #be3a34 !important;
+}
+
 .reveal {
   opacity: 0;
   transform: translateY(20px);

@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260218z" />
+    <link rel="stylesheet" href="styles.css?v=20260218zb" />
   </head>
   <body id="wompiThankYouPage">
     <header class="site-header scrolled">
@@ -29,13 +29,14 @@
       <section class="thankyou-wrap">
         <article class="thankyou-card">
           <div class="thankyou-badge">
-            <img src="Imagenes/Sign-check-icon.png" alt="Pago confirmado" />
+            <img src="Imagenes/Sign-check-icon.png" onerror="this.onerror=null;this.src='Imagenes/favicon.png';" alt="Pago confirmado" />
           </div>
           <h1 class="thankyou-title">Gracias por tu recarga</h1>
           <p class="thankyou-subtitle">Estamos validando el pago con Wompi para acreditar tu saldo de forma automática.</p>
 
           <div class="thankyou-status">
             <p><strong>Estado:</strong> <span id="wompiThanksStatus">Procesando...</span></p>
+            <p id="wompiThanksHelp" class="thankyou-help" hidden></p>
             <p><strong>Transacción:</strong> <span id="wompiThanksTx">-</span></p>
             <p><strong>Referencia:</strong> <span id="wompiThanksRef">-</span></p>
             <p><strong>Saldo actual:</strong> <span id="wompiThanksAmount">-</span></p>
@@ -49,6 +50,6 @@
       </section>
     </main>
 
-    <script src="script.js?v=20260218z"></script>
+    <script src="script.js?v=20260218zb"></script>
   </body>
 </html>
