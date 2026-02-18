@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260218y" />
+    <link rel="stylesheet" href="styles.css?v=20260218z" />
   </head>
   <body>
     <header class="site-header scrolled">
@@ -170,6 +170,11 @@
               </div>
               <p class="muted-note">Ingresa el monto a recargar en tu cuenta NovaWash.</p>
               <label class="wompi-topup-label" for="wompiTopUpAmountInput">Valor a recargar (COP)</label>
+              <div class="wompi-topup-presets" role="group" aria-label="Montos rápidos">
+                <button class="wompi-topup-preset is-active" type="button" data-amount="35000">$35.000</button>
+                <button class="wompi-topup-preset" type="button" data-amount="50000">$50.000</button>
+                <button class="wompi-topup-preset" type="button" data-amount="100000">$100.000</button>
+              </div>
               <input
                 id="wompiTopUpAmountInput"
                 class="wompi-topup-input"
@@ -190,6 +195,6 @@
       </section>
     </main>
 
-    <script src="script.js?v=20260218y"></script>
+    <script src="script.js?v=20260218z"></script>
   </body>
 </html>

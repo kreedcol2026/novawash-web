@@ -1623,6 +1623,30 @@ tr.is-editing .bo-edit-field {
   margin: 0.75rem 0 0.35rem;
 }
 
+.wompi-topup-presets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-bottom: 0.55rem;
+}
+
+.wompi-topup-preset {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: #1b2435;
+  border-radius: 999px;
+  height: 40px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.wompi-topup-preset.is-active {
+  border-color: var(--orange);
+  background: rgba(255, 122, 24, 0.1);
+  color: #9a4309;
+}
+
 .wompi-topup-input {
   width: 100%;
   height: 48px;
@@ -1644,6 +1668,65 @@ tr.is-editing .bo-edit-field {
 .wompi-topup-actions {
   justify-content: flex-end;
   margin-top: 0.8rem;
+}
+
+.thankyou-page {
+  min-height: 100vh;
+  background: #f5f7fb;
+  padding: 6.2rem 1rem 2rem;
+}
+
+.thankyou-wrap {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.thankyou-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 1.2rem;
+  text-align: center;
+}
+
+.thankyou-badge {
+  width: 84px;
+  height: 84px;
+  margin: 0 auto 0.7rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 122, 24, 0.12);
+}
+
+.thankyou-badge img {
+  width: 42px;
+  height: 42px;
+}
+
+.thankyou-title {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.4vw, 1.9rem);
+}
+
+.thankyou-subtitle {
+  color: #5c6779;
+  margin: 0.5rem auto 0.95rem;
+  max-width: 45ch;
+}
+
+.thankyou-status {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fafbfd;
+  padding: 0.9rem;
+  text-align: left;
+}
+
+.thankyou-status p {
+  margin: 0.35rem 0;
+  color: #3f4959;
 }
 
 .reveal {

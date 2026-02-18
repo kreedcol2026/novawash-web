@@ -169,13 +169,15 @@ async function postAppsAction(action, payload = {}) {
 }
 
 async function requestWompiCheckout({ user, amount }) {
+  const basePath = window.location.pathname.replace(/[^/]*$/, '');
+  const returnUrl = `${window.location.origin}${basePath}wompi-thankyou.html`;
   return postAppsAction('createWompiCheckout', {
     amount,
     userEmail: user.email,
     userId: user.userId,
     customerName: user.name,
     customerPhone: user.phone || '',
-    returnUrl: `${window.location.origin}${window.location.pathname}`,
+    returnUrl,
   });
 }
 
@@ -759,6 +761,7 @@ function initDashboardPage() {
   const wompiTopUpAmountInput = document.querySelector('#wompiTopUpAmountInput');
   const wompiTopUpHint = document.querySelector('#wompiTopUpHint');
   const wompiTopUpConfirmBtn = document.querySelector('#wompiTopUpConfirmBtn');
+  const wompiTopUpPresetBtns = [...document.querySelectorAll('.wompi-topup-preset')];
 
   const startScanBtn = null;
   const stopScanBtn = null;
@@ -808,6 +811,10 @@ function initDashboardPage() {
   function openWompiTopUpModal(defaultAmount = 50000) {
     if (!wompiTopUpModal || !wompiTopUpAmountInput) return;
     wompiTopUpAmountInput.value = formatThousands(defaultAmount);
+    wompiTopUpPresetBtns.forEach((btn) => {
+      const value = Number(btn.dataset.amount || 0);
+      btn.classList.toggle('is-active', value === Number(defaultAmount));
+    });
     if (wompiTopUpHint) wompiTopUpHint.textContent = 'Mínimo $1.000';
     wompiTopUpModal.hidden = false;
     wompiTopUpModal.setAttribute('aria-hidden', 'false');
@@ -1145,6 +1152,19 @@ function initDashboardPage() {
   wompiTopUpAmountInput?.addEventListener('input', () => {
     const amount = parseMoneyInput(wompiTopUpAmountInput.value);
     wompiTopUpAmountInput.value = amount ? formatThousands(amount) : '';
+    wompiTopUpPresetBtns.forEach((btn) => {
+      btn.classList.toggle('is-active', Number(btn.dataset.amount || 0) === amount);
+    });
+  });
+
+  wompiTopUpPresetBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const amount = Number(btn.dataset.amount || 0);
+      wompiTopUpAmountInput.value = amount ? formatThousands(amount) : '';
+      wompiTopUpPresetBtns.forEach((other) => other.classList.toggle('is-active', other === btn));
+      if (wompiTopUpHint) wompiTopUpHint.textContent = 'Mínimo $1.000';
+      wompiTopUpAmountInput.focus();
+    });
   });
 
   wompiTopUpAmountInput?.addEventListener('keydown', (event) => {
@@ -1255,6 +1275,63 @@ if (document.querySelector('#loginForm') || document.querySelector('#signupForm'
 
 if (document.querySelector('#dashboard')) {
   initDashboardPage();
+}
+
+async function initWompiThankYouPage() {
+  const page = document.querySelector('#wompiThankYouPage');
+  if (!page) return;
+
+  const statusText = document.querySelector('#wompiThanksStatus');
+  const txText = document.querySelector('#wompiThanksTx');
+  const refText = document.querySelector('#wompiThanksRef');
+  const amountText = document.querySelector('#wompiThanksAmount');
+  const backBtn = document.querySelector('#wompiThanksBackBtn');
+  const retryBtn = document.querySelector('#wompiThanksRetryBtn');
+
+  const params = new URLSearchParams(window.location.search);
+  const txId = params.get('id') || params.get('transaction_id') || params.get('transactionId') || '';
+  const reference = params.get('reference') || '-';
+  const wompiStatus = String(params.get('status') || params.get('wompi_status') || '-').toUpperCase();
+
+  if (txText) txText.textContent = txId || '-';
+  if (refText) refText.textContent = reference;
+  if (statusText) statusText.textContent = txId ? 'Validando pago con Wompi...' : 'No recibimos ID de transacción.';
+  if (amountText) amountText.textContent = '-';
+
+  async function runValidation() {
+    if (!txId) {
+      if (statusText) statusText.textContent = `Estado Wompi: ${wompiStatus || 'SIN_DATO'}.`;
+      return;
+    }
+    const resp = await postAppsAction('confirmWompiTransaction', { transactionId: txId });
+    if (!resp?.ok) {
+      if (statusText) statusText.textContent = `Pago en proceso: ${resp?.error || 'pendiente de confirmación'}`;
+      return;
+    }
+
+    const remote = await fetchRemoteStateAsync();
+    if (remote) {
+      appDataCache = remote;
+      writeLocalState(remote);
+      hasUnsyncedLocalChanges = false;
+      pendingRemoteState = null;
+      const currentEmail = String(remote.currentUserEmail || '').toLowerCase();
+      const currentUser = remote.users.find((u) => String(u.email || '').toLowerCase() === currentEmail);
+      if (amountText && currentUser) amountText.textContent = formatCOP(currentUser.wallet || 0);
+    }
+    if (statusText) statusText.textContent = 'Pago confirmado. Tu saldo fue actualizado correctamente.';
+  }
+
+  backBtn?.addEventListener('click', () => {
+    window.location.href = 'dashboard.html';
+  });
+  retryBtn?.addEventListener('click', runValidation);
+
+  runValidation();
+}
+
+if (document.querySelector('#wompiThankYouPage')) {
+  initWompiThankYouPage();
 }
 
 function initBackofficePage() {

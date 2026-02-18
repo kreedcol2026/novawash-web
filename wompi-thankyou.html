@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nova Wash | Confirmación de Pago</title>
+    <link rel="icon" type="image/png" href="Imagenes/favicon.png" />
+    <link rel="apple-touch-icon" href="Imagenes/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css?v=20260218z" />
+  </head>
+  <body id="wompiThankYouPage">
+    <header class="site-header scrolled">
+      <a class="logo" href="index.html" aria-label="Nova Wash">
+        <img class="logo-mark" src="Imagenes/logo_largo.png" onerror="this.onerror=null;this.src='logo-novawash.svg';" alt="Nova Wash" />
+      </a>
+      <nav class="main-nav" aria-label="Navegación">
+        <a href="dashboard.html">Mi cuenta</a>
+      </nav>
+      <a class="btn btn-light" href="dashboard.html">Volver</a>
+    </header>
+
+    <main class="thankyou-page">
+      <section class="thankyou-wrap">
+        <article class="thankyou-card">
+          <div class="thankyou-badge">
+            <img src="Imagenes/favicon.png" alt="Nova Wash" />
+          </div>
+          <h1 class="thankyou-title">Gracias por tu recarga</h1>
+          <p class="thankyou-subtitle">Estamos validando el pago con Wompi para acreditar tu saldo de forma automática.</p>
+
+          <div class="thankyou-status">
+            <p><strong>Estado:</strong> <span id="wompiThanksStatus">Procesando...</span></p>
+            <p><strong>Transacción:</strong> <span id="wompiThanksTx">-</span></p>
+            <p><strong>Referencia:</strong> <span id="wompiThanksRef">-</span></p>
+            <p><strong>Saldo actual:</strong> <span id="wompiThanksAmount">-</span></p>
+          </div>
+
+          <div class="dash-actions" style="justify-content: center; margin-top: 0.95rem">
+            <button id="wompiThanksRetryBtn" class="btn btn-light" type="button">Revalidar pago</button>
+            <button id="wompiThanksBackBtn" class="btn btn-orange" type="button">Volver a mi cuenta</button>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script src="script.js?v=20260218z"></script>
+  </body>
+</html>
