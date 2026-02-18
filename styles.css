@@ -1022,6 +1022,57 @@ select:focus {
   overflow: visible;
 }
 
+.bo-users-mobile {
+  display: none;
+}
+
+.bo-mobile-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: var(--shadow);
+  padding: 0.72rem;
+  display: grid;
+  gap: 0.38rem;
+}
+
+.bo-mobile-card p {
+  margin: 0;
+  font-size: 0.84rem;
+  color: #535d6a;
+}
+
+.bo-mobile-card p strong {
+  color: #2d3541;
+}
+
+.bo-mobile-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.bo-mobile-head h5 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.bo-mobile-head small {
+  color: #6a7380;
+  font-size: 0.72rem;
+}
+
+.bo-mobile-recharge-label {
+  margin-top: 0.3rem;
+}
+
+.bo-mobile-empty {
+  margin: 0.5rem 0 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
 .bo-metrics {
   margin-top: 0.9rem;
   display: grid;
@@ -1655,6 +1706,17 @@ tr.is-editing .bo-edit-field {
 
   .bo-users-wrap {
     overflow-x: auto;
+  }
+
+  .bo-users-wrap,
+  .bo-table-actions {
+    display: none;
+  }
+
+  .bo-users-mobile {
+    margin-top: 0.9rem;
+    display: grid;
+    gap: 0.7rem;
   }
 
   .bo-modal-grid {

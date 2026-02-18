@@ -865,6 +865,7 @@ function initBackofficePage() {
   const boPanelMessage = document.querySelector('#boPanelMessage');
   const backofficePanel = document.querySelector('#backofficePanel');
   const boUsersBody = document.querySelector('#boUsersBody');
+  const boUsersMobile = document.querySelector('#boUsersMobile');
   const boModal = document.querySelector('#boModal');
   const boModalForm = document.querySelector('#boModalForm');
   const boModalTitle = document.querySelector('#boModalTitle');
@@ -972,6 +973,21 @@ function initBackofficePage() {
     }, 4500);
   }
 
+  function pushBrowserPaymentNotification(message) {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'granted') {
+      new Notification('Nova Wash Backoffice', { body: message });
+      return;
+    }
+    if (Notification.permission === 'default') {
+      Notification.requestPermission().then((perm) => {
+        if (perm === 'granted') {
+          new Notification('Nova Wash Backoffice', { body: message });
+        }
+      });
+    }
+  }
+
   function buildPaymentNotice(log, data) {
     const amount = Number(log.amount) || 0;
     const user = data.users.find((u) => String(u.email || '').toLowerCase() === String(log.targetEmail || '').toLowerCase());
@@ -1006,7 +1022,9 @@ function initBackofficePage() {
     renderAudit();
 
     newPaymentLogs.slice(-3).forEach((log) => {
-      showFloatingNotice(buildPaymentNotice(log, remoteData));
+      const message = buildPaymentNotice(log, remoteData);
+      showFloatingNotice(message);
+      pushBrowserPaymentNotification(message);
     });
   }
 
@@ -1133,8 +1151,10 @@ function initBackofficePage() {
     renderMetrics(data, filteredUsers);
 
     boUsersBody.innerHTML = '';
+    if (boUsersMobile) boUsersMobile.innerHTML = '';
     if (filteredUsers.length === 0) {
       boUsersBody.innerHTML = '<tr><td colspan=\"13\">No hay usuarios para los filtros aplicados.</td></tr>';
+      if (boUsersMobile) boUsersMobile.innerHTML = '<p class="bo-mobile-empty">No hay usuarios para los filtros aplicados.</p>';
       return;
     }
 
@@ -1186,13 +1206,152 @@ function initBackofficePage() {
         </td>
       `;
       boUsersBody.appendChild(row);
+
+      if (boUsersMobile) {
+        const card = document.createElement('article');
+        card.className = 'bo-mobile-card';
+        card.dataset.userIndex = String(idx);
+        card.innerHTML = `
+          <div class="bo-mobile-head">
+            <h5>${esc(user.name || 'Cliente')}</h5>
+            <small>${esc(user.userId || '-')}</small>
+          </div>
+          <p><strong>Correo:</strong> ${esc(user.email || '-')}</p>
+          <p><strong>Placa:</strong> ${esc(user.plate || '-')}</p>
+          <p><strong>Teléfono:</strong> ${esc(user.phone || '-')}</p>
+          <p><strong>Plan:</strong> ${user.plan.mode === 'premium_monthly' ? 'Premium' : 'Básico'}</p>
+          <p><strong>Disponibles:</strong> ${Number(user.plan.washesRemaining) || 0} | <strong>Realizadas:</strong> ${Number(user.stats.washesDone) || 0}</p>
+          <p><strong>Saldo:</strong> ${formatCOP(Number(user.wallet) || 0)}</p>
+          <label class="bo-mobile-recharge-label">
+            Recarga
+            <input class="bo-recharge-input" name="cashAmount" type="number" min="0" value="" placeholder="$" />
+          </label>
+          <div class="bo-actions-cell">
+            <button class="btn btn-orange bo-btn" type="button" data-action="cash">Recarga</button>
+            <div class="bo-menu">
+              <button class="bo-menu-trigger" type="button" data-action="toggle-menu" aria-label="Más opciones">...</button>
+              <div class="bo-menu-list" hidden>
+                <button class="bo-menu-item" type="button" data-action="edit">Editar ✎</button>
+                <button class="bo-menu-item" type="button" data-action="change-password">Cambiar contraseña</button>
+                <button class="bo-menu-item" type="button" data-action="cancel-subscription">Cancelar suscripción</button>
+                <button class="bo-menu-item danger" type="button" data-action="delete">Eliminar usuario</button>
+              </div>
+            </div>
+          </div>
+        `;
+        boUsersMobile.appendChild(card);
+      }
     });
   }
 
   function closeAllRowMenus() {
-    boUsersBody.querySelectorAll('.bo-menu-list').forEach((menu) => {
+    document.querySelectorAll('.bo-menu-list').forEach((menu) => {
       menu.hidden = true;
     });
+  }
+
+  function handleUserAction(event) {
+    const btn = event.target.closest('button[data-action]');
+    if (!btn) return;
+    const row = btn.closest('[data-user-index]');
+    if (!row) return;
+    const idx = Number(row.dataset.userIndex);
+    const data = getData();
+    data.users = data.users.map((user) => normalizeUser(user));
+    const user = data.users[idx];
+    if (!user) return;
+    const input = (name) => row.querySelector(`[name="${name}"]`);
+
+    if (btn.dataset.action === 'cash') {
+      const amount = Math.max(0, Number(input('cashAmount')?.value || 0));
+      if (amount <= 0) return;
+      const addedWashes = applyRechargeToUser(user, amount);
+      user.paymentMethod = 'Efectivo en punto';
+      const suffix = addedWashes > 0 ? ` + ${addedWashes} lavadas premium.` : '';
+      addHistory(user, `Backoffice: pago en efectivo registrado por ${formatCOP(amount)}.${suffix}`, 'pago');
+      addAuditEntry(
+        data,
+        BO_USER,
+        user.email,
+        'manual_cash_payment',
+        `Recarga manual en efectivo por ${formatCOP(amount)}.${suffix}`,
+        { amount, addedWashes }
+      );
+      saveData(data);
+      const notice = `Recarga manual aplicada: ${formatCOP(amount)} a ${user.name}.`;
+      showFloatingNotice(notice);
+      pushBrowserPaymentNotification(notice);
+      setResult(boPanelMessage, `Recarga manual aplicada: ${formatCOP(amount)}.`, 'success');
+      render();
+      return;
+    }
+
+    if (btn.dataset.action === 'toggle-menu') {
+      closeAllRowMenus();
+      const menu = row.querySelector('.bo-menu-list');
+      if (menu) menu.hidden = !menu.hidden;
+      return;
+    }
+
+    if (btn.dataset.action === 'edit') {
+      openModal('edit', idx);
+      closeAllRowMenus();
+      return;
+    }
+
+    if (btn.dataset.action === 'change-password') {
+      const nextPassword = window.prompt(`Nueva contraseña para ${user.email}:`, '');
+      if (nextPassword === null) {
+        closeAllRowMenus();
+        return;
+      }
+      const cleanPassword = String(nextPassword).trim();
+      if (cleanPassword.length < 6) {
+        setResult(boPanelMessage, 'La contraseña debe tener al menos 6 caracteres.', 'error');
+        closeAllRowMenus();
+        return;
+      }
+      user.password = cleanPassword;
+      addAuditEntry(data, BO_USER, user.email, 'change_password', 'Cambio de contraseña desde backoffice.');
+      saveData(data);
+      setResult(boPanelMessage, 'Contraseña actualizada correctamente.', 'success');
+      closeAllRowMenus();
+      render();
+      return;
+    }
+
+    if (btn.dataset.action === 'cancel-subscription') {
+      if (user.plan.mode !== 'premium_monthly') {
+        setResult(boPanelMessage, 'El cliente ya está en plan básico.', 'error');
+        closeAllRowMenus();
+        return;
+      }
+      user.plan.mode = 'basic_single';
+      user.plan.cycleStart = null;
+      user.plan.cycleEnd = null;
+      user.plan.usedPlates = [];
+      syncAvailableWashes(user);
+      addHistory(user, 'Suscripción premium cancelada desde backoffice.', 'plan');
+      addAuditEntry(data, BO_USER, user.email, 'cancel_subscription', 'Suscripción cancelada y cambio a Plan Básico.');
+      saveData(data);
+      setResult(boPanelMessage, 'Suscripción cancelada. Cliente en Plan Básico.', 'success');
+      closeAllRowMenus();
+      render();
+      return;
+    }
+
+    if (btn.dataset.action === 'delete') {
+      const removedEmail = user.email;
+      data.users.splice(idx, 1);
+      if (data.currentUserEmail && data.currentUserEmail.toLowerCase() === removedEmail.toLowerCase()) {
+        data.currentUserEmail = null;
+      }
+      addAuditEntry(data, BO_USER, removedEmail, 'delete_user', 'Usuario eliminado desde backoffice.');
+      saveData(data);
+      setResult(boPanelMessage, 'Usuario eliminado correctamente.', 'success');
+      closeAllRowMenus();
+      render();
+    }
   }
 
   function closeModal() {
@@ -1455,106 +1614,8 @@ function initBackofficePage() {
     render();
   });
 
-  boUsersBody.addEventListener('click', (event) => {
-    const btn = event.target.closest('button[data-action]');
-    if (!btn) return;
-    const row = btn.closest('tr');
-    if (!row) return;
-    const idx = Number(row.dataset.userIndex);
-    const data = getData();
-    data.users = data.users.map((user) => normalizeUser(user));
-    const user = data.users[idx];
-    if (!user) return;
-    const input = (name) => row.querySelector(`[name="${name}"]`);
-
-    if (btn.dataset.action === 'cash') {
-      const amount = Math.max(0, Number(input('cashAmount')?.value || 0));
-      if (amount <= 0) return;
-      const addedWashes = applyRechargeToUser(user, amount);
-      user.paymentMethod = 'Efectivo en punto';
-      const suffix = addedWashes > 0 ? ` + ${addedWashes} lavadas premium.` : '';
-      addHistory(user, `Backoffice: pago en efectivo registrado por ${formatCOP(amount)}.${suffix}`, 'pago');
-      addAuditEntry(
-        data,
-        BO_USER,
-        user.email,
-        'manual_cash_payment',
-        `Recarga manual en efectivo por ${formatCOP(amount)}.${suffix}`,
-        { amount, addedWashes }
-      );
-      saveData(data);
-      setResult(boPanelMessage, `Recarga manual aplicada: ${formatCOP(amount)}.`, 'success');
-      render();
-      return;
-    }
-
-    if (btn.dataset.action === 'toggle-menu') {
-      closeAllRowMenus();
-      const menu = row.querySelector('.bo-menu-list');
-      if (menu) menu.hidden = !menu.hidden;
-      return;
-    }
-
-    if (btn.dataset.action === 'edit') {
-      openModal('edit', idx);
-      closeAllRowMenus();
-      return;
-    }
-
-    if (btn.dataset.action === 'change-password') {
-      const nextPassword = window.prompt(`Nueva contraseña para ${user.email}:`, '');
-      if (nextPassword === null) {
-        closeAllRowMenus();
-        return;
-      }
-      const cleanPassword = String(nextPassword).trim();
-      if (cleanPassword.length < 6) {
-        setResult(boPanelMessage, 'La contraseña debe tener al menos 6 caracteres.', 'error');
-        closeAllRowMenus();
-        return;
-      }
-      user.password = cleanPassword;
-      addAuditEntry(data, BO_USER, user.email, 'change_password', 'Cambio de contraseña desde backoffice.');
-      saveData(data);
-      setResult(boPanelMessage, 'Contraseña actualizada correctamente.', 'success');
-      closeAllRowMenus();
-      render();
-      return;
-    }
-
-    if (btn.dataset.action === 'cancel-subscription') {
-      if (user.plan.mode !== 'premium_monthly') {
-        setResult(boPanelMessage, 'El cliente ya está en plan básico.', 'error');
-        closeAllRowMenus();
-        return;
-      }
-      user.plan.mode = 'basic_single';
-      user.plan.cycleStart = null;
-      user.plan.cycleEnd = null;
-      user.plan.usedPlates = [];
-      syncAvailableWashes(user);
-      addHistory(user, 'Suscripción premium cancelada desde backoffice.', 'plan');
-      addAuditEntry(data, BO_USER, user.email, 'cancel_subscription', 'Suscripción cancelada y cambio a Plan Básico.');
-      saveData(data);
-      setResult(boPanelMessage, 'Suscripción cancelada. Cliente en Plan Básico.', 'success');
-      closeAllRowMenus();
-      render();
-      return;
-    }
-
-    if (btn.dataset.action === 'delete') {
-      const removedEmail = user.email;
-      data.users.splice(idx, 1);
-      if (data.currentUserEmail && data.currentUserEmail.toLowerCase() === removedEmail.toLowerCase()) {
-        data.currentUserEmail = null;
-      }
-      addAuditEntry(data, BO_USER, removedEmail, 'delete_user', 'Usuario eliminado desde backoffice.');
-      saveData(data);
-      setResult(boPanelMessage, 'Usuario eliminado correctamente.', 'success');
-      closeAllRowMenus();
-      render();
-    }
-  });
+  boUsersBody.addEventListener('click', handleUserAction);
+  boUsersMobile?.addEventListener('click', handleUserAction);
 
   boSaveAllBtn?.addEventListener('click', () => {
     const data = getData();
