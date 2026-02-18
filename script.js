@@ -755,6 +755,10 @@ function initDashboardPage() {
   const cancelPremiumBtn = document.querySelector('#cancelPremiumBtn');
   const cashTopUpBtn = document.querySelector('#cashTopUpBtn');
   const bankTopUpBtn = document.querySelector('#bankTopUpBtn');
+  const wompiTopUpModal = document.querySelector('#wompiTopUpModal');
+  const wompiTopUpAmountInput = document.querySelector('#wompiTopUpAmountInput');
+  const wompiTopUpHint = document.querySelector('#wompiTopUpHint');
+  const wompiTopUpConfirmBtn = document.querySelector('#wompiTopUpConfirmBtn');
 
   const startScanBtn = null;
   const stopScanBtn = null;
@@ -765,6 +769,7 @@ function initDashboardPage() {
   let profileEditing = false;
   let dashboardSyncInterval = null;
   let dashboardSyncInFlight = false;
+  let wompiTopUpBusy = false;
 
   function stopDashboardSync() {
     if (dashboardSyncInterval) {
@@ -798,6 +803,24 @@ function initDashboardPage() {
       if (document.hidden) return;
       syncDashboardFromRemote();
     }, 12000);
+  }
+
+  function openWompiTopUpModal(defaultAmount = 50000) {
+    if (!wompiTopUpModal || !wompiTopUpAmountInput) return;
+    wompiTopUpAmountInput.value = formatThousands(defaultAmount);
+    if (wompiTopUpHint) wompiTopUpHint.textContent = 'Mínimo $1.000';
+    wompiTopUpModal.hidden = false;
+    wompiTopUpModal.setAttribute('aria-hidden', 'false');
+    setTimeout(() => {
+      wompiTopUpAmountInput.focus();
+      wompiTopUpAmountInput.select();
+    }, 10);
+  }
+
+  function closeWompiTopUpModal() {
+    if (!wompiTopUpModal) return;
+    wompiTopUpModal.hidden = true;
+    wompiTopUpModal.setAttribute('aria-hidden', 'true');
   }
 
   function clearWompiReturnParams() {
@@ -1115,7 +1138,35 @@ function initDashboardPage() {
     );
   });
 
-  bankTopUpBtn?.addEventListener('click', async () => {
+  bankTopUpBtn?.addEventListener('click', () => {
+    openWompiTopUpModal(50000);
+  });
+
+  wompiTopUpAmountInput?.addEventListener('input', () => {
+    const amount = parseMoneyInput(wompiTopUpAmountInput.value);
+    wompiTopUpAmountInput.value = amount ? formatThousands(amount) : '';
+  });
+
+  wompiTopUpAmountInput?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      wompiTopUpConfirmBtn?.click();
+    }
+  });
+
+  wompiTopUpModal?.addEventListener('click', (event) => {
+    if (event.target.closest('[data-modal-close="1"]')) {
+      if (!wompiTopUpBusy) closeWompiTopUpModal();
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && wompiTopUpModal && !wompiTopUpModal.hidden && !wompiTopUpBusy) {
+      closeWompiTopUpModal();
+    }
+  });
+
+  wompiTopUpConfirmBtn?.addEventListener('click', async () => {
     const data = getData();
     const user = getCurrentUser(data);
     if (!user) {
@@ -1123,16 +1174,18 @@ function initDashboardPage() {
       return;
     }
 
-    const rawAmount = window.prompt('Valor a recargar con Wompi (COP):', '50000');
-    if (rawAmount === null) return;
+    const rawAmount = wompiTopUpAmountInput?.value || '';
     const amount = parseMoneyInput(rawAmount);
     if (amount < 1000) {
-      window.alert('Ingresa un valor válido de recarga.');
+      if (wompiTopUpHint) wompiTopUpHint.textContent = 'Ingresa un valor válido de al menos $1.000.';
+      wompiTopUpAmountInput?.focus();
       return;
     }
 
+    wompiTopUpBusy = true;
     setResult(profileMessage, 'Generando enlace de pago Wompi...', 'success');
     if (bankTopUpBtn) bankTopUpBtn.disabled = true;
+    if (wompiTopUpConfirmBtn) wompiTopUpConfirmBtn.disabled = true;
     try {
       const resp = await requestWompiCheckout({ user, amount });
       if (!resp?.ok || !resp.checkoutUrl) {
@@ -1146,6 +1199,7 @@ function initDashboardPage() {
       addHistory(user, `Recarga Wompi iniciada por ${formatCOP(amount)}. Referencia: ${resp.reference || '-'}.`, 'pago');
       saveData(data);
       render();
+      closeWompiTopUpModal();
 
       setResult(profileMessage, 'Enlace listo. Confirma para abrir Wompi.', 'success');
       const continueToWompi = window.confirm(
@@ -1169,6 +1223,8 @@ function initDashboardPage() {
       }, 1200);
     } finally {
       if (bankTopUpBtn) bankTopUpBtn.disabled = false;
+      if (wompiTopUpConfirmBtn) wompiTopUpConfirmBtn.disabled = false;
+      wompiTopUpBusy = false;
     }
   });
 

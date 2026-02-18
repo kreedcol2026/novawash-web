@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260218x" />
+    <link rel="stylesheet" href="styles.css?v=20260218y" />
   </head>
   <body>
     <header class="site-header scrolled">
@@ -161,10 +161,35 @@
             </section>
           </article>
 
+          <section id="wompiTopUpModal" class="bo-modal" hidden aria-hidden="true">
+            <div class="bo-modal-backdrop" data-modal-close="1"></div>
+            <div class="bo-modal-card wompi-modal-card" role="dialog" aria-modal="true" aria-labelledby="wompiTopUpTitle">
+              <div class="bo-modal-header">
+                <h4 id="wompiTopUpTitle">Recargar con Wompi</h4>
+                <button id="wompiTopUpCloseBtn" type="button" class="btn btn-light" data-modal-close="1">Cerrar</button>
+              </div>
+              <p class="muted-note">Ingresa el monto a recargar en tu cuenta NovaWash.</p>
+              <label class="wompi-topup-label" for="wompiTopUpAmountInput">Valor a recargar (COP)</label>
+              <input
+                id="wompiTopUpAmountInput"
+                class="wompi-topup-input"
+                type="text"
+                inputmode="numeric"
+                placeholder="50.000"
+                autocomplete="off"
+              />
+              <p id="wompiTopUpHint" class="muted-note">Mínimo $1.000</p>
+              <div class="dash-actions wompi-topup-actions">
+                <button id="wompiTopUpCancelBtn" class="btn btn-light" type="button" data-modal-close="1">Cancelar</button>
+                <button id="wompiTopUpConfirmBtn" class="btn btn-orange" type="button">Continuar a Wompi</button>
+              </div>
+            </div>
+          </section>
+
         </div>
       </section>
     </main>
 
-    <script src="script.js?v=20260218x"></script>
+    <script src="script.js?v=20260218y"></script>
   </body>
 </html>
