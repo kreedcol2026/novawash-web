@@ -872,11 +872,14 @@ function initDashboardPage() {
 
   setPremiumMonthlyBtn?.addEventListener('click', () => {
     mutateCurrentUser((user) => {
+      if ((Number(user.wallet) || 0) < PRICES.premiumMonthlyFee) {
+        window.alert('Recarga tu saldo con al menos $50.000 para pagar la suscripción.');
+        return;
+      }
       user.plan.mode = 'premium_monthly';
       user.plan.cycleStart = nowISO();
       user.plan.cycleEnd = oneMonthFromNowISO();
       user.plan.usedPlates = [];
-      user.wallet = PRICES.premiumMonthlyFee;
       syncAvailableWashes(user);
       addHistory(user, `Suscripción Premium activada por ${formatCOP(PRICES.premiumMonthlyFee)}.`, 'plan');
     });
