@@ -12,6 +12,9 @@ const BO_USER = 'personal';
 const BO_PASS = 'NovaWashAdmin2026';
 let appDataCache = null;
 let remoteStateLoaded = false;
+let hasUnsyncedLocalChanges = false;
+let remoteSaveInFlight = false;
+let pendingRemoteState = null;
 
 const header = document.querySelector('.site-header');
 const revealEls = document.querySelectorAll('.reveal');
@@ -78,16 +81,18 @@ if (revealEls.length) {
 }
 
 function buildDefaultData() {
-  return { users: [], currentUserEmail: null, queueNumber: 0, auditLogs: [] };
+  return { users: [], currentUserEmail: null, queueNumber: 0, auditLogs: [], stateUpdatedAt: 0 };
 }
 
 function normalizeAppState(parsed) {
   const source = parsed || {};
+  const stateUpdatedAt = Number(source.stateUpdatedAt) || 0;
   return {
     users: Array.isArray(source.users) ? source.users : [],
     currentUserEmail: source.currentUserEmail || null,
     queueNumber: Number.isFinite(source.queueNumber) ? source.queueNumber : 0,
     auditLogs: Array.isArray(source.auditLogs) ? source.auditLogs : [],
+    stateUpdatedAt,
   };
 }
 
@@ -136,20 +141,59 @@ async function fetchRemoteStateAsync() {
   }
 }
 
+async function flushPendingRemoteState() {
+  if (remoteSaveInFlight || !pendingRemoteState) return;
+  remoteSaveInFlight = true;
+
+  const payload = pendingRemoteState;
+  pendingRemoteState = null;
+
+  try {
+    const response = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8',
+      },
+      body: JSON.stringify({
+        action: 'saveState',
+        data: normalizeAppState(payload),
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    let ok = true;
+    try {
+      const body = await response.json();
+      ok = Boolean(body?.ok);
+    } catch {
+      ok = true;
+    }
+    if (!ok) throw new Error('saveState rejected');
+
+    const local = getData();
+    if ((Number(local.stateUpdatedAt) || 0) <= (Number(payload.stateUpdatedAt) || 0)) {
+      hasUnsyncedLocalChanges = false;
+    }
+  } catch {
+    pendingRemoteState = payload;
+    setTimeout(() => {
+      flushPendingRemoteState();
+    }, 2500);
+  } finally {
+    remoteSaveInFlight = false;
+    if (pendingRemoteState) {
+      flushPendingRemoteState();
+    }
+  }
+}
+
 function pushRemoteState(data) {
-  fetch(APPS_SCRIPT_URL, {
-    method: 'POST',
-    mode: 'cors',
-    headers: {
-      'Content-Type': 'text/plain;charset=utf-8',
-    },
-    body: JSON.stringify({
-      action: 'saveState',
-      data: normalizeAppState(data),
-    }),
-  }).catch(() => {
-    // No-op: se mantiene respaldo local.
-  });
+  pendingRemoteState = normalizeAppState(data);
+  flushPendingRemoteState();
 }
 
 function getData() {
@@ -168,6 +212,8 @@ function getData() {
 
 function saveData(data) {
   appDataCache = normalizeAppState(data);
+  appDataCache.stateUpdatedAt = Date.now();
+  hasUnsyncedLocalChanges = true;
   writeLocalState(appDataCache);
   pushRemoteState(appDataCache);
 }
@@ -1005,6 +1051,12 @@ function initBackofficePage() {
   async function syncBackofficeFromRemote(withNotifications = false) {
     const remoteData = await fetchRemoteStateAsync();
     if (!remoteData) return;
+    if (hasUnsyncedLocalChanges || pendingRemoteState) return;
+
+    const localData = getData();
+    const remoteVersion = Number(remoteData.stateUpdatedAt) || 0;
+    const localVersion = Number(localData.stateUpdatedAt) || 0;
+    if (remoteVersion < localVersion) return;
 
     const newPaymentLogs = [];
     (remoteData.auditLogs || []).forEach((log) => {
@@ -1144,9 +1196,16 @@ function initBackofficePage() {
 
     const data = getData();
     data.users = data.users.map((user) => normalizeUser(user));
-    applyBackofficeMonthlyResets(data, BO_USER);
-    data.users.forEach((user) => syncAvailableWashes(user));
-    saveData(data);
+    const didReset = applyBackofficeMonthlyResets(data, BO_USER);
+    let didSyncChange = false;
+    data.users.forEach((user) => {
+      const before = Number(user.plan?.washesRemaining) || 0;
+      const after = syncAvailableWashes(user);
+      if (before !== after) didSyncChange = true;
+    });
+    if (didReset || didSyncChange) {
+      saveData(data);
+    }
     const filteredUsers = getFilteredUsers(data);
     renderMetrics(data, filteredUsers);
 
