@@ -722,6 +722,7 @@ function initDashboardPage() {
   const processFallbackBtn = null;
   let profileEditing = false;
   let dashboardSyncInterval = null;
+  let dashboardSyncInFlight = false;
 
   function stopDashboardSync() {
     if (dashboardSyncInterval) {
@@ -731,21 +732,30 @@ function initDashboardPage() {
   }
 
   async function syncDashboardFromRemote() {
+    if (dashboardSyncInFlight) return;
     if (profileEditing || hasUnsyncedLocalChanges || pendingRemoteState) return;
-    const remoteData = await fetchRemoteStateAsync();
-    if (!remoteData) return;
-    const localData = getData();
-    const remoteVersion = Number(remoteData.stateUpdatedAt) || 0;
-    const localVersion = Number(localData.stateUpdatedAt) || 0;
-    if (remoteVersion <= localVersion) return;
-    appDataCache = remoteData;
-    writeLocalState(remoteData);
-    render();
+    dashboardSyncInFlight = true;
+    try {
+      const remoteData = await fetchRemoteStateAsync();
+      if (!remoteData) return;
+      const localData = getData();
+      const remoteVersion = Number(remoteData.stateUpdatedAt) || 0;
+      const localVersion = Number(localData.stateUpdatedAt) || 0;
+      if (remoteVersion <= localVersion) return;
+      appDataCache = remoteData;
+      writeLocalState(remoteData);
+      render();
+    } finally {
+      dashboardSyncInFlight = false;
+    }
   }
 
   function startDashboardSync() {
     stopDashboardSync();
-    dashboardSyncInterval = setInterval(syncDashboardFromRemote, 6000);
+    dashboardSyncInterval = setInterval(() => {
+      if (document.hidden) return;
+      syncDashboardFromRemote();
+    }, 12000);
   }
 
   function setProfileEditMode(editing) {
@@ -765,13 +775,15 @@ function initDashboardPage() {
       return;
     }
 
-    const sorted = [...user.history].sort((a, b) => (a.date < b.date ? 1 : -1));
+    const sorted = [...user.history].sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 80);
+    const fragment = document.createDocumentFragment();
     sorted.forEach((item) => {
       const row = document.createElement('div');
       row.className = 'history-item';
       row.textContent = `${new Date(item.date).toLocaleString('es-CO')} | ${item.detail}`;
-      historyList.appendChild(row);
+      fragment.appendChild(row);
     });
+    historyList.appendChild(fragment);
   }
 
   function render() {
