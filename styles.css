@@ -252,6 +252,15 @@ h2 {
   background: linear-gradient(180deg, #fff8f3, #ffffff);
 }
 
+/* Cliente y backoffice: fondo neutro (sin tono naranja) */
+.dashboard-page {
+  background: #ffffff;
+}
+
+.dashboard-page .manage {
+  background: linear-gradient(180deg, #ffffff, #ffffff);
+}
+
 .benefits-grid {
   margin-top: 1.5rem;
   display: grid;
