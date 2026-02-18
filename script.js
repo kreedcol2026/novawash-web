@@ -1603,6 +1603,11 @@ function initBackofficePage() {
     const data = getData();
     addAuditEntry(data, BO_USER, '-', 'login_backoffice', 'Ingreso de personal al backoffice.');
     saveData(data);
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().catch(() => {
+        // No-op.
+      });
+    }
     setResult(boLoginMessage, 'Ingreso autorizado.', 'success');
     render();
   });

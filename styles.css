@@ -1719,6 +1719,54 @@ tr.is-editing .bo-edit-field {
     gap: 0.7rem;
   }
 
+  .backoffice-page {
+    overflow-x: hidden;
+  }
+
+  .backoffice-page .bo-section {
+    padding-left: 0.55rem;
+    padding-right: 0.55rem;
+  }
+
+  .backoffice-page .bo-full {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .backoffice-page .dashboard {
+    width: 100%;
+    padding: 0.72rem;
+  }
+
+  .backoffice-page .dashboard-top {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.45rem;
+  }
+
+  .backoffice-page .dashboard-top h3 {
+    margin: 0;
+  }
+
+  .backoffice-page .dashboard-top .dash-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
+  }
+
+  .backoffice-page .dashboard-top .dash-actions .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.56rem 0.58rem;
+    font-size: 0.62rem;
+    letter-spacing: 0.04em;
+  }
+
+  .backoffice-page .bo-metrics {
+    grid-template-columns: 1fr;
+  }
+
   .bo-modal-grid {
     grid-template-columns: 1fr;
   }
