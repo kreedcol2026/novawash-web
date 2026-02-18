@@ -690,6 +690,44 @@ select:focus {
   padding: 0.9rem;
 }
 
+.loyalty-card {
+  grid-column: span 2;
+}
+
+.loyalty-grid {
+  margin-top: 0.65rem;
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 0.42rem;
+}
+
+.loyalty-cell {
+  aspect-ratio: 1 / 1;
+  border: 1px solid #cfd6e1;
+  border-radius: 10px;
+  background: #eef2f7;
+  display: grid;
+  place-items: center;
+}
+
+.loyalty-cell img {
+  width: 68%;
+  height: 68%;
+  object-fit: contain;
+  filter: grayscale(1) saturate(0.15);
+  opacity: 0.55;
+}
+
+.loyalty-cell.filled {
+  border-color: rgba(255, 106, 26, 0.45);
+  background: linear-gradient(180deg, #fff8f2, #fff1e6);
+}
+
+.loyalty-cell.filled img {
+  filter: none;
+  opacity: 1;
+}
+
 .dash-card h4 {
   margin-bottom: 0.5rem;
   font-size: 0.95rem;
@@ -1591,6 +1629,10 @@ tr.is-editing .bo-edit-field {
     grid-template-columns: 1fr;
   }
 
+  .loyalty-card {
+    grid-column: span 1;
+  }
+
   .plan-grid.two-cols {
     grid-template-columns: 1fr;
   }
@@ -1695,6 +1737,10 @@ tr.is-editing .bo-edit-field {
 
   .hero-highlights {
     display: none;
+  }
+
+  .loyalty-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
   .account-grid,

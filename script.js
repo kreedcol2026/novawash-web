@@ -8,6 +8,8 @@ const PRICES = {
   cashTopUpDefault: 50000,
 };
 const WELCOME_BONUS = 10000;
+const LOYALTY_GOAL = 10;
+const LOYALTY_BONUS = 25000;
 const BO_SESSION_KEY = 'novaWashBackofficeSession';
 const BO_USER = 'personal';
 const BO_PASS = 'NovaWashAdmin2026';
@@ -377,6 +379,9 @@ function normalizeUser(user) {
     history: Array.isArray(normalized.history) ? normalized.history : [],
     stats: {
       washesDone: Number.isFinite(normalized?.stats?.washesDone) ? normalized.stats.washesDone : 0,
+      loyaltyProgress: Number.isFinite(normalized?.stats?.loyaltyProgress)
+        ? Math.max(0, normalized.stats.loyaltyProgress)
+        : Math.max(0, (Number.isFinite(normalized?.stats?.washesDone) ? normalized.stats.washesDone : 0) % LOYALTY_GOAL),
     },
     plan: {
       mode,
@@ -481,6 +486,7 @@ function createUser({ name, email, password }) {
     stripeLinked: false,
     stats: {
       washesDone: 0,
+      loyaltyProgress: 0,
     },
     plan: {
       mode: 'basic_single',
@@ -561,6 +567,15 @@ function consumeWashByPlan(user, plate) {
   user.wallet -= charge;
   syncAvailableWashes(user);
   user.stats.washesDone += 1;
+  user.stats.loyaltyProgress = Math.max(0, Number(user.stats.loyaltyProgress) || 0) + 1;
+
+  if (user.stats.loyaltyProgress >= LOYALTY_GOAL) {
+    user.stats.loyaltyProgress -= LOYALTY_GOAL;
+    user.wallet += LOYALTY_BONUS;
+    syncAvailableWashes(user);
+    addHistory(user, `Bono de fidelidad aplicado por ${formatCOP(LOYALTY_BONUS)} al completar 10 lavadas.`, 'bono');
+  }
+
   user.plate = plate;
   addHistory(
     user,
@@ -688,6 +703,8 @@ function initDashboardPage() {
   const profileMessage = document.querySelector('#profileMessage');
   const userQrImage = document.querySelector('#userQrImage');
   const userQrCode = document.querySelector('#userQrCode');
+  const loyaltyGrid = document.querySelector('#loyaltyGrid');
+  const loyaltyProgressText = document.querySelector('#loyaltyProgressText');
   const historyList = document.querySelector('#historyList');
   const washMessage = document.querySelector('#washMessage');
 
@@ -816,6 +833,23 @@ function initDashboardPage() {
     if (profileWashesDone) profileWashesDone.textContent = `Lavadas realizadas: ${user.stats.washesDone}`;
     if (userQrImage) userQrImage.src = getQrImageUrl(getUserQrPayload(user), 170);
     if (userQrCode) userQrCode.textContent = getUserQrPayload(user);
+    if (loyaltyGrid) {
+      loyaltyGrid.innerHTML = '';
+      const filled = Math.max(0, Math.min(LOYALTY_GOAL, Number(user?.stats?.loyaltyProgress) || 0));
+      for (let i = 0; i < LOYALTY_GOAL; i += 1) {
+        const cell = document.createElement('div');
+        cell.className = `loyalty-cell${i < filled ? ' filled' : ''}`;
+        const icon = document.createElement('img');
+        icon.src = 'Imagenes/favicon.png';
+        icon.alt = '';
+        icon.loading = 'lazy';
+        cell.appendChild(icon);
+        loyaltyGrid.appendChild(cell);
+      }
+      if (loyaltyProgressText) {
+        loyaltyProgressText.textContent = `${filled} de ${LOYALTY_GOAL} lavadas para el próximo bono de ${formatCOP(LOYALTY_BONUS)}.`;
+      }
+    }
 
     setProfileEditMode(false);
     renderHistory(user);
