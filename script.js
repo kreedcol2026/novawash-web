@@ -211,6 +211,19 @@ async function flushPendingRemoteState() {
   pendingRemoteState = null;
 
   try {
+    // Anti-borrado: evita subir un estado vacio si en remoto ya existen usuarios.
+    const payloadUsers = Array.isArray(payload?.users) ? payload.users.length : 0;
+    if (payloadUsers === 0) {
+      const remoteSnapshot = await fetchRemoteStateAsync();
+      const remoteUsers = Array.isArray(remoteSnapshot?.users) ? remoteSnapshot.users.length : 0;
+      if (remoteUsers > 0) {
+        appDataCache = remoteSnapshot;
+        writeLocalState(remoteSnapshot);
+        hasUnsyncedLocalChanges = false;
+        return;
+      }
+    }
+
     const response = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       mode: 'cors',
