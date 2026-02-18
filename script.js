@@ -800,6 +800,55 @@ function initDashboardPage() {
     }, 12000);
   }
 
+  function clearWompiReturnParams() {
+    try {
+      const url = new URL(window.location.href);
+      ['id', 'transaction_id', 'transactionId', 'status', 'wompi_status', 'reference'].forEach((key) => {
+        url.searchParams.delete(key);
+      });
+      const next = `${url.pathname}${url.search ? `?${url.searchParams.toString()}` : ''}${url.hash || ''}`;
+      window.history.replaceState({}, document.title, next);
+    } catch {
+      // No-op.
+    }
+  }
+
+  async function handleWompiReturnIfPresent() {
+    const params = new URLSearchParams(window.location.search);
+    const txId =
+      params.get('id') || params.get('transaction_id') || params.get('transactionId') || '';
+    const status = String(params.get('status') || params.get('wompi_status') || '').toUpperCase();
+    if (!txId && !status) return;
+
+    if (!txId) {
+      setResult(profileMessage, 'Pago recibido. Esperando confirmación de Wompi...', 'success');
+      clearWompiReturnParams();
+      return;
+    }
+
+    setResult(profileMessage, 'Validando pago con Wompi...', 'success');
+    const response = await postAppsAction('confirmWompiTransaction', { transactionId: txId });
+    if (!response?.ok) {
+      const reason = response?.error || 'No se pudo confirmar la transacción.';
+      setResult(profileMessage, `Pago recibido, pero no confirmado aún: ${reason}`, 'error');
+      window.alert(`Pago recibido, pero no confirmado todavía.\n\nDetalle: ${reason}`);
+      clearWompiReturnParams();
+      return;
+    }
+
+    const remote = await fetchRemoteStateAsync();
+    if (remote) {
+      appDataCache = remote;
+      writeLocalState(remote);
+      hasUnsyncedLocalChanges = false;
+      pendingRemoteState = null;
+    }
+
+    render();
+    setResult(profileMessage, 'Pago Wompi confirmado y saldo actualizado.', 'success');
+    clearWompiReturnParams();
+  }
+
   function setProfileEditMode(editing) {
     profileEditing = editing;
     [profileNameInput, profileCedulaInput, profileEmailInput, profilePhoneInput, profilePlateInput, profileVehicleModelInput].forEach((el) => {
@@ -1141,6 +1190,7 @@ function initDashboardPage() {
     render();
   });
   render();
+  handleWompiReturnIfPresent();
 }
 
 if (document.querySelector('#loginForm') || document.querySelector('#signupForm') || document.querySelector('#arrivalForm')) {
