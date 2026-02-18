@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260218e" />
+    <link rel="stylesheet" href="styles.css?v=20260218f" />
   </head>
   <body>
     <header class="site-header scrolled">
@@ -49,45 +49,6 @@
             </div>
 
             <div class="dashboard-grid">
-              <section class="dash-card">
-                <h4>Perfil</h4>
-                <div class="profile-details">
-                  <p class="sub-detail-row">
-                    <strong class="sub-detail-label">Nombre:</strong>
-                    <input id="profileNameInput" class="profile-input" type="text" disabled />
-                  </p>
-                  <p class="sub-detail-row">
-                    <strong class="sub-detail-label">Cédula:</strong>
-                    <input id="profileCedulaInput" class="profile-input" type="text" disabled />
-                  </p>
-                  <p class="sub-detail-row">
-                    <strong class="sub-detail-label">Correo:</strong>
-                    <input id="profileEmailInput" class="profile-input" type="email" disabled />
-                  </p>
-                  <p class="sub-detail-row">
-                    <strong class="sub-detail-label">Teléfono:</strong>
-                    <input id="profilePhoneInput" class="profile-input" type="text" disabled />
-                  </p>
-                  <p class="sub-detail-row">
-                    <strong class="sub-detail-label">Placa principal:</strong>
-                    <input id="profilePlateInput" class="profile-input" type="text" disabled />
-                  </p>
-                  <p class="sub-detail-row">
-                    <strong class="sub-detail-label">Marca y modelo:</strong>
-                    <input id="profileVehicleModelInput" class="profile-input" type="text" disabled placeholder="Opcional" />
-                  </p>
-                  <p class="sub-detail-row">
-                    <strong class="sub-detail-label">Lavadas realizadas:</strong>
-                    <span id="profileWashesDone" class="sub-detail-value">0</span>
-                  </p>
-                </div>
-                <div class="dash-actions">
-                  <button id="profileEditBtn" class="btn btn-dark" type="button">Editar</button>
-                  <button id="profileSaveBtn" class="btn btn-orange" type="button" hidden>Guardar cambios</button>
-                </div>
-                <p id="profileMessage" class="result" aria-live="polite"></p>
-              </section>
-
               <section class="dash-card user-qr-card">
                 <h4>Mi QR único</h4>
                 <img id="userQrImage" class="user-qr-image" alt="QR único del cliente" />
@@ -143,6 +104,45 @@
                   <button id="bankTopUpBtn" class="btn btn-orange" type="button">Recargar con transferencia</button>
                 </div>
               </section>
+
+              <section class="dash-card">
+                <h4>Perfil</h4>
+                <div class="profile-details">
+                  <p class="sub-detail-row">
+                    <strong class="sub-detail-label">Nombre:</strong>
+                    <input id="profileNameInput" class="profile-input" type="text" disabled />
+                  </p>
+                  <p class="sub-detail-row">
+                    <strong class="sub-detail-label">Cédula:</strong>
+                    <input id="profileCedulaInput" class="profile-input" type="text" disabled />
+                  </p>
+                  <p class="sub-detail-row">
+                    <strong class="sub-detail-label">Correo:</strong>
+                    <input id="profileEmailInput" class="profile-input" type="email" disabled />
+                  </p>
+                  <p class="sub-detail-row">
+                    <strong class="sub-detail-label">Teléfono:</strong>
+                    <input id="profilePhoneInput" class="profile-input" type="text" disabled />
+                  </p>
+                  <p class="sub-detail-row">
+                    <strong class="sub-detail-label">Placa principal:</strong>
+                    <input id="profilePlateInput" class="profile-input" type="text" disabled />
+                  </p>
+                  <p class="sub-detail-row">
+                    <strong class="sub-detail-label">Marca y modelo:</strong>
+                    <input id="profileVehicleModelInput" class="profile-input" type="text" disabled placeholder="Opcional" />
+                  </p>
+                  <p class="sub-detail-row">
+                    <strong class="sub-detail-label">Lavadas realizadas:</strong>
+                    <span id="profileWashesDone" class="sub-detail-value">0</span>
+                  </p>
+                </div>
+                <div class="dash-actions">
+                  <button id="profileEditBtn" class="btn btn-dark" type="button">Editar</button>
+                  <button id="profileSaveBtn" class="btn btn-orange" type="button" hidden>Guardar cambios</button>
+                </div>
+                <p id="profileMessage" class="result" aria-live="polite"></p>
+              </section>
             </div>
 
             <section class="history-block" id="historial">
@@ -156,6 +156,6 @@
       </section>
     </main>
 
-    <script src="script.js?v=20260218e"></script>
+    <script src="script.js?v=20260218f"></script>
   </body>
 </html>

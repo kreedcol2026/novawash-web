@@ -14,7 +14,7 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260218e" />
+    <link rel="stylesheet" href="styles.css?v=20260218f" />
   </head>
   <body>
     <header class="site-header" id="top">
@@ -89,15 +89,32 @@
               <p class="plan-eyebrow">Plan Básico</p>
               <h3>1 Lavada</h3>
               <strong>$35.000 COP</strong>
-              <p>Cobro por evento.</p>
-              <a class="btn btn-dark plan-action" href="login.html">Recargar cuenta</a>
+              <ul class="plan-list">
+                <li>Lavada general exterior.</li>
+                <li>Aspirado interior.</li>
+                <li>Aplicador de protector en partes negras.</li>
+                <li>Ambientador.</li>
+                <li>Supervisión de calidad.</li>
+                <li>Servicio en 15 minutos.</li>
+                <li>Cuenta digital y lector QR.</li>
+              </ul>
+              <a class="btn btn-dark plan-action" href="#registro">Recargar cuenta</a>
             </article>
             <article class="plan-card featured">
               <p class="plan-eyebrow">Plan Premium</p>
               <h3>2 Lavadas / Mes (2 carros distintos)</h3>
               <strong>$50.000 COP</strong>
-              <p>No acumulables: al cerrar mes, se reinician.</p>
-              <a class="btn btn-orange plan-action" href="login.html">Suscribirme</a>
+              <ul class="plan-list">
+                <li>2 lavadas generales mensuales.</li>
+                <li>Soporte premium.</li>
+                <li>Débito automático.</li>
+                <li>Facilidad de ingreso al lavadero.</li>
+                <li>Cuenta digital y lector QR.</li>
+                <li>Economía frente al pago por evento.</li>
+                <li>Puede usarse con dos carros distintos.</li>
+                <li>No acumulables: al cerrar mes, se reinician.</li>
+              </ul>
+              <a class="btn btn-orange plan-action" href="#registro">Suscribirme</a>
             </article>
           </div>
         </div>
@@ -208,6 +225,9 @@
                 </label>
                 <button class="btn btn-dark" type="submit">Crear cuenta</button>
               </form>
+              <div class="auth-switch">
+                <a class="btn btn-light" href="login.html">Ya soy cliente - Iniciar sesión</a>
+              </div>
               <p id="authMessage" class="result" aria-live="polite"></p>
             </article>
           </div>
@@ -251,6 +271,6 @@
       WhatsApp
     </a>
 
-    <script src="script.js?v=20260218e"></script>
+    <script src="script.js?v=20260218f"></script>
   </body>
 </html>

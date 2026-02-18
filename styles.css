@@ -598,6 +598,10 @@ select:focus {
   gap: 0.8rem;
 }
 
+.auth-switch {
+  margin-top: 0.7rem;
+}
+
 .dashboard {
   margin-top: 1.1rem;
   padding: 1rem;
