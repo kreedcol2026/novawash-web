@@ -7,6 +7,7 @@ const PRICES = {
   premiumMonthlyFee: 50000,
   cashTopUpDefault: 50000,
 };
+const WELCOME_BONUS = 10000;
 const BO_SESSION_KEY = 'novaWashBackofficeSession';
 const BO_USER = 'personal';
 const BO_PASS = 'NovaWashAdmin2026';
@@ -226,6 +227,18 @@ function formatCOP(value) {
   }).format(value);
 }
 
+function formatThousands(value) {
+  const num = Math.max(0, Number(value) || 0);
+  return new Intl.NumberFormat('es-CO', {
+    maximumFractionDigits: 0,
+  }).format(num);
+}
+
+function parseMoneyInput(raw) {
+  const digits = String(raw || '').replace(/[^\d]/g, '');
+  return digits ? Number(digits) : 0;
+}
+
 function playScanBeep() {
   try {
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -251,6 +264,38 @@ function playScanBeep() {
     osc.onended = () => {
       ctx.close();
     };
+  } catch {
+    // No-op
+  }
+}
+
+function playCashRegisterSound() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const gain = ctx.createGain();
+    gain.connect(ctx.destination);
+
+    const osc1 = ctx.createOscillator();
+    osc1.type = 'triangle';
+    osc1.frequency.value = 880;
+    osc1.connect(gain);
+
+    const osc2 = ctx.createOscillator();
+    osc2.type = 'square';
+    osc2.frequency.value = 560;
+    osc2.connect(gain);
+
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.48, ctx.currentTime + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.35);
+
+    osc1.start();
+    osc2.start();
+    osc1.stop(ctx.currentTime + 0.35);
+    osc2.stop(ctx.currentTime + 0.35);
+    osc2.onended = () => ctx.close();
   } catch {
     // No-op
   }
@@ -562,10 +607,13 @@ function initLandingPage() {
       user.cedula = cedula;
       user.phone = phone;
       user.plate = plate;
+      user.wallet = WELCOME_BONUS;
+      syncAvailableWashes(user);
+      addHistory(user, `Bono de bienvenida aplicado por ${formatCOP(WELCOME_BONUS)}.`, 'bono');
       data.users.push(user);
       data.currentUserEmail = email;
       saveData(data);
-      setResult(authMessage, 'Cuenta creada. Redirigiendo al panel...', 'success');
+      setResult(authMessage, `Cuenta creada. Bono aplicado: ${formatCOP(WELCOME_BONUS)}. Redirigiendo al panel...`, 'success');
       setTimeout(() => {
         window.location.href = 'dashboard.html';
       }, 500);
@@ -640,6 +688,32 @@ function initDashboardPage() {
   const qrFallbackInput = null;
   const processFallbackBtn = null;
   let profileEditing = false;
+  let dashboardSyncInterval = null;
+
+  function stopDashboardSync() {
+    if (dashboardSyncInterval) {
+      clearInterval(dashboardSyncInterval);
+      dashboardSyncInterval = null;
+    }
+  }
+
+  async function syncDashboardFromRemote() {
+    if (profileEditing || hasUnsyncedLocalChanges || pendingRemoteState) return;
+    const remoteData = await fetchRemoteStateAsync();
+    if (!remoteData) return;
+    const localData = getData();
+    const remoteVersion = Number(remoteData.stateUpdatedAt) || 0;
+    const localVersion = Number(localData.stateUpdatedAt) || 0;
+    if (remoteVersion <= localVersion) return;
+    appDataCache = remoteData;
+    writeLocalState(remoteData);
+    render();
+  }
+
+  function startDashboardSync() {
+    stopDashboardSync();
+    dashboardSyncInterval = setInterval(syncDashboardFromRemote, 6000);
+  }
 
   function setProfileEditMode(editing) {
     profileEditing = editing;
@@ -673,13 +747,17 @@ function initDashboardPage() {
     if (!user) {
       dashboard.hidden = true;
       sessionGuard.hidden = false;
+      stopDashboardSync();
       return;
     }
 
     Object.assign(user, normalizeUser(user));
-    applyMonthlyReset(user);
-    syncAvailableWashes(user);
-    saveData(data);
+    const didReset = applyMonthlyReset(user);
+    const beforeWashes = Number(user.plan?.washesRemaining) || 0;
+    const nextWashes = syncAvailableWashes(user);
+    if (didReset || beforeWashes !== nextWashes) {
+      saveData(data);
+    }
 
     sessionGuard.hidden = true;
     dashboard.hidden = false;
@@ -725,6 +803,7 @@ function initDashboardPage() {
 
     setProfileEditMode(false);
     renderHistory(user);
+    startDashboardSync();
   }
 
   function mutateCurrentUser(mutator) {
@@ -891,6 +970,7 @@ function initDashboardPage() {
   });
 
   window.addEventListener('beforeunload', stopScanner);
+  window.addEventListener('beforeunload', stopDashboardSync);
   render();
 }
 
@@ -1041,6 +1121,13 @@ function initBackofficePage() {
     return `Pago registrado: ${name}${amount > 0 ? ` por ${formatCOP(amount)}` : ''}.`;
   }
 
+  function buildDebitNotice(log, data) {
+    const amount = Number(log.amount) || 0;
+    const user = data.users.find((u) => String(u.email || '').toLowerCase() === String(log.targetEmail || '').toLowerCase());
+    const name = user?.name || log.targetEmail || 'Cliente';
+    return `Débito de cuenta a cliente: ${name} por ${amount > 0 ? formatCOP(amount) : '$0'}.`;
+  }
+
   function stopRemoteSync() {
     if (remoteSyncInterval) {
       clearInterval(remoteSyncInterval);
@@ -1059,12 +1146,16 @@ function initBackofficePage() {
     if (remoteVersion < localVersion) return;
 
     const newPaymentLogs = [];
+    const newDebitLogs = [];
     (remoteData.auditLogs || []).forEach((log) => {
       const key = auditKey(log);
       if (seenAuditKeys.has(key)) return;
       seenAuditKeys.add(key);
       if (withNotifications && log.action === 'manual_cash_payment') {
         newPaymentLogs.push(log);
+      }
+      if (withNotifications && ['kiosk_qr_wash', 'qr_wash_operation'].includes(log.action)) {
+        newDebitLogs.push(log);
       }
     });
 
@@ -1077,6 +1168,13 @@ function initBackofficePage() {
       const message = buildPaymentNotice(log, remoteData);
       showFloatingNotice(message);
       pushBrowserPaymentNotification(message);
+    });
+
+    newDebitLogs.slice(-3).forEach((log) => {
+      const message = buildDebitNotice(log, remoteData);
+      showFloatingNotice(message);
+      pushBrowserPaymentNotification(message);
+      playCashRegisterSound();
     });
   }
 
@@ -1250,7 +1348,7 @@ function initBackofficePage() {
             <option value="Nequi" ${user.paymentMethod === 'Nequi' ? 'selected' : ''}>Nequi</option>
           </select>
         </td>
-        <td class="bo-col-recharge"><input class="bo-recharge-input" name="cashAmount" type="number" min="0" value="" placeholder="$" /></td>
+        <td class="bo-col-recharge"><input class="bo-recharge-input" name="cashAmount" type="text" inputmode="numeric" value="" placeholder="$" /></td>
         <td class="bo-actions-cell">
           <button class="btn btn-orange bo-btn" type="button" data-action="cash">Recarga</button>
           <div class="bo-menu">
@@ -1283,7 +1381,7 @@ function initBackofficePage() {
           <p><strong>Saldo:</strong> ${formatCOP(Number(user.wallet) || 0)}</p>
           <label class="bo-mobile-recharge-label">
             Recarga
-            <input class="bo-recharge-input" name="cashAmount" type="number" min="0" value="" placeholder="$" />
+            <input class="bo-recharge-input" name="cashAmount" type="text" inputmode="numeric" value="" placeholder="$" />
           </label>
           <div class="bo-actions-cell">
             <button class="btn btn-orange bo-btn" type="button" data-action="cash">Recarga</button>
@@ -1322,7 +1420,7 @@ function initBackofficePage() {
     const input = (name) => row.querySelector(`[name="${name}"]`);
 
     if (btn.dataset.action === 'cash') {
-      const amount = Math.max(0, Number(input('cashAmount')?.value || 0));
+      const amount = Math.max(0, parseMoneyInput(input('cashAmount')?.value || ''));
       if (amount <= 0) return;
       const addedWashes = applyRechargeToUser(user, amount);
       user.paymentMethod = 'Efectivo en punto';
@@ -1337,6 +1435,8 @@ function initBackofficePage() {
         { amount, addedWashes }
       );
       saveData(data);
+      const rechargeField = input('cashAmount');
+      if (rechargeField) rechargeField.value = '';
       const notice = `Recarga manual aplicada: ${formatCOP(amount)} a ${user.name}.`;
       showFloatingNotice(notice);
       pushBrowserPaymentNotification(notice);
@@ -1568,7 +1668,15 @@ function initBackofficePage() {
       return;
     }
 
-    addAuditEntry(data, BO_USER, user.email, 'qr_wash_operation', `Lavada registrada por QR operativo para placa ${plateToUse}.`);
+    const charge = getWashUnitPriceByPlan(user);
+    addAuditEntry(
+      data,
+      BO_USER,
+      user.email,
+      'qr_wash_operation',
+      `Lavada registrada por QR operativo para placa ${plateToUse}.`,
+      { amount: charge }
+    );
     saveData(data);
     playScanBeep();
     setResult(boScanMessage, `${result.message} Cliente: ${user.name}.`, 'success');
@@ -1927,6 +2035,16 @@ function initBackofficePage() {
     renderAudit();
   });
 
+  function handleMoneyInputFormatting(event) {
+    const target = event.target;
+    if (!target || target.name !== 'cashAmount') return;
+    const amount = parseMoneyInput(target.value);
+    target.value = amount > 0 ? formatThousands(amount) : '';
+  }
+
+  boUsersBody.addEventListener('input', handleMoneyInputFormatting);
+  boUsersMobile?.addEventListener('input', handleMoneyInputFormatting);
+
   boStartScanBtn?.addEventListener('click', startBackofficeScanner);
   boStopScanBtn?.addEventListener('click', () => {
     stopBackofficeScanner();
@@ -2114,7 +2232,14 @@ function initKioskPage() {
       return;
     }
 
-    addAuditEntry(data, 'kiosk', user.email, 'kiosk_qr_wash', `Lavada registrada por lector público para placa ${plateToUse}.`);
+    addAuditEntry(
+      data,
+      'kiosk',
+      user.email,
+      'kiosk_qr_wash',
+      `Lavada registrada por lector público para placa ${plateToUse}.`,
+      { amount: charge }
+    );
     saveData(data);
     playScanBeep();
     showConfirmation(user, plateToUse, charge);
