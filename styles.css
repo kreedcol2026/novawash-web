@@ -115,6 +115,28 @@ a {
   border-radius: 999px;
 }
 
+.floating-notice-wrap {
+  position: fixed;
+  right: 14px;
+  bottom: 84px;
+  z-index: 160;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.floating-notice {
+  min-width: 240px;
+  max-width: min(380px, calc(100vw - 24px));
+  border-radius: 12px;
+  border: 1px solid #bfe8cf;
+  background: #f2fff7;
+  color: #11663c;
+  padding: 0.62rem 0.72rem;
+  box-shadow: 0 10px 26px rgba(17, 94, 55, 0.2);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
 .main-nav a:hover {
   color: var(--text);
 }
@@ -369,6 +391,16 @@ h2 {
   margin-top: 0.65rem;
   color: var(--muted);
   line-height: 1.5;
+}
+
+.plan-list {
+  margin: 0.7rem 0 0;
+  padding-left: 1.05rem;
+  color: var(--muted);
+  display: grid;
+  gap: 0.32rem;
+  line-height: 1.4;
+  font-size: 0.9rem;
 }
 
 .plan-action {
@@ -1490,8 +1522,17 @@ tr.is-editing .bo-edit-field {
     display: none;
   }
 
+  .site-header > .btn.mobile-auth-btn {
+    display: inline-flex;
+    order: 2;
+    padding: 0.45rem 0.72rem;
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+  }
+
   .menu-toggle {
     display: inline-flex;
+    order: 3;
   }
 
   .main-nav {

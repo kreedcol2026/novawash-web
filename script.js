@@ -120,6 +120,22 @@ function fetchRemoteStateSync() {
   }
 }
 
+async function fetchRemoteStateAsync() {
+  try {
+    const sep = APPS_SCRIPT_URL.includes('?') ? '&' : '?';
+    const res = await fetch(`${APPS_SCRIPT_URL}${sep}action=getState`, {
+      method: 'GET',
+      cache: 'no-store',
+    });
+    if (!res.ok) return null;
+    const payload = await res.json();
+    if (!payload || !payload.ok || !payload.data) return null;
+    return normalizeAppState(payload.data);
+  } catch {
+    return null;
+  }
+}
+
 function pushRemoteState(data) {
   fetch(APPS_SCRIPT_URL, {
     method: 'POST',
@@ -921,10 +937,86 @@ function initBackofficePage() {
   let boStream = null;
   let boScanInterval = null;
   let boDetecting = false;
+  let remoteSyncInterval = null;
+  const seenAuditKeys = new Set();
   const modalState = {
     type: '',
     userIndex: -1,
   };
+
+  function auditKey(log) {
+    return `${log?.at || ''}|${log?.action || ''}|${log?.targetEmail || ''}|${log?.detail || ''}|${log?.amount || ''}`;
+  }
+
+  function registerExistingAudits(data) {
+    (data.auditLogs || []).forEach((log) => {
+      seenAuditKeys.add(auditKey(log));
+    });
+  }
+
+  function showFloatingNotice(message) {
+    let wrap = document.querySelector('#floatingNoticeWrap');
+    if (!wrap) {
+      wrap = document.createElement('div');
+      wrap.id = 'floatingNoticeWrap';
+      wrap.className = 'floating-notice-wrap';
+      document.body.appendChild(wrap);
+    }
+    const note = document.createElement('div');
+    note.className = 'floating-notice';
+    note.textContent = message;
+    wrap.appendChild(note);
+    setTimeout(() => {
+      note.remove();
+      if (!wrap.childElementCount) wrap.remove();
+    }, 4500);
+  }
+
+  function buildPaymentNotice(log, data) {
+    const amount = Number(log.amount) || 0;
+    const user = data.users.find((u) => String(u.email || '').toLowerCase() === String(log.targetEmail || '').toLowerCase());
+    const name = user?.name || log.targetEmail || 'Cliente';
+    return `Pago registrado: ${name}${amount > 0 ? ` por ${formatCOP(amount)}` : ''}.`;
+  }
+
+  function stopRemoteSync() {
+    if (remoteSyncInterval) {
+      clearInterval(remoteSyncInterval);
+      remoteSyncInterval = null;
+    }
+  }
+
+  async function syncBackofficeFromRemote(withNotifications = false) {
+    const remoteData = await fetchRemoteStateAsync();
+    if (!remoteData) return;
+
+    const newPaymentLogs = [];
+    (remoteData.auditLogs || []).forEach((log) => {
+      const key = auditKey(log);
+      if (seenAuditKeys.has(key)) return;
+      seenAuditKeys.add(key);
+      if (withNotifications && log.action === 'manual_cash_payment') {
+        newPaymentLogs.push(log);
+      }
+    });
+
+    appDataCache = remoteData;
+    writeLocalState(remoteData);
+    renderUsers();
+    renderAudit();
+
+    newPaymentLogs.slice(-3).forEach((log) => {
+      showFloatingNotice(buildPaymentNotice(log, remoteData));
+    });
+  }
+
+  function startRemoteSync() {
+    stopRemoteSync();
+    remoteSyncInterval = setInterval(() => {
+      if (!isLogged()) return;
+      syncBackofficeFromRemote(true);
+    }, 8000);
+  }
 
   function matchesAuditType(log, type) {
     if (type === 'all') return true;
@@ -1329,8 +1421,14 @@ function initBackofficePage() {
     boLoginCard.hidden = logged;
     backofficePanel.hidden = !logged;
     if (logged) {
+      const data = getData();
+      registerExistingAudits(data);
       renderUsers();
       renderAudit();
+      startRemoteSync();
+      syncBackofficeFromRemote(false);
+    } else {
+      stopRemoteSync();
     }
   }
 
@@ -1352,6 +1450,7 @@ function initBackofficePage() {
 
   boLogoutBtn?.addEventListener('click', () => {
     stopBackofficeScanner();
+    stopRemoteSync();
     setLogged(false);
     render();
   });
@@ -1747,7 +1846,10 @@ function initBackofficePage() {
     render();
   });
 
-  window.addEventListener('beforeunload', stopBackofficeScanner);
+  window.addEventListener('beforeunload', () => {
+    stopBackofficeScanner();
+    stopRemoteSync();
+  });
 
   render();
 }
