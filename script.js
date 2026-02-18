@@ -1066,7 +1066,7 @@ function initDashboardPage() {
     );
   });
 
-  bankTopUpBtn?.addEventListener('click', () => {
+  bankTopUpBtn?.addEventListener('click', async () => {
     const data = getData();
     const user = getCurrentUser(data);
     if (!user) {
@@ -1083,9 +1083,13 @@ function initDashboardPage() {
     }
 
     setResult(profileMessage, 'Generando enlace de pago Wompi...', 'success');
-    requestWompiCheckout({ user, amount }).then((resp) => {
+    if (bankTopUpBtn) bankTopUpBtn.disabled = true;
+    try {
+      const resp = await requestWompiCheckout({ user, amount });
       if (!resp?.ok || !resp.checkoutUrl) {
-        setResult(profileMessage, 'No se pudo generar el pago Wompi. Verifica Apps Script y llaves Wompi.', 'error');
+        const reason = resp?.error || 'Respuesta inválida de Apps Script.';
+        setResult(profileMessage, `No se pudo generar el pago Wompi: ${reason}`, 'error');
+        window.alert(`No se pudo generar el pago Wompi.\n\nDetalle: ${reason}`);
         return;
       }
 
@@ -1094,9 +1098,11 @@ function initDashboardPage() {
       saveData(data);
       render();
 
-      window.open(resp.checkoutUrl, '_blank', 'noopener,noreferrer');
-      setResult(profileMessage, 'Abrimos Wompi en una nueva pestaña para completar el pago.', 'success');
-    });
+      setResult(profileMessage, 'Redirigiendo a Wompi para completar el pago...', 'success');
+      window.location.href = resp.checkoutUrl;
+    } finally {
+      if (bankTopUpBtn) bankTopUpBtn.disabled = false;
+    }
   });
 
   startScanBtn?.addEventListener('click', startScanner);
