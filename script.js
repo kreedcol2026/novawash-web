@@ -383,6 +383,12 @@ function getWashUnitPriceByPlan(user) {
   return user.plan.mode === 'premium_monthly' ? PRICES.premiumPerWash : PRICES.basicSingle;
 }
 
+function enforcePlanMode(user) {
+  if (!user || !user.plan) return 'basic_single';
+  user.plan.mode = user.plan.mode === 'premium_monthly' ? 'premium_monthly' : 'basic_single';
+  return user.plan.mode;
+}
+
 function syncAvailableWashes(user) {
   const price = getWashUnitPriceByPlan(user);
   user.plan.washesRemaining = Math.max(0, Math.floor((Number(user.wallet) || 0) / price));
@@ -536,6 +542,7 @@ function applyRechargeToUser(user, amount) {
 }
 
 function consumeWashByPlan(user, plate) {
+  enforcePlanMode(user);
   applyMonthlyReset(user);
   const charge = getWashUnitPriceByPlan(user);
   if (user.wallet < charge) {
@@ -847,6 +854,7 @@ function initDashboardPage() {
       return;
     }
 
+    enforcePlanMode(user);
     const result = consumeWashByPlan(user, plateToUse);
     if (!result.ok) {
       setResult(washMessage, result.message, 'error');
@@ -886,6 +894,13 @@ function initDashboardPage() {
   });
 
   cancelPremiumBtn?.addEventListener('click', () => {
+    const firstConfirm = window.confirm('¿Seguro que quieres cancelar tu Plan Premium?');
+    if (!firstConfirm) return;
+    const secondConfirm = window.confirm(
+      'Confirmación final: al cancelar, pasarás a Plan Básico y cada lavada en lector costará $35.000. ¿Deseas continuar?'
+    );
+    if (!secondConfirm) return;
+
     mutateCurrentUser((user) => {
       if (user.plan.mode !== 'premium_monthly') return;
       user.plan.mode = 'basic_single';
@@ -1665,6 +1680,7 @@ function initBackofficePage() {
       return;
     }
 
+    enforcePlanMode(user);
     const result = consumeWashByPlan(user, plateToUse);
     if (!result.ok) {
       setResult(boScanMessage, result.message, 'error');
@@ -2228,6 +2244,7 @@ function initKioskPage() {
       return;
     }
 
+    enforcePlanMode(user);
     const charge = getWashUnitPriceByPlan(user);
     const result = consumeWashByPlan(user, plateToUse);
     if (!result.ok) {
