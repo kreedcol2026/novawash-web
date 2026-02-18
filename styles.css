@@ -1783,7 +1783,23 @@ tr.is-editing .bo-edit-field {
   }
 
   .backoffice-page .bo-metrics {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.45rem;
+  }
+
+  .backoffice-page .bo-metric-card {
+    padding: 0.48rem 0.5rem;
+  }
+
+  .backoffice-page .bo-metric-card p {
+    font-size: 0.56rem;
+    letter-spacing: 0.03em;
+  }
+
+  .backoffice-page .bo-metric-card strong {
+    margin-top: 0.12rem;
+    font-size: 1rem;
+    line-height: 1.05;
   }
 
   .backoffice-page .bo-audit .bo-table-wrap {
