@@ -271,6 +271,17 @@ function pushRemoteState(data) {
   flushPendingRemoteState();
 }
 
+async function waitForRemoteSync(timeoutMs = 7000) {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    if (!pendingRemoteState && !remoteSaveInFlight && !hasUnsyncedLocalChanges) {
+      return true;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 120));
+  }
+  return false;
+}
+
 function getData() {
   if (!appDataCache) {
     appDataCache = readLocalState();
@@ -285,6 +296,11 @@ function saveData(data) {
   hasUnsyncedLocalChanges = true;
   writeLocalState(appDataCache);
   pushRemoteState(appDataCache);
+}
+
+async function saveDataAndSync(data, timeoutMs = 7000) {
+  saveData(data);
+  return waitForRemoteSync(timeoutMs);
 }
 
 function formatCOP(value) {
@@ -670,7 +686,7 @@ function initLandingPage() {
   }
 
   if (signupForm) {
-    signupForm.addEventListener('submit', (event) => {
+    signupForm.addEventListener('submit', async (event) => {
       event.preventDefault();
       const fd = new FormData(signupForm);
       const name = String(fd.get('name') || '').trim();
@@ -700,16 +716,21 @@ function initLandingPage() {
       addHistory(user, `Bono de bienvenida aplicado por ${formatCOP(WELCOME_BONUS)}.`, 'bono');
       data.users.push(user);
       data.currentUserEmail = email;
-      saveData(data);
+      setResult(authMessage, 'Creando cuenta y guardando en servidor...', 'success');
+      const synced = await saveDataAndSync(data, 9000);
+      if (!synced) {
+        setResult(authMessage, 'Cuenta creada localmente, pero hubo demora guardando en servidor. Intenta de nuevo en 10 segundos.', 'error');
+        return;
+      }
       setResult(authMessage, `Cuenta creada. Bono aplicado: ${formatCOP(WELCOME_BONUS)}. Redirigiendo al panel...`, 'success');
       setTimeout(() => {
         window.location.href = 'dashboard.html';
-      }, 500);
+      }, 350);
     });
   }
 
   if (loginForm) {
-    loginForm.addEventListener('submit', (event) => {
+    loginForm.addEventListener('submit', async (event) => {
       event.preventDefault();
       const fd = new FormData(loginForm);
       const email = String(fd.get('email') || '').trim().toLowerCase();
@@ -723,7 +744,7 @@ function initLandingPage() {
       }
 
       data.currentUserEmail = user.email;
-      saveData(data);
+      await saveDataAndSync(data, 5000);
       setResult(authMessage, 'Sesión iniciada. Redirigiendo...', 'success');
       setTimeout(() => {
         window.location.href = 'dashboard.html';
@@ -1230,7 +1251,7 @@ function initDashboardPage() {
 
       user.paymentMethod = 'Wompi';
       addHistory(user, `Recarga Wompi iniciada por ${formatCOP(amount)}. Referencia: ${resp.reference || '-'}.`, 'pago');
-      saveData(data);
+      await saveDataAndSync(data, 6000);
       render();
       closeWompiTopUpModal();
 
