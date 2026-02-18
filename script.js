@@ -1098,8 +1098,26 @@ function initDashboardPage() {
       saveData(data);
       render();
 
+      setResult(profileMessage, 'Enlace listo. Confirma para abrir Wompi.', 'success');
+      const continueToWompi = window.confirm(
+        'Se abrirá Wompi para completar el pago.\n\nSi estás dentro de WhatsApp/Instagram/Facebook, abre NovaWash en Chrome/Safari y vuelve a intentarlo.'
+      );
+      if (!continueToWompi) return;
+
       setResult(profileMessage, 'Redirigiendo a Wompi para completar el pago...', 'success');
-      window.location.href = resp.checkoutUrl;
+      try {
+        window.location.assign(resp.checkoutUrl);
+      } catch {
+        window.location.href = resp.checkoutUrl;
+      }
+
+      setTimeout(() => {
+        if (document.visibilityState === 'visible') {
+          window.alert(
+            'Si Wompi no abrió automáticamente, copia este enlace y ábrelo en Chrome/Safari:\n\n' + resp.checkoutUrl
+          );
+        }
+      }, 1200);
     } finally {
       if (bankTopUpBtn) bankTopUpBtn.disabled = false;
     }
