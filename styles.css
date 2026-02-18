@@ -371,6 +371,11 @@ h2 {
   line-height: 1.5;
 }
 
+.plan-action {
+  margin-top: 0.9rem;
+  display: inline-flex;
+}
+
 .city-wrap {
   text-align: center;
 }
