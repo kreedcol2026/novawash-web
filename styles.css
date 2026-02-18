@@ -1723,19 +1723,38 @@ tr.is-editing .bo-edit-field {
     overflow-x: hidden;
   }
 
-  .backoffice-page .bo-section {
-    padding-left: 0.55rem;
-    padding-right: 0.55rem;
-  }
-
-  .backoffice-page .bo-full {
+  .backoffice-page main,
+  .backoffice-page .dashboard-page,
+  .backoffice-page .section,
+  .backoffice-page .manage,
+  .backoffice-page .panel-content {
     width: 100%;
     max-width: 100%;
   }
 
+  .backoffice-page .section {
+    display: block;
+    place-items: initial;
+    padding-left: 0.45rem;
+    padding-right: 0.45rem;
+  }
+
+  .backoffice-page .bo-section {
+    padding-left: 0.45rem;
+    padding-right: 0.45rem;
+  }
+
+  .backoffice-page .bo-full {
+    width: 100% !important;
+    max-width: 100%;
+    margin: 0;
+  }
+
   .backoffice-page .dashboard {
     width: 100%;
+    max-width: 100%;
     padding: 0.72rem;
+    margin: 0;
   }
 
   .backoffice-page .dashboard-top {
@@ -1765,6 +1784,11 @@ tr.is-editing .bo-edit-field {
 
   .backoffice-page .bo-metrics {
     grid-template-columns: 1fr;
+  }
+
+  .backoffice-page .bo-audit .bo-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .bo-modal-grid {
