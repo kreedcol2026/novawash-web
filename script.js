@@ -137,6 +137,48 @@ async function fetchRemoteStateAsync() {
   }
 }
 
+async function postAppsAction(action, payload = {}) {
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timeoutId = setTimeout(() => {
+    controller?.abort();
+  }, 10000);
+
+  try {
+    const response = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8',
+      },
+      signal: controller?.signal,
+      body: JSON.stringify({
+        action,
+        ...payload,
+      }),
+    });
+    if (!response.ok) {
+      return { ok: false, error: `HTTP ${response.status}` };
+    }
+    const body = await response.json();
+    return body && typeof body === 'object' ? body : { ok: false, error: 'Respuesta inválida del backend' };
+  } catch (error) {
+    return { ok: false, error: String(error?.message || error || 'Error de red') };
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+async function requestWompiCheckout({ user, amount }) {
+  return postAppsAction('createWompiCheckout', {
+    amount,
+    userEmail: user.email,
+    userId: user.userId,
+    customerName: user.name,
+    customerPhone: user.phone || '',
+    returnUrl: `${window.location.origin}${window.location.pathname}`,
+  });
+}
+
 function hydrateRemoteStateInBackground() {
   if (remoteStateLoaded || remoteHydrationPromise) return;
   remoteHydrationPromise = fetchRemoteStateAsync()
@@ -1025,9 +1067,36 @@ function initDashboardPage() {
   });
 
   bankTopUpBtn?.addEventListener('click', () => {
-    window.alert(
-      'Nequi: 3046040723. Bancolombia Ahorros a nombre de Mauricio Ospina, No. 91214106413. Envía el comprobante al 3046040723. En 10 min validaremos para activar créditos en la cuenta.'
-    );
+    const data = getData();
+    const user = getCurrentUser(data);
+    if (!user) {
+      window.alert('Inicia sesión para continuar.');
+      return;
+    }
+
+    const rawAmount = window.prompt('Valor a recargar con Wompi (COP):', '50000');
+    if (rawAmount === null) return;
+    const amount = parseMoneyInput(rawAmount);
+    if (amount < 1000) {
+      window.alert('Ingresa un valor válido de recarga.');
+      return;
+    }
+
+    setResult(profileMessage, 'Generando enlace de pago Wompi...', 'success');
+    requestWompiCheckout({ user, amount }).then((resp) => {
+      if (!resp?.ok || !resp.checkoutUrl) {
+        setResult(profileMessage, 'No se pudo generar el pago Wompi. Verifica Apps Script y llaves Wompi.', 'error');
+        return;
+      }
+
+      user.paymentMethod = 'Wompi';
+      addHistory(user, `Recarga Wompi iniciada por ${formatCOP(amount)}. Referencia: ${resp.reference || '-'}.`, 'pago');
+      saveData(data);
+      render();
+
+      window.open(resp.checkoutUrl, '_blank', 'noopener,noreferrer');
+      setResult(profileMessage, 'Abrimos Wompi en una nueva pestaña para completar el pago.', 'success');
+    });
   });
 
   startScanBtn?.addEventListener('click', startScanner);
