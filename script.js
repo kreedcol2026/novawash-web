@@ -13,6 +13,7 @@ const BO_USER = 'personal';
 const BO_PASS = 'NovaWashAdmin2026';
 let appDataCache = null;
 let remoteStateLoaded = false;
+let remoteHydrationPromise = null;
 let hasUnsyncedLocalChanges = false;
 let remoteSaveInFlight = false;
 let pendingRemoteState = null;
@@ -111,27 +112,17 @@ function writeLocalState(data) {
   localStorage.setItem(APP_KEY, JSON.stringify(normalizeAppState(data)));
 }
 
-function fetchRemoteStateSync() {
-  try {
-    const sep = APPS_SCRIPT_URL.includes('?') ? '&' : '?';
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', `${APPS_SCRIPT_URL}${sep}action=getState`, false);
-    xhr.send(null);
-    if (xhr.status < 200 || xhr.status >= 300) return null;
-    const payload = JSON.parse(xhr.responseText || '{}');
-    if (!payload || !payload.ok || !payload.data) return null;
-    return normalizeAppState(payload.data);
-  } catch {
-    return null;
-  }
-}
-
 async function fetchRemoteStateAsync() {
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timeoutId = setTimeout(() => {
+    controller?.abort();
+  }, 4500);
   try {
     const sep = APPS_SCRIPT_URL.includes('?') ? '&' : '?';
     const res = await fetch(`${APPS_SCRIPT_URL}${sep}action=getState`, {
       method: 'GET',
       cache: 'no-store',
+      signal: controller?.signal,
     });
     if (!res.ok) return null;
     const payload = await res.json();
@@ -139,7 +130,31 @@ async function fetchRemoteStateAsync() {
     return normalizeAppState(payload.data);
   } catch {
     return null;
+  } finally {
+    clearTimeout(timeoutId);
   }
+}
+
+function hydrateRemoteStateInBackground() {
+  if (remoteStateLoaded || remoteHydrationPromise) return;
+  remoteHydrationPromise = fetchRemoteStateAsync()
+    .then((remote) => {
+      remoteStateLoaded = true;
+      if (!remote) return;
+      if (hasUnsyncedLocalChanges || pendingRemoteState) return;
+
+      const local = appDataCache || readLocalState();
+      const remoteVersion = Number(remote.stateUpdatedAt) || 0;
+      const localVersion = Number(local.stateUpdatedAt) || 0;
+      if (remoteVersion <= localVersion) return;
+
+      appDataCache = remote;
+      writeLocalState(remote);
+      window.dispatchEvent(new CustomEvent('nova:data-hydrated'));
+    })
+    .finally(() => {
+      remoteHydrationPromise = null;
+    });
 }
 
 async function flushPendingRemoteState() {
@@ -198,16 +213,10 @@ function pushRemoteState(data) {
 }
 
 function getData() {
-  if (appDataCache) return appDataCache;
-  appDataCache = readLocalState();
-  if (!remoteStateLoaded) {
-    const remote = fetchRemoteStateSync();
-    if (remote) {
-      appDataCache = remote;
-      writeLocalState(remote);
-    }
-    remoteStateLoaded = true;
+  if (!appDataCache) {
+    appDataCache = readLocalState();
   }
+  hydrateRemoteStateInBackground();
   return appDataCache;
 }
 
@@ -989,6 +998,9 @@ function initDashboardPage() {
 
   window.addEventListener('beforeunload', stopScanner);
   window.addEventListener('beforeunload', stopDashboardSync);
+  window.addEventListener('nova:data-hydrated', () => {
+    render();
+  });
   render();
 }
 
