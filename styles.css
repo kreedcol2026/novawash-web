@@ -1255,6 +1255,11 @@ select:focus {
   align-items: end;
 }
 
+.bo-filters.bo-filters-dates {
+  grid-template-columns: 96px 96px minmax(340px, 1fr) 34px !important;
+  gap: 0.32rem !important;
+}
+
 .bo-filters:not(.bo-filters-dates) {
   grid-template-columns: minmax(260px, 1fr);
 }
@@ -1266,14 +1271,14 @@ select:focus {
 .bo-filters-dates label {
   display: grid;
   gap: 0.15rem;
-  font-size: 0.73rem;
+  font-size: 0.7rem;
 }
 
 .bo-filters-dates input[type='date'] {
   width: 100%;
-  height: 34px;
-  padding: 0.3rem 0.42rem;
-  font-size: 0.77rem;
+  height: 32px;
+  padding: 0.2rem 0.3rem;
+  font-size: 0.72rem;
 }
 
 .bo-date-presets {
@@ -1296,11 +1301,11 @@ select:focus {
 }
 
 .bo-btn-clear {
-  width: 34px;
-  min-width: 34px;
-  height: 34px;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
   padding: 0;
-  background: #fff2f2 !important;
+  background: #ffdede !important;
   border-color: #d84b4b !important;
   color: #d84b4b !important;
   font-weight: 800;
@@ -1312,7 +1317,7 @@ select:focus {
 }
 
 #boResetFiltersBtn.btn.btn-light.bo-btn-clear {
-  background: #fff2f2 !important;
+  background: #ffdede !important;
   border-color: #d84b4b !important;
   color: #d84b4b !important;
 }
@@ -1478,7 +1483,21 @@ tr.is-editing .bo-edit-field {
   font-size: 0.72rem;
 }
 
-.bo-actions-cell {
+.bo-users-table td.bo-actions-cell {
+  min-width: 156px;
+  white-space: nowrap;
+}
+
+.bo-users-table td.bo-actions-cell .bo-btn {
+  margin-right: 0.35rem;
+}
+
+.bo-users-table td.bo-actions-cell .bo-menu {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.bo-mobile-card .bo-actions-cell {
   min-width: 156px;
   display: flex;
   align-items: center;
