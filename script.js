@@ -928,6 +928,7 @@ function initDashboardPage() {
   const historyPageSize = 30;
   let historyPage = 1;
   let lastQrNoticeAt = '';
+  let qrNoticeTimeout = null;
 
   function stopDashboardSync() {
     if (dashboardSyncInterval) {
@@ -990,6 +991,11 @@ function initDashboardPage() {
       `Codigo leído. Débito ${amountText} a placa ${plate}. Saldo: ${formatCOP(user.wallet || 0)}. Lavadas disponibles: ${user.plan?.washesRemaining || 0}.`,
       'success'
     );
+    if (qrNoticeTimeout) clearTimeout(qrNoticeTimeout);
+    qrNoticeTimeout = setTimeout(() => {
+      if (!qrLiveStatus) return;
+      setResult(qrLiveStatus, '');
+    }, 10000);
   }
 
   function openWompiTopUpModal(defaultAmount = 50000) {
