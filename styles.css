@@ -667,6 +667,23 @@ select:focus {
   padding: 1rem;
 }
 
+.portal-title-wrap {
+  margin-bottom: 0.6rem;
+}
+
+.portal-title {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(1.12rem, 2.3vw, 1.45rem);
+  font-weight: 800;
+}
+
+.portal-subtitle {
+  margin: 0.28rem 0 0;
+  color: #5a6576;
+  font-size: 0.92rem;
+}
+
 .dashboard-top {
   display: flex;
   align-items: center;
@@ -990,14 +1007,24 @@ select:focus {
   color: #177048;
   border-color: #a9ddc3;
   background: #f1fbf5;
-  font-weight: 700;
 }
 
 .history-item.history-negative {
   color: #b93f3f;
   border-color: #efc0c0;
   background: #fff3f3;
-  font-weight: 700;
+}
+
+.history-amount {
+  font-weight: 800;
+}
+
+.history-amount.history-positive {
+  color: #127243;
+}
+
+.history-amount.history-negative {
+  color: #b33636;
 }
 
 .site-footer {

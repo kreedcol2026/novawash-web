@@ -10,6 +10,7 @@ const PRICES = {
 const WELCOME_BONUS = 10000;
 const LOYALTY_GOAL = 10;
 const LOYALTY_BONUS = 25000;
+const DEFAULT_PROFILE_PHOTO = 'Imagenes/icon-user.webp';
 const BO_SESSION_KEY = 'novaWashBackofficeSession';
 const BO_USER = 'personal';
 const BO_PASS = 'NovaWashAdmin2026';
@@ -446,7 +447,7 @@ function normalizeUser(user) {
     paymentMethod: normalized.paymentMethod || 'Efectivo en punto',
     cedula: normalized.cedula || '',
     vehicleModel: normalized.vehicleModel || '',
-    profilePhoto: normalized.profilePhoto || 'Imagenes/favicon.png',
+    profilePhoto: normalized.profilePhoto || DEFAULT_PROFILE_PHOTO,
     phone: normalized.phone || '',
     plate: normalized.plate || '',
     stripeLinked: Boolean(normalized.stripeLinked),
@@ -553,7 +554,7 @@ function createUser({ name, email, password }) {
     password,
     cedula: '',
     vehicleModel: '',
-    profilePhoto: 'Imagenes/favicon.png',
+    profilePhoto: DEFAULT_PROFILE_PHOTO,
     phone: '',
     plate: '',
     wallet: 0,
@@ -585,9 +586,71 @@ function addHistory(user, detail, type = 'evento') {
 
 function getHistoryTone(item) {
   const text = String(item?.detail || '').toLowerCase();
-  if (text.includes('recarga') || text.includes('bono')) return 'history-positive';
   if (text.includes('descuento') || text.includes('lavada cobrada') || text.includes('cobrada')) return 'history-negative';
+  if (
+    String(item?.type || '').toLowerCase() === 'pago' ||
+    text.includes('recarga') ||
+    text.includes('bono') ||
+    text.includes('pago en efectivo') ||
+    text.includes('efectivo registrado') ||
+    text.includes('wompi') ||
+    text.includes('abono')
+  ) {
+    return 'history-positive';
+  }
   return '';
+}
+
+function highlightAmountsInDetail(container, detail, toneClass) {
+  const text = String(detail || '');
+  const amountRegex = /\$\s?\d{1,3}(?:\.\d{3})*(?:,\d+)?/g;
+  let lastIndex = 0;
+  let match = amountRegex.exec(text);
+  while (match) {
+    const start = match.index;
+    if (start > lastIndex) {
+      container.appendChild(document.createTextNode(text.slice(lastIndex, start)));
+    }
+    const amountNode = document.createElement('strong');
+    amountNode.className = `history-amount ${toneClass || ''}`.trim();
+    amountNode.textContent = match[0];
+    container.appendChild(amountNode);
+    lastIndex = start + match[0].length;
+    match = amountRegex.exec(text);
+  }
+  if (lastIndex < text.length) {
+    container.appendChild(document.createTextNode(text.slice(lastIndex)));
+  }
+}
+
+function compressImageFile(file, maxSize = 360, quality = 0.8) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('No se pudo leer la imagen.'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('No se pudo procesar la imagen.'));
+      img.onload = () => {
+        try {
+          const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+          const width = Math.max(1, Math.round(img.width * scale));
+          const height = Math.max(1, Math.round(img.height * scale));
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) throw new Error('Sin contexto de imagen.');
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/webp', quality);
+          resolve(dataUrl || '');
+        } catch (error) {
+          reject(error);
+        }
+      };
+      img.src = String(reader.result || '');
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 function formatShortDate(iso) {
@@ -973,8 +1036,17 @@ function initDashboardPage() {
     const fragment = document.createDocumentFragment();
     pageItems.forEach((item) => {
       const row = document.createElement('div');
-      row.className = `history-item ${getHistoryTone(item)}`.trim();
-      row.textContent = `${new Date(item.date).toLocaleString('es-CO')} | ${item.detail}`;
+      const toneClass = getHistoryTone(item);
+      row.className = `history-item ${toneClass}`.trim();
+
+      const datePart = document.createElement('span');
+      datePart.className = 'history-date';
+      datePart.textContent = `${new Date(item.date).toLocaleString('es-CO')} | `;
+      row.appendChild(datePart);
+
+      const detailPart = document.createElement('span');
+      highlightAmountsInDetail(detailPart, item.detail, toneClass);
+      row.appendChild(detailPart);
       fragment.appendChild(row);
     });
     historyList.appendChild(fragment);
@@ -1001,7 +1073,7 @@ function initDashboardPage() {
     sessionGuard.hidden = true;
     dashboard.hidden = false;
     welcomeUser.textContent = `Hola, ${user.name}`;
-    const photoSrc = String(user.profilePhoto || 'Imagenes/favicon.png');
+    const photoSrc = String(user.profilePhoto || DEFAULT_PROFILE_PHOTO);
     if (dashboardAvatar) dashboardAvatar.src = photoSrc;
     if (profilePhotoPreview) profilePhotoPreview.src = photoSrc;
 
@@ -1167,7 +1239,7 @@ function initDashboardPage() {
     profileNameInput?.focus();
   });
 
-  profileSaveBtn?.addEventListener('click', () => {
+  profileSaveBtn?.addEventListener('click', async () => {
     const data = getData();
     data.users = data.users.map((entry) => normalizeUser(entry));
     const user = getCurrentUser(data);
@@ -1180,7 +1252,7 @@ function initDashboardPage() {
     const nextPhone = String(profilePhoneInput?.value || '').trim();
     const nextPlate = normalizePlate(String(profilePlateInput?.value || ''));
     const nextVehicleModel = String(profileVehicleModelInput?.value || '').trim();
-    const nextPhoto = String(profilePhotoPreview?.src || user.profilePhoto || 'Imagenes/favicon.png');
+    const nextPhoto = String(profilePhotoPreview?.src || user.profilePhoto || DEFAULT_PROFILE_PHOTO);
 
     if (!nextName) {
       setResult(profileMessage, 'El nombre es obligatorio.', 'error');
@@ -1210,24 +1282,34 @@ function initDashboardPage() {
     }
     addHistory(user, 'Perfil actualizado por el cliente desde panel de gestión.', 'perfil');
     saveData(data);
+    const synced = await waitForRemoteSync(8000);
+    if (!synced) {
+      setResult(profileMessage, 'Perfil guardado localmente. Sincronizando al servidor...', 'error');
+      render();
+      return;
+    }
     setResult(profileMessage, 'Perfil actualizado correctamente.', 'success');
     render();
   });
 
-  profilePhotoInput?.addEventListener('change', () => {
+  profilePhotoInput?.addEventListener('change', async () => {
     const file = profilePhotoInput.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
       setResult(profileMessage, 'Selecciona una imagen válida para la foto.', 'error');
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = String(reader.result || '');
-      if (!dataUrl) return;
+    try {
+      const dataUrl = await compressImageFile(file);
+      if (!dataUrl) {
+        setResult(profileMessage, 'No se pudo preparar la imagen.', 'error');
+        return;
+      }
       if (profilePhotoPreview) profilePhotoPreview.src = dataUrl;
-    };
-    reader.readAsDataURL(file);
+      setResult(profileMessage, 'Foto lista para guardar.', 'success');
+    } catch {
+      setResult(profileMessage, 'No se pudo procesar la imagen. Intenta con otra foto.', 'error');
+    }
   });
 
   cashTopUpBtn?.addEventListener('click', () => {
