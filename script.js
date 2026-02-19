@@ -1251,30 +1251,12 @@ function initDashboardPage() {
 
       user.paymentMethod = 'Wompi';
       addHistory(user, `Recarga Wompi iniciada por ${formatCOP(amount)}. Referencia: ${resp.reference || '-'}.`, 'pago');
-      await saveDataAndSync(data, 6000);
+      saveData(data);
       render();
       closeWompiTopUpModal();
 
-      setResult(profileMessage, 'Enlace listo. Confirma para abrir Wompi.', 'success');
-      const continueToWompi = window.confirm(
-        'Se abrirá Wompi para completar el pago.\n\nSi estás dentro de WhatsApp/Instagram/Facebook, abre NovaWash en Chrome/Safari y vuelve a intentarlo.'
-      );
-      if (!continueToWompi) return;
-
       setResult(profileMessage, 'Redirigiendo a Wompi para completar el pago...', 'success');
-      try {
-        window.location.assign(resp.checkoutUrl);
-      } catch {
-        window.location.href = resp.checkoutUrl;
-      }
-
-      setTimeout(() => {
-        if (document.visibilityState === 'visible') {
-          window.alert(
-            'Si Wompi no abrió automáticamente, copia este enlace y ábrelo en Chrome/Safari:\n\n' + resp.checkoutUrl
-          );
-        }
-      }, 1200);
+      window.location.assign(resp.checkoutUrl);
     } finally {
       if (bankTopUpBtn) bankTopUpBtn.disabled = false;
       if (wompiTopUpConfirmBtn) wompiTopUpConfirmBtn.disabled = false;
