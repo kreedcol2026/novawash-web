@@ -462,6 +462,25 @@ select:focus {
   color: #ba2f2f;
 }
 
+.forgot-link-btn {
+  margin-top: 0.55rem;
+  border: 0;
+  background: transparent;
+  color: #4d5d78;
+  text-decoration: underline;
+  font-size: 0.84rem;
+  cursor: pointer;
+  text-underline-offset: 2px;
+}
+
+.forgot-link-btn:hover {
+  color: #253448;
+}
+
+.forgot-modal-card {
+  width: min(460px, calc(100vw - 2rem));
+}
+
 .process-subtitle {
   margin-top: 0.7rem;
   color: var(--muted);

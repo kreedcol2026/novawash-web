@@ -16,7 +16,7 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260218zq" />
+    <link rel="stylesheet" href="styles.css?v=20260219e" />
   </head>
   <body>
     <header class="site-header" id="top">
@@ -58,12 +58,35 @@
                 </label>
                 <button class="btn btn-dark" type="submit">Entrar al panel</button>
               </form>
+              <button id="forgotPasswordBtn" class="forgot-link-btn" type="button">Olvidé mi contraseña</button>
               <p id="authMessage" class="result" aria-live="polite"></p>
             </article>
           </div>
         </div>
       </section>
     </main>
+
+    <section id="forgotModal" class="bo-modal" hidden aria-hidden="true">
+      <div class="bo-modal-backdrop" data-forgot-close="1"></div>
+      <div class="bo-modal-card forgot-modal-card" role="dialog" aria-modal="true" aria-labelledby="forgotModalTitle">
+        <div class="bo-modal-header">
+          <h4 id="forgotModalTitle">Recuperar contraseña</h4>
+          <button id="forgotCloseBtn" type="button" class="btn btn-light wompi-close-x" data-forgot-close="1">X</button>
+        </div>
+        <p class="muted-note">Ingresa tu correo y te enviaremos tu contraseña registrada.</p>
+        <form id="forgotForm" class="stack-form">
+          <label>
+            Correo
+            <input id="forgotEmailInput" name="email" type="email" required />
+          </label>
+          <div class="dash-actions">
+            <button id="forgotSendBtn" class="btn btn-orange" type="submit">Enviar contraseña</button>
+            <button class="btn btn-light" type="button" data-forgot-close="1">Cancelar</button>
+          </div>
+        </form>
+        <p id="forgotMessage" class="result" aria-live="polite"></p>
+      </div>
+    </section>
 
     <footer class="site-footer">
       <div class="footer-grid">
@@ -91,6 +114,6 @@
       <p class="copyright">Hecho por <a href="https://kreed.com.co" target="_blank" rel="noopener noreferrer">Kreed.com.co</a></p>
     </footer>
 
-    <script src="script.js?v=20260218zq"></script>
+    <script src="script.js?v=20260219e"></script>
   </body>
 </html>

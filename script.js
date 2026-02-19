@@ -706,6 +706,30 @@ function initLandingPage() {
   const signupForm = document.querySelector('#signupForm');
   const loginForm = document.querySelector('#loginForm');
   const authMessage = document.querySelector('#authMessage');
+  const forgotPasswordBtn = document.querySelector('#forgotPasswordBtn');
+  const forgotModal = document.querySelector('#forgotModal');
+  const forgotForm = document.querySelector('#forgotForm');
+  const forgotEmailInput = document.querySelector('#forgotEmailInput');
+  const forgotSendBtn = document.querySelector('#forgotSendBtn');
+  const forgotMessage = document.querySelector('#forgotMessage');
+
+  function openForgotModal() {
+    if (!forgotModal) return;
+    forgotModal.hidden = false;
+    forgotModal.setAttribute('aria-hidden', 'false');
+    if (forgotEmailInput) {
+      forgotEmailInput.value = '';
+      setTimeout(() => forgotEmailInput.focus(), 10);
+    }
+    setResult(forgotMessage, '');
+  }
+
+  function closeForgotModal() {
+    if (!forgotModal) return;
+    forgotModal.hidden = true;
+    forgotModal.setAttribute('aria-hidden', 'true');
+    setResult(forgotMessage, '');
+  }
 
   if (arrivalForm) {
     arrivalForm.addEventListener('submit', (event) => {
@@ -793,6 +817,51 @@ function initLandingPage() {
       }, 350);
     });
   }
+
+  forgotPasswordBtn?.addEventListener('click', openForgotModal);
+  forgotModal?.addEventListener('click', (event) => {
+    if (!event.target.closest('[data-forgot-close="1"]')) return;
+    closeForgotModal();
+  });
+
+  forgotForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const email = String(forgotEmailInput?.value || '').trim().toLowerCase();
+    if (!email) {
+      setResult(forgotMessage, 'Ingresa un correo válido.', 'error');
+      return;
+    }
+
+    const originalText = forgotSendBtn?.textContent || 'Enviar contraseña';
+    if (forgotSendBtn) {
+      forgotSendBtn.disabled = true;
+      forgotSendBtn.textContent = 'Enviando...';
+      forgotSendBtn.classList.add('is-loading');
+    }
+
+    setResult(forgotMessage, 'Procesando solicitud...', 'success');
+    const resp = await postAppsAction('recoverPasswordByEmail', { email });
+    if (!resp?.ok) {
+      const reason = String(resp?.error || 'No se pudo enviar el correo en este momento.');
+      setResult(forgotMessage, reason, 'error');
+      if (forgotSendBtn) {
+        forgotSendBtn.disabled = false;
+        forgotSendBtn.textContent = originalText;
+        forgotSendBtn.classList.remove('is-loading');
+      }
+      return;
+    }
+
+    setResult(forgotMessage, 'Listo. Revisa tu correo, te enviamos la contraseña.', 'success');
+    if (forgotSendBtn) {
+      forgotSendBtn.disabled = false;
+      forgotSendBtn.textContent = originalText;
+      forgotSendBtn.classList.remove('is-loading');
+    }
+    setTimeout(() => {
+      closeForgotModal();
+    }, 1400);
+  });
 }
 
 function initDashboardPage() {
