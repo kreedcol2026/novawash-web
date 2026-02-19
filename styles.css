@@ -738,6 +738,15 @@ select:focus {
   line-height: 1.45;
 }
 
+.btn-danger-mini {
+  background: #fff2f2;
+  color: #c33838;
+  border: 1px solid #e6a6a6;
+  padding: 0.36rem 0.62rem;
+  font-size: 0.64rem;
+  letter-spacing: 0.06em;
+}
+
 .sub-details {
   margin-top: 0.2rem;
   display: grid;
