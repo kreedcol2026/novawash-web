@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260218zd" />
+    <link rel="stylesheet" href="styles.css?v=20260218ze" />
   </head>
   <body class="backoffice-page">
     <header class="site-header scrolled">
@@ -66,22 +66,45 @@
 
             <section class="bo-top-layout">
               <div class="bo-left-panel">
+                <section class="bo-filters bo-filters-dates">
+                  <label>
+                    Fecha desde
+                    <input id="boDateFrom" type="date" />
+                  </label>
+                  <label>
+                    Fecha hasta
+                    <input id="boDateTo" type="date" />
+                  </label>
+                  <div class="bo-date-presets" aria-label="Atajos de fecha">
+                    <button id="boPresetToday" class="btn btn-light" type="button">Hoy</button>
+                    <button id="boPresetYesterday" class="btn btn-light" type="button">Ayer</button>
+                    <button id="boPresetLast7" class="btn btn-light" type="button">Últimos 7 días</button>
+                    <button id="boPresetMonth" class="btn btn-light" type="button">Este mes</button>
+                    <button id="boPresetYear" class="btn btn-light" type="button">Este año</button>
+                  </div>
+                  <button id="boResetFiltersBtn" class="btn btn-light" type="button">Limpiar filtros</button>
+                </section>
+
                 <section class="bo-metrics">
                   <article class="bo-metric-card">
                     <p>Usuarios</p>
                     <strong id="boMetricUsers">0</strong>
                   </article>
                   <article class="bo-metric-card">
-                    <p>Ingresos de caja</p>
+                    <p>Recargas efectivo</p>
                     <strong id="boMetricCash">$0</strong>
+                  </article>
+                  <article class="bo-metric-card">
+                    <p>Ingresos Wompi</p>
+                    <strong id="boMetricWompi">$0</strong>
+                  </article>
+                  <article class="bo-metric-card">
+                    <p>Ingresos totales</p>
+                    <strong id="boMetricTotalIncome">$0</strong>
                   </article>
                   <article class="bo-metric-card">
                     <p>Suscripciones activas</p>
                     <strong id="boMetricSubs">0</strong>
-                  </article>
-                  <article class="bo-metric-card">
-                    <p>Resultados filtrados</p>
-                    <strong id="boMetricFiltered">0</strong>
                   </article>
                   <article class="bo-metric-card">
                     <p>Lavadas realizadas</p>
@@ -102,22 +125,6 @@
                     Buscar cliente
                     <input id="boSearchInput" type="text" placeholder="Nombre, correo o ID" />
                   </label>
-                  <label>
-                    Fecha desde
-                    <input id="boDateFrom" type="date" />
-                  </label>
-                  <label>
-                    Fecha hasta
-                    <input id="boDateTo" type="date" />
-                  </label>
-                  <div class="bo-date-presets" aria-label="Atajos de fecha">
-                    <button id="boPresetToday" class="btn btn-light" type="button">Hoy</button>
-                    <button id="boPresetYesterday" class="btn btn-light" type="button">Ayer</button>
-                    <button id="boPresetLast7" class="btn btn-light" type="button">Últimos 7 días</button>
-                    <button id="boPresetMonth" class="btn btn-light" type="button">Este mes</button>
-                    <button id="boPresetYear" class="btn btn-light" type="button">Este año</button>
-                  </div>
-                  <button id="boResetFiltersBtn" class="btn btn-light" type="button">Limpiar filtros</button>
                 </section>
               </div>
 
@@ -147,6 +154,15 @@
               </section>
             </section>
 
+            <div class="bo-users-toolbar">
+              <p id="boUsersCount" class="bo-users-count">Mostrando 0 de 0</p>
+              <div class="bo-audit-pager bo-users-pager">
+                <button id="boUsersPrevBtn" class="btn btn-light" type="button">Anterior</button>
+                <span id="boUsersPageText">Página 1</span>
+                <button id="boUsersNextBtn" class="btn btn-light" type="button">Siguiente</button>
+              </div>
+            </div>
+
             <div class="bo-table-wrap bo-users-wrap">
               <table class="bo-table bo-users-table">
                 <thead>
@@ -170,9 +186,6 @@
               </table>
             </div>
             <div id="boUsersMobile" class="bo-users-mobile"></div>
-            <div class="bo-table-actions">
-              <button id="boSaveAllBtn" class="btn btn-dark" type="button">Guardar todos los cambios</button>
-            </div>
 
             <section class="history-block bo-audit">
               <h4>Registro de Auditoría</h4>
@@ -183,7 +196,8 @@
                 </label>
                 <div class="bo-audit-type-filters">
                   <button id="boAuditTypeAllBtn" class="btn btn-light is-active" type="button">Todos</button>
-                  <button id="boAuditTypeRechargeBtn" class="btn btn-light" type="button">Recarga</button>
+                  <button id="boAuditTypeRechargeCashBtn" class="btn btn-light" type="button">Recarga efectivo</button>
+                  <button id="boAuditTypeRechargeWompiBtn" class="btn btn-light" type="button">Recarga Wompi</button>
                   <button id="boAuditTypeEditBtn" class="btn btn-light" type="button">Edición</button>
                   <button id="boAuditTypeExpiryBtn" class="btn btn-light" type="button">Vencimiento</button>
                 </div>
@@ -301,6 +315,6 @@
       </section>
     </main>
 
-    <script src="script.js?v=20260218zd"></script>
+    <script src="script.js?v=20260218ze"></script>
   </body>
 </html>

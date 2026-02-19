@@ -1466,16 +1466,20 @@ function initBackofficePage() {
   const boModalMessage = document.querySelector('#boModalMessage');
   const boModalCancel = document.querySelector('#boModalCancel');
   const boModalDismiss = document.querySelector('#boModalDismiss');
-  const boSaveAllBtn = document.querySelector('#boSaveAllBtn');
   const boAuditBody = document.querySelector('#boAuditBody');
   const boAuditCount = document.querySelector('#boAuditCount');
   const boAuditPageText = document.querySelector('#boAuditPageText');
   const boAuditPrevBtn = document.querySelector('#boAuditPrevBtn');
   const boAuditNextBtn = document.querySelector('#boAuditNextBtn');
+  const boUsersCount = document.querySelector('#boUsersCount');
+  const boUsersPageText = document.querySelector('#boUsersPageText');
+  const boUsersPrevBtn = document.querySelector('#boUsersPrevBtn');
+  const boUsersNextBtn = document.querySelector('#boUsersNextBtn');
   const boMetricUsers = document.querySelector('#boMetricUsers');
   const boMetricCash = document.querySelector('#boMetricCash');
+  const boMetricWompi = document.querySelector('#boMetricWompi');
+  const boMetricTotalIncome = document.querySelector('#boMetricTotalIncome');
   const boMetricSubs = document.querySelector('#boMetricSubs');
-  const boMetricFiltered = document.querySelector('#boMetricFiltered');
   const boMetricWashesDone = document.querySelector('#boMetricWashesDone');
   const boMetricWashesAvailable = document.querySelector('#boMetricWashesAvailable');
   const boMetricWallets = document.querySelector('#boMetricWallets');
@@ -1490,7 +1494,8 @@ function initBackofficePage() {
   const boPresetYear = document.querySelector('#boPresetYear');
   const boAuditClientInput = document.querySelector('#boAuditClientInput');
   const boAuditTypeAllBtn = document.querySelector('#boAuditTypeAllBtn');
-  const boAuditTypeRechargeBtn = document.querySelector('#boAuditTypeRechargeBtn');
+  const boAuditTypeRechargeCashBtn = document.querySelector('#boAuditTypeRechargeCashBtn');
+  const boAuditTypeRechargeWompiBtn = document.querySelector('#boAuditTypeRechargeWompiBtn');
   const boAuditTypeEditBtn = document.querySelector('#boAuditTypeEditBtn');
   const boAuditTypeExpiryBtn = document.querySelector('#boAuditTypeExpiryBtn');
   const boQrVideo = document.querySelector('#boQrVideo');
@@ -1511,6 +1516,8 @@ function initBackofficePage() {
     auditClient: '',
     auditType: 'all',
   };
+  const userPageSize = 50;
+  let userPage = 1;
   const auditPageSize = 50;
   let auditPage = 1;
   let boStream = null;
@@ -1640,7 +1647,8 @@ function initBackofficePage() {
 
   function matchesAuditType(log, type) {
     if (type === 'all') return true;
-    if (type === 'recharge') return log.action === 'manual_cash_payment';
+    if (type === 'recharge_cash') return log.action === 'manual_cash_payment';
+    if (type === 'recharge_wompi') return log.action === 'wompi_approved';
     if (type === 'edit') return ['bulk_update_users', 'create_user', 'delete_user', 'change_password', 'expiry_update'].includes(log.action);
     if (type === 'expiry') return ['subscription_renewal', 'expiry_update'].includes(log.action);
     return true;
@@ -1690,6 +1698,7 @@ function initBackofficePage() {
     filters.to = toInputDate(toDate);
     if (boDateFrom) boDateFrom.value = filters.from;
     if (boDateTo) boDateTo.value = filters.to;
+    userPage = 1;
     auditPage = 1;
     renderUsers();
     renderAudit();
@@ -1717,19 +1726,24 @@ function initBackofficePage() {
   }
 
   function renderMetrics(data, filteredUsers) {
-    const activeSubs = data.users.filter((user) => user.plan.mode === 'premium_monthly').length;
-    const totalWashesDone = data.users.reduce((sum, user) => sum + (Number(user?.stats?.washesDone) || 0), 0);
-    const totalWashesAvailable = data.users.reduce((sum, user) => sum + (Number(user?.plan?.washesRemaining) || 0), 0);
-    const totalWalletBalance = data.users.reduce((sum, user) => sum + (Number(user?.wallet) || 0), 0);
-    const cashIncome = (data.auditLogs || [])
+    const activeSubs = filteredUsers.filter((user) => user.plan.mode === 'premium_monthly').length;
+    const totalWashesDone = filteredUsers.reduce((sum, user) => sum + (Number(user?.stats?.washesDone) || 0), 0);
+    const totalWashesAvailable = filteredUsers.reduce((sum, user) => sum + (Number(user?.plan?.washesRemaining) || 0), 0);
+    const totalWalletBalance = filteredUsers.reduce((sum, user) => sum + (Number(user?.wallet) || 0), 0);
+    const scopedLogs = (data.auditLogs || []).filter((log) => isWithinDateRange(log.at, filters.from, filters.to));
+    const cashIncome = scopedLogs
       .filter((log) => log.action === 'manual_cash_payment')
-      .filter((log) => isWithinDateRange(log.at, filters.from, filters.to))
       .reduce((sum, log) => sum + (Number(log.amount) || 0), 0);
+    const wompiIncome = scopedLogs
+      .filter((log) => log.action === 'wompi_approved')
+      .reduce((sum, log) => sum + (Number(log.amount) || 0), 0);
+    const totalIncome = cashIncome + wompiIncome;
 
-    if (boMetricUsers) boMetricUsers.textContent = String(data.users.length);
+    if (boMetricUsers) boMetricUsers.textContent = String(filteredUsers.length);
     if (boMetricSubs) boMetricSubs.textContent = String(activeSubs);
-    if (boMetricFiltered) boMetricFiltered.textContent = String(filteredUsers.length);
     if (boMetricCash) boMetricCash.textContent = formatCOP(cashIncome);
+    if (boMetricWompi) boMetricWompi.textContent = formatCOP(wompiIncome);
+    if (boMetricTotalIncome) boMetricTotalIncome.textContent = formatCOP(totalIncome);
     if (boMetricWashesDone) boMetricWashesDone.textContent = String(totalWashesDone);
     if (boMetricWashesAvailable) boMetricWashesAvailable.textContent = String(totalWashesAvailable);
     if (boMetricWallets) boMetricWallets.textContent = formatCOP(totalWalletBalance);
@@ -1764,10 +1778,26 @@ function initBackofficePage() {
     if (filteredUsers.length === 0) {
       boUsersBody.innerHTML = '<tr><td colspan=\"13\">No hay usuarios para los filtros aplicados.</td></tr>';
       if (boUsersMobile) boUsersMobile.innerHTML = '<p class="bo-mobile-empty">No hay usuarios para los filtros aplicados.</p>';
+      if (boUsersCount) boUsersCount.textContent = `Mostrando 0 de 0 (${userPageSize} por página)`;
+      if (boUsersPageText) boUsersPageText.textContent = 'Página 1';
+      if (boUsersPrevBtn) boUsersPrevBtn.disabled = true;
+      if (boUsersNextBtn) boUsersNextBtn.disabled = true;
       return;
     }
 
-    filteredUsers.forEach((user) => {
+    const totalPages = Math.max(1, Math.ceil(filteredUsers.length / userPageSize));
+    if (userPage > totalPages) userPage = totalPages;
+    if (userPage < 1) userPage = 1;
+    const start = (userPage - 1) * userPageSize;
+    const pageUsers = filteredUsers.slice(start, start + userPageSize);
+    const fromItem = filteredUsers.length ? start + 1 : 0;
+    const toItem = start + pageUsers.length;
+    if (boUsersCount) boUsersCount.textContent = `Mostrando ${fromItem}-${toItem} de ${filteredUsers.length} (${userPageSize} por página)`;
+    if (boUsersPageText) boUsersPageText.textContent = `Página ${userPage} / ${totalPages}`;
+    if (boUsersPrevBtn) boUsersPrevBtn.disabled = userPage <= 1;
+    if (boUsersNextBtn) boUsersNextBtn.disabled = userPage >= totalPages;
+
+    pageUsers.forEach((user) => {
       const idx = data.users.findIndex((u) => u.userId === user.userId);
       const row = document.createElement('tr');
       row.dataset.userIndex = String(idx);
@@ -2242,65 +2272,6 @@ function initBackofficePage() {
   boUsersBody.addEventListener('click', handleUserAction);
   boUsersMobile?.addEventListener('click', handleUserAction);
 
-  boSaveAllBtn?.addEventListener('click', () => {
-    const data = getData();
-    data.users = data.users.map((user) => normalizeUser(user));
-    const rows = [...boUsersBody.querySelectorAll('tr[data-user-index]')];
-    const nextEmails = new Set();
-
-    for (const row of rows) {
-      const idx = Number(row.dataset.userIndex);
-      const user = data.users[idx];
-      if (!user) continue;
-      const input = (name) => row.querySelector(`[name="${name}"]`);
-
-      const oldEmail = String(user.email || '').toLowerCase();
-      const newEmail = String(input('email')?.value || '')
-        .trim()
-        .toLowerCase();
-      const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail);
-      if (!emailValid) {
-        setResult(boPanelMessage, 'Correo inválido. Verifica el formato del email.', 'error');
-        return;
-      }
-      if (nextEmails.has(newEmail) || data.users.some((u, i) => i !== idx && String(u.email).toLowerCase() === newEmail)) {
-        setResult(boPanelMessage, 'Hay correos duplicados en la tabla.', 'error');
-        return;
-      }
-      nextEmails.add(newEmail);
-
-      user.name = String(input('name')?.value || '').trim() || user.name;
-      user.cedula = String(input('cedula')?.value || '').trim();
-      user.email = newEmail;
-      user.phone = String(input('phone')?.value || '').trim();
-      user.plate = normalizePlate(String(input('plate')?.value || ''));
-      user.plan.mode = String(input('mode')?.value || 'basic_single');
-      user.wallet = Math.max(0, Number(input('wallet')?.value || 0));
-      user.paymentMethod = String(input('paymentMethod')?.value || 'Efectivo en punto');
-
-      if (user.plan.mode === 'premium_monthly' && !user.plan.cycleEnd) {
-        user.plan.cycleStart = nowISO();
-        user.plan.cycleEnd = oneMonthFromNowISO();
-      }
-      if (user.plan.mode === 'basic_single') {
-        user.plan.cycleStart = null;
-        user.plan.cycleEnd = null;
-        user.plan.usedPlates = [];
-      }
-      syncAvailableWashes(user);
-
-      if (data.currentUserEmail && data.currentUserEmail.toLowerCase() === oldEmail) {
-        data.currentUserEmail = newEmail;
-      }
-      addHistory(user, 'Backoffice: datos de cliente actualizados (guardado masivo).', 'backoffice');
-    }
-
-      addAuditEntry(data, BO_USER, '-', 'bulk_update_users', `Guardado masivo de ${rows.length} filas de clientes.`);
-    saveData(data);
-    setResult(boPanelMessage, 'Todos los cambios fueron guardados correctamente.', 'success');
-    render();
-  });
-
   boModalForm?.addEventListener('submit', (event) => {
     event.preventDefault();
     const data = getData();
@@ -2392,11 +2363,15 @@ function initBackofficePage() {
 
   boSearchInput?.addEventListener('input', () => {
     filters.query = boSearchInput.value || '';
+    userPage = 1;
+    auditPage = 1;
     renderUsers();
+    renderAudit();
   });
 
   boDateFrom?.addEventListener('change', () => {
     filters.from = boDateFrom.value || '';
+    userPage = 1;
     auditPage = 1;
     renderUsers();
     renderAudit();
@@ -2404,6 +2379,7 @@ function initBackofficePage() {
 
   boDateTo?.addEventListener('change', () => {
     filters.to = boDateTo.value || '';
+    userPage = 1;
     auditPage = 1;
     renderUsers();
     renderAudit();
@@ -2449,8 +2425,9 @@ function initBackofficePage() {
     if (boDateFrom) boDateFrom.value = '';
     if (boDateTo) boDateTo.value = '';
     if (boAuditClientInput) boAuditClientInput.value = '';
+    userPage = 1;
     auditPage = 1;
-    [boAuditTypeAllBtn, boAuditTypeRechargeBtn, boAuditTypeEditBtn, boAuditTypeExpiryBtn].forEach((btn) => {
+    [boAuditTypeAllBtn, boAuditTypeRechargeCashBtn, boAuditTypeRechargeWompiBtn, boAuditTypeEditBtn, boAuditTypeExpiryBtn].forEach((btn) => {
       if (!btn) return;
       btn.classList.toggle('is-active', btn === boAuditTypeAllBtn);
     });
@@ -2466,7 +2443,7 @@ function initBackofficePage() {
   function setAuditType(nextType, activeBtn) {
     filters.auditType = nextType;
     auditPage = 1;
-    [boAuditTypeAllBtn, boAuditTypeRechargeBtn, boAuditTypeEditBtn, boAuditTypeExpiryBtn].forEach((btn) => {
+    [boAuditTypeAllBtn, boAuditTypeRechargeCashBtn, boAuditTypeRechargeWompiBtn, boAuditTypeEditBtn, boAuditTypeExpiryBtn].forEach((btn) => {
       if (!btn) return;
       btn.classList.toggle('is-active', btn === activeBtn);
     });
@@ -2474,9 +2451,20 @@ function initBackofficePage() {
   }
 
   boAuditTypeAllBtn?.addEventListener('click', () => setAuditType('all', boAuditTypeAllBtn));
-  boAuditTypeRechargeBtn?.addEventListener('click', () => setAuditType('recharge', boAuditTypeRechargeBtn));
+  boAuditTypeRechargeCashBtn?.addEventListener('click', () => setAuditType('recharge_cash', boAuditTypeRechargeCashBtn));
+  boAuditTypeRechargeWompiBtn?.addEventListener('click', () => setAuditType('recharge_wompi', boAuditTypeRechargeWompiBtn));
   boAuditTypeEditBtn?.addEventListener('click', () => setAuditType('edit', boAuditTypeEditBtn));
   boAuditTypeExpiryBtn?.addEventListener('click', () => setAuditType('expiry', boAuditTypeExpiryBtn));
+
+  boUsersPrevBtn?.addEventListener('click', () => {
+    userPage -= 1;
+    renderUsers();
+  });
+
+  boUsersNextBtn?.addEventListener('click', () => {
+    userPage += 1;
+    renderUsers();
+  });
 
   boAuditPrevBtn?.addEventListener('click', () => {
     auditPage -= 1;

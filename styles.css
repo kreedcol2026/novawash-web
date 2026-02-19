@@ -1146,6 +1146,10 @@ select:focus {
   gap: 0.75rem;
 }
 
+.bo-filters-dates {
+  margin-top: 0.1rem;
+}
+
 .bo-qr-ops {
   margin-top: 0.9rem;
   width: 100%;
@@ -1236,6 +1240,10 @@ select:focus {
   align-items: end;
 }
 
+.bo-filters:not(.bo-filters-dates) {
+  grid-template-columns: minmax(260px, 1fr);
+}
+
 .bo-filters label {
   min-width: 0;
 }
@@ -1259,6 +1267,21 @@ select:focus {
   margin-top: 0.7rem;
   display: flex;
   justify-content: flex-end;
+}
+
+.bo-users-toolbar {
+  margin-top: 0.55rem;
+  margin-bottom: 0.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.bo-users-count {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #5c6678;
 }
 
 .bo-table {
@@ -1906,6 +1929,11 @@ tr.is-editing .bo-edit-field {
 
   .bo-filters {
     grid-template-columns: 1fr;
+  }
+
+  .bo-users-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .bo-top-layout {
