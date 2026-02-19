@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260218ze" />
+    <link rel="stylesheet" href="styles.css?v=20260218zf" />
   </head>
   <body class="backoffice-page">
     <header class="site-header scrolled">
@@ -82,13 +82,13 @@
                     <button id="boPresetMonth" class="btn btn-light" type="button">Este mes</button>
                     <button id="boPresetYear" class="btn btn-light" type="button">Este año</button>
                   </div>
-                  <button id="boResetFiltersBtn" class="btn btn-light" type="button">Limpiar filtros</button>
+                  <button id="boResetFiltersBtn" class="btn btn-light bo-btn-clear" type="button" title="Limpiar filtros" aria-label="Limpiar filtros">X</button>
                 </section>
 
                 <section class="bo-metrics">
                   <article class="bo-metric-card">
-                    <p>Usuarios</p>
-                    <strong id="boMetricUsers">0</strong>
+                    <p>Ingresos totales</p>
+                    <strong id="boMetricTotalIncome">$0</strong>
                   </article>
                   <article class="bo-metric-card">
                     <p>Recargas efectivo</p>
@@ -99,8 +99,12 @@
                     <strong id="boMetricWompi">$0</strong>
                   </article>
                   <article class="bo-metric-card">
-                    <p>Ingresos totales</p>
-                    <strong id="boMetricTotalIncome">$0</strong>
+                    <p>Total en bonos</p>
+                    <strong id="boMetricBonuses">$0</strong>
+                  </article>
+                  <article class="bo-metric-card">
+                    <p>Usuarios</p>
+                    <strong id="boMetricUsers">0</strong>
                   </article>
                   <article class="bo-metric-card">
                     <p>Suscripciones activas</p>
@@ -315,6 +319,6 @@
       </section>
     </main>
 
-    <script src="script.js?v=20260218ze"></script>
+    <script src="script.js?v=20260218zf"></script>
   </body>
 </html>

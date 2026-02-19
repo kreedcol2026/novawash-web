@@ -1479,6 +1479,7 @@ function initBackofficePage() {
   const boMetricCash = document.querySelector('#boMetricCash');
   const boMetricWompi = document.querySelector('#boMetricWompi');
   const boMetricTotalIncome = document.querySelector('#boMetricTotalIncome');
+  const boMetricBonuses = document.querySelector('#boMetricBonuses');
   const boMetricSubs = document.querySelector('#boMetricSubs');
   const boMetricWashesDone = document.querySelector('#boMetricWashesDone');
   const boMetricWashesAvailable = document.querySelector('#boMetricWashesAvailable');
@@ -1738,12 +1739,23 @@ function initBackofficePage() {
       .filter((log) => log.action === 'wompi_approved')
       .reduce((sum, log) => sum + (Number(log.amount) || 0), 0);
     const totalIncome = cashIncome + wompiIncome;
+    const totalBonuses = filteredUsers.reduce((sum, user) => {
+      const history = Array.isArray(user?.history) ? user.history : [];
+      const bonusFromHistory = history.reduce((inner, item) => {
+        const detail = String(item?.detail || '').toLowerCase();
+        if (detail.includes('bono de fidelidad aplicado')) return inner + 25000;
+        if (detail.includes('bono de bienvenida aplicado')) return inner + 10000;
+        return inner;
+      }, 0);
+      return sum + bonusFromHistory;
+    }, 0);
 
     if (boMetricUsers) boMetricUsers.textContent = String(filteredUsers.length);
     if (boMetricSubs) boMetricSubs.textContent = String(activeSubs);
     if (boMetricCash) boMetricCash.textContent = formatCOP(cashIncome);
     if (boMetricWompi) boMetricWompi.textContent = formatCOP(wompiIncome);
     if (boMetricTotalIncome) boMetricTotalIncome.textContent = formatCOP(totalIncome);
+    if (boMetricBonuses) boMetricBonuses.textContent = formatCOP(totalBonuses);
     if (boMetricWashesDone) boMetricWashesDone.textContent = String(totalWashesDone);
     if (boMetricWashesAvailable) boMetricWashesAvailable.textContent = String(totalWashesAvailable);
     if (boMetricWallets) boMetricWallets.textContent = formatCOP(totalWalletBalance);
