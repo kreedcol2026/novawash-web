@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260218zi" />
+    <link rel="stylesheet" href="styles.css?v=20260218zj" />
   </head>
   <body class="backoffice-page">
     <header class="site-header scrolled">
@@ -128,6 +128,14 @@
                   <label>
                     Buscar cliente
                     <input id="boSearchInput" type="text" placeholder="Nombre, correo o ID" />
+                  </label>
+                  <label>
+                    Tipo de plan
+                    <select id="boPlanFilter">
+                      <option value="all">Todos</option>
+                      <option value="premium_monthly">Premium</option>
+                      <option value="basic_single">Básico</option>
+                    </select>
                   </label>
                 </section>
               </div>
@@ -319,6 +327,6 @@
       </section>
     </main>
 
-    <script src="script.js?v=20260218zi"></script>
+    <script src="script.js?v=20260218zj"></script>
   </body>
 </html>

@@ -1262,7 +1262,7 @@ select:focus {
 }
 
 .bo-filters:not(.bo-filters-dates) {
-  grid-template-columns: minmax(260px, 1fr);
+  grid-template-columns: minmax(260px, 1fr) minmax(170px, 210px);
 }
 
 .bo-filters label {
@@ -1467,6 +1467,32 @@ tr.is-editing .bo-edit-field {
 
 .bo-col-payment select {
   min-width: 92px !important;
+}
+
+.bo-plan-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 86px;
+  height: 32px;
+  padding: 0 0.6rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+}
+
+.bo-plan-pill.is-premium {
+  color: #b04e12;
+  background: #fff0e7;
+  border-color: #ffc8a7;
+}
+
+.bo-plan-pill.is-basic {
+  color: #245fae;
+  background: #eaf2ff;
+  border-color: #bfd5ff;
 }
 
 .bo-col-recharge {

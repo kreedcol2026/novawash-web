@@ -1485,6 +1485,7 @@ function initBackofficePage() {
   const boMetricWashesAvailable = document.querySelector('#boMetricWashesAvailable');
   const boMetricWallets = document.querySelector('#boMetricWallets');
   const boSearchInput = document.querySelector('#boSearchInput');
+  const boPlanFilter = document.querySelector('#boPlanFilter');
   const boDateFrom = document.querySelector('#boDateFrom');
   const boDateTo = document.querySelector('#boDateTo');
   const boResetFiltersBtn = document.querySelector('#boResetFiltersBtn');
@@ -1512,6 +1513,7 @@ function initBackofficePage() {
 
   const filters = {
     query: '',
+    plan: 'all',
     from: '',
     to: '',
     auditClient: '',
@@ -1710,6 +1712,7 @@ function initBackofficePage() {
     return data.users.filter((user, idx) => {
       const byDate = isWithinDateRange(user.createdAt, filters.from, filters.to);
       if (!byDate) return false;
+      if (filters.plan !== 'all' && String(user?.plan?.mode || '') !== filters.plan) return false;
       if (!query) return true;
       const id = String(user.userId || '');
       const name = String(user.name || '');
@@ -1826,10 +1829,9 @@ function initBackofficePage() {
         <td class="bo-col-plate"><input class="bo-edit-field" name="plate" type="text" value="${esc(user.plate || '')}" disabled /></td>
         <td><input class="bo-edit-field" name="phone" type="text" value="${esc(user.phone || '')}" disabled /></td>
         <td>
-          <select class="bo-edit-field" name="mode" disabled>
-            <option value="basic_single" ${user.plan.mode === 'basic_single' ? 'selected' : ''}>Básico</option>
-            <option value="premium_monthly" ${user.plan.mode === 'premium_monthly' ? 'selected' : ''}>Premium</option>
-          </select>
+          <span class="bo-plan-pill ${user.plan.mode === 'premium_monthly' ? 'is-premium' : 'is-basic'}">
+            ${user.plan.mode === 'premium_monthly' ? 'Premium' : 'Básico'}
+          </span>
         </td>
         <td class="bo-col-mini"><input class="bo-edit-field" name="washesRemaining" type="number" min="0" max="999" value="${user.plan.washesRemaining}" disabled /></td>
         <td class="bo-col-mini"><input class="bo-edit-field" name="washesDone" type="number" min="0" max="999" value="${user.stats.washesDone}" disabled /></td>
@@ -2381,6 +2383,14 @@ function initBackofficePage() {
     renderAudit();
   });
 
+  boPlanFilter?.addEventListener('change', () => {
+    filters.plan = boPlanFilter.value || 'all';
+    userPage = 1;
+    auditPage = 1;
+    renderUsers();
+    renderAudit();
+  });
+
   boDateFrom?.addEventListener('change', () => {
     filters.from = boDateFrom.value || '';
     userPage = 1;
@@ -2429,11 +2439,13 @@ function initBackofficePage() {
 
   boResetFiltersBtn?.addEventListener('click', () => {
     filters.query = '';
+    filters.plan = 'all';
     filters.from = '';
     filters.to = '';
     filters.auditClient = '';
     filters.auditType = 'all';
     if (boSearchInput) boSearchInput.value = '';
+    if (boPlanFilter) boPlanFilter.value = 'all';
     if (boDateFrom) boDateFrom.value = '';
     if (boDateTo) boDateTo.value = '';
     if (boAuditClientInput) boAuditClientInput.value = '';
