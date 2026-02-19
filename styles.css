@@ -674,6 +674,15 @@ select:focus {
   gap: 0.6rem;
 }
 
+.dashboard-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid #ced6e4;
+  background: #fff;
+}
+
 .dashboard-grid {
   margin-top: 1rem;
   display: grid;
@@ -775,6 +784,21 @@ select:focus {
   gap: 0.35rem;
 }
 
+.profile-photo-wrap {
+  display: grid;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.profile-photo {
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid #d5dbe7;
+  background: #fff;
+}
+
 .profile-input {
   width: 100%;
   min-width: 0;
@@ -797,6 +821,11 @@ select:focus {
 
 .user-qr-note {
   margin-top: 0.55rem;
+}
+
+.user-qr-note-strong {
+  color: #db6a1c !important;
+  font-weight: 800;
 }
 
 .user-qr-code {
@@ -934,6 +963,20 @@ select:focus {
   gap: 0.55rem;
 }
 
+.history-toolbar {
+  margin-top: 0.55rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.history-toolbar p {
+  margin: 0;
+  color: #5a6576;
+  font-size: 0.8rem;
+}
+
 .history-item {
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -947,12 +990,14 @@ select:focus {
   color: #177048;
   border-color: #a9ddc3;
   background: #f1fbf5;
+  font-weight: 700;
 }
 
 .history-item.history-negative {
   color: #b93f3f;
   border-color: #efc0c0;
   background: #fff3f3;
+  font-weight: 700;
 }
 
 .site-footer {
@@ -2111,6 +2156,11 @@ tr.is-editing .bo-edit-field {
 
   .loyalty-grid {
     grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .history-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .account-grid,

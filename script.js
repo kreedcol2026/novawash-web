@@ -446,6 +446,7 @@ function normalizeUser(user) {
     paymentMethod: normalized.paymentMethod || 'Efectivo en punto',
     cedula: normalized.cedula || '',
     vehicleModel: normalized.vehicleModel || '',
+    profilePhoto: normalized.profilePhoto || 'Imagenes/favicon.png',
     phone: normalized.phone || '',
     plate: normalized.plate || '',
     stripeLinked: Boolean(normalized.stripeLinked),
@@ -552,6 +553,7 @@ function createUser({ name, email, password }) {
     password,
     cedula: '',
     vehicleModel: '',
+    profilePhoto: 'Imagenes/favicon.png',
     phone: '',
     plate: '',
     wallet: 0,
@@ -766,6 +768,7 @@ function initDashboardPage() {
   if (!dashboard) return;
 
   const welcomeUser = document.querySelector('#welcomeUser');
+  const dashboardAvatar = document.querySelector('#dashboardAvatar');
   const subscriptionType = document.querySelector('#subscriptionType');
   const subscriptionBadge = document.querySelector('#subscriptionBadge');
   const subscriptionStatus = document.querySelector('#subscriptionStatus');
@@ -782,6 +785,8 @@ function initDashboardPage() {
   const profilePhoneInput = document.querySelector('#profilePhoneInput');
   const profilePlateInput = document.querySelector('#profilePlateInput');
   const profileVehicleModelInput = document.querySelector('#profileVehicleModelInput');
+  const profilePhotoInput = document.querySelector('#profilePhotoInput');
+  const profilePhotoPreview = document.querySelector('#profilePhotoPreview');
   const profileWashesDone = document.querySelector('#profileWashesDone');
   const profileEditBtn = document.querySelector('#profileEditBtn');
   const profileSaveBtn = document.querySelector('#profileSaveBtn');
@@ -791,6 +796,10 @@ function initDashboardPage() {
   const loyaltyGrid = document.querySelector('#loyaltyGrid');
   const loyaltyProgressText = document.querySelector('#loyaltyProgressText');
   const historyList = document.querySelector('#historyList');
+  const historyCount = document.querySelector('#historyCount');
+  const historyPageText = document.querySelector('#historyPageText');
+  const historyPrevBtn = document.querySelector('#historyPrevBtn');
+  const historyNextBtn = document.querySelector('#historyNextBtn');
   const washMessage = document.querySelector('#washMessage');
 
   const logoutBtn = document.querySelector('#logoutBtn');
@@ -815,6 +824,8 @@ function initDashboardPage() {
   let dashboardSyncInterval = null;
   let dashboardSyncInFlight = false;
   let wompiTopUpBusy = false;
+  const historyPageSize = 30;
+  let historyPage = 1;
 
   function stopDashboardSync() {
     if (dashboardSyncInterval) {
@@ -924,7 +935,7 @@ function initDashboardPage() {
 
   function setProfileEditMode(editing) {
     profileEditing = editing;
-    [profileNameInput, profileCedulaInput, profileEmailInput, profilePhoneInput, profilePlateInput, profileVehicleModelInput].forEach((el) => {
+    [profileNameInput, profileCedulaInput, profileEmailInput, profilePhoneInput, profilePlateInput, profileVehicleModelInput, profilePhotoInput].forEach((el) => {
       if (!el) return;
       el.disabled = !editing;
     });
@@ -934,17 +945,33 @@ function initDashboardPage() {
 
   function renderHistory(user) {
     historyList.innerHTML = '';
-    if (!user.history.length) {
+    const sorted = [...(user.history || [])]
+      .filter((item) => !String(item?.detail || '').toLowerCase().includes('recarga wompi iniciada'))
+      .sort((a, b) => (a.date < b.date ? 1 : -1));
+
+    if (!sorted.length) {
       historyList.innerHTML = '<p class="history-item">Aún no hay registros.</p>';
+      if (historyCount) historyCount.textContent = `Mostrando 0 de 0 (${historyPageSize} por página)`;
+      if (historyPageText) historyPageText.textContent = 'Página 1';
+      if (historyPrevBtn) historyPrevBtn.disabled = true;
+      if (historyNextBtn) historyNextBtn.disabled = true;
       return;
     }
 
-    const sorted = [...user.history]
-      .filter((item) => !String(item?.detail || '').toLowerCase().includes('recarga wompi iniciada'))
-      .sort((a, b) => (a.date < b.date ? 1 : -1))
-      .slice(0, 80);
+    const totalPages = Math.max(1, Math.ceil(sorted.length / historyPageSize));
+    if (historyPage > totalPages) historyPage = totalPages;
+    if (historyPage < 1) historyPage = 1;
+    const start = (historyPage - 1) * historyPageSize;
+    const pageItems = sorted.slice(start, start + historyPageSize);
+    const fromItem = start + 1;
+    const toItem = start + pageItems.length;
+    if (historyCount) historyCount.textContent = `Mostrando ${fromItem}-${toItem} de ${sorted.length} (${historyPageSize} por página)`;
+    if (historyPageText) historyPageText.textContent = `Página ${historyPage} / ${totalPages}`;
+    if (historyPrevBtn) historyPrevBtn.disabled = historyPage <= 1;
+    if (historyNextBtn) historyNextBtn.disabled = historyPage >= totalPages;
+
     const fragment = document.createDocumentFragment();
-    sorted.forEach((item) => {
+    pageItems.forEach((item) => {
       const row = document.createElement('div');
       row.className = `history-item ${getHistoryTone(item)}`.trim();
       row.textContent = `${new Date(item.date).toLocaleString('es-CO')} | ${item.detail}`;
@@ -974,6 +1001,9 @@ function initDashboardPage() {
     sessionGuard.hidden = true;
     dashboard.hidden = false;
     welcomeUser.textContent = `Hola, ${user.name}`;
+    const photoSrc = String(user.profilePhoto || 'Imagenes/favicon.png');
+    if (dashboardAvatar) dashboardAvatar.src = photoSrc;
+    if (profilePhotoPreview) profilePhotoPreview.src = photoSrc;
 
     const plan = getPlanDescriptor(user);
     subscriptionType.textContent = plan.name;
@@ -1005,6 +1035,7 @@ function initDashboardPage() {
     if (profilePhoneInput) profilePhoneInput.value = user.phone || '';
     if (profilePlateInput) profilePlateInput.value = user.plate || '';
     if (profileVehicleModelInput) profileVehicleModelInput.value = user.vehicleModel || '';
+    if (profilePhotoInput) profilePhotoInput.value = '';
     if (profileWashesDone) profileWashesDone.textContent = `Lavadas realizadas: ${user.stats.washesDone}`;
     if (userQrImage) userQrImage.src = getQrImageUrl(getUserQrPayload(user), 170);
     if (userQrCode) userQrCode.textContent = getUserQrPayload(user);
@@ -1149,6 +1180,7 @@ function initDashboardPage() {
     const nextPhone = String(profilePhoneInput?.value || '').trim();
     const nextPlate = normalizePlate(String(profilePlateInput?.value || ''));
     const nextVehicleModel = String(profileVehicleModelInput?.value || '').trim();
+    const nextPhoto = String(profilePhotoPreview?.src || user.profilePhoto || 'Imagenes/favicon.png');
 
     if (!nextName) {
       setResult(profileMessage, 'El nombre es obligatorio.', 'error');
@@ -1171,6 +1203,7 @@ function initDashboardPage() {
     user.phone = nextPhone;
     user.plate = nextPlate;
     user.vehicleModel = nextVehicleModel;
+    user.profilePhoto = nextPhoto;
 
     if (data.currentUserEmail && data.currentUserEmail.toLowerCase() === oldEmail) {
       data.currentUserEmail = nextEmail;
@@ -1179,6 +1212,22 @@ function initDashboardPage() {
     saveData(data);
     setResult(profileMessage, 'Perfil actualizado correctamente.', 'success');
     render();
+  });
+
+  profilePhotoInput?.addEventListener('change', () => {
+    const file = profilePhotoInput.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setResult(profileMessage, 'Selecciona una imagen válida para la foto.', 'error');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = String(reader.result || '');
+      if (!dataUrl) return;
+      if (profilePhotoPreview) profilePhotoPreview.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
   });
 
   cashTopUpBtn?.addEventListener('click', () => {
@@ -1290,6 +1339,18 @@ function initDashboardPage() {
   window.addEventListener('beforeunload', stopDashboardSync);
   window.addEventListener('nova:data-hydrated', () => {
     render();
+  });
+  historyPrevBtn?.addEventListener('click', () => {
+    historyPage -= 1;
+    const data = getData();
+    const user = getCurrentUser(data);
+    if (user) renderHistory(user);
+  });
+  historyNextBtn?.addEventListener('click', () => {
+    historyPage += 1;
+    const data = getData();
+    const user = getCurrentUser(data);
+    if (user) renderHistory(user);
   });
   render();
   handleWompiReturnIfPresent();

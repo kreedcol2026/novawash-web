@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260218zq" />
+    <link rel="stylesheet" href="styles.css?v=20260219a" />
   </head>
   <body>
     <header class="site-header scrolled">
@@ -33,11 +33,8 @@
     </header>
 
     <main class="dashboard-page">
-      <section class="section manage" aria-labelledby="gestion-title">
+      <section class="section manage" aria-label="Gestión de cliente">
         <div class="panel-content reveal visible">
-          <h1 id="gestion-title" class="dash-title">Panel de Gestión</h1>
-          <p class="manage-subtitle">El registro de lavadas se realiza con lector QR del sistema.</p>
-
           <article id="sessionGuard" class="account-card" hidden>
             <h3>Sin sesión activa</h3>
             <p>Inicia sesión para continuar.</p>
@@ -46,14 +43,15 @@
 
           <article id="dashboard" class="dashboard" hidden>
             <div class="dashboard-top">
-              <h3 id="welcomeUser">Panel de usuario</h3>
+              <h3 id="welcomeUser">Hola</h3>
+              <img id="dashboardAvatar" class="dashboard-avatar" src="Imagenes/favicon.png" alt="Foto de perfil" />
             </div>
 
             <div class="dashboard-grid">
               <section class="dash-card user-qr-card">
                 <h4>Mi QR único</h4>
                 <img id="userQrImage" class="user-qr-image" alt="QR único del cliente" />
-                <p class="user-qr-note">Escanéalo en máquina o en backoffice.</p>
+                <p class="user-qr-note user-qr-note-strong">Escanea el Código en la Maquina de Novawash</p>
                 <p id="userQrCode" class="user-qr-code"></p>
                 <div class="qr-stats">
                   <article class="qr-stat">
@@ -122,6 +120,13 @@
                 <h4>Perfil</h4>
                 <div class="profile-details">
                   <p class="sub-detail-row">
+                    <strong class="sub-detail-label">Foto:</strong>
+                    <span class="profile-photo-wrap">
+                      <img id="profilePhotoPreview" class="profile-photo" src="Imagenes/favicon.png" alt="Foto perfil" />
+                      <input id="profilePhotoInput" class="profile-input" type="file" accept="image/*" disabled />
+                    </span>
+                  </p>
+                  <p class="sub-detail-row">
                     <strong class="sub-detail-label">Nombre:</strong>
                     <input id="profileNameInput" class="profile-input" type="text" disabled />
                   </p>
@@ -162,6 +167,14 @@
             <section class="history-block" id="historial">
               <h4>Histórico de lavados</h4>
               <p id="washMessage" class="result" aria-live="polite"></p>
+              <div class="history-toolbar">
+                <p id="historyCount">Mostrando 0 de 0</p>
+                <div class="bo-audit-pager">
+                  <button id="historyPrevBtn" class="btn btn-light" type="button">Anterior</button>
+                  <span id="historyPageText">Página 1</span>
+                  <button id="historyNextBtn" class="btn btn-light" type="button">Siguiente</button>
+                </div>
+              </div>
               <div id="historyList" class="history-list"></div>
             </section>
           </article>
@@ -204,6 +217,6 @@
       </section>
     </main>
 
-    <script src="script.js?v=20260218zq"></script>
+    <script src="script.js?v=20260219a"></script>
   </body>
 </html>
