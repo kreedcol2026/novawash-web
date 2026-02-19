@@ -1150,6 +1150,40 @@ select:focus {
   font-size: clamp(1rem, 2.2vw, 1.4rem);
 }
 
+.kiosk-pricing {
+  margin: 0.55rem auto 1rem;
+  width: min(760px, 100%);
+  text-align: left;
+}
+
+.kiosk-pricing h2 {
+  margin: 0 0 0.7rem;
+  font-size: clamp(1.1rem, 2.1vw, 1.45rem);
+}
+
+.kiosk-pricing .plan-grid {
+  margin-top: 0;
+}
+
+.kiosk-pricing .plan-card {
+  padding: 0.85rem 0.9rem;
+}
+
+.kiosk-pricing .plan-card h3 {
+  font-size: 1rem;
+}
+
+.kiosk-pricing .plan-card strong {
+  font-size: 1.2rem;
+}
+
+.kiosk-pricing .plan-card p {
+  margin: 0.4rem 0 0;
+  max-width: none;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
 .kiosk-scanner {
   margin: 0 auto;
   width: min(520px, 92vw);
@@ -2380,6 +2414,10 @@ tr.is-editing .bo-edit-field {
   }
 
   .kiosk-confirm-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .kiosk-pricing .plan-grid.two-cols {
     grid-template-columns: 1fr;
   }
 

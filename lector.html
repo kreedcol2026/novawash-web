@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260218zq" />
+    <link rel="stylesheet" href="styles.css?v=20260219f" />
   </head>
   <body class="kiosk-page" id="kioskPage">
     <main class="kiosk-wrap">
@@ -21,6 +21,24 @@
       <p>
         Automáticamente se debitará de tu saldo según tu plan.
       </p>
+
+      <section class="kiosk-pricing" aria-label="Planes y precios NovaWash">
+        <h2>Planes y precios</h2>
+        <div class="plan-grid two-cols">
+          <article class="plan-card">
+            <span class="plan-eyebrow">Plan Básico</span>
+            <h3>Pago por cada lavada</h3>
+            <strong>$35.000</strong>
+            <p>Cobro automático por lectura QR en cada ingreso.</p>
+          </article>
+          <article class="plan-card featured">
+            <span class="plan-eyebrow">Plan Premium</span>
+            <h3>Suscripción mensual</h3>
+            <strong>$50.000</strong>
+            <p>Incluye 2 lavadas al mes, no acumulables.</p>
+          </article>
+        </div>
+      </section>
 
       <div class="kiosk-scanner">
         <video id="kioskQrVideo" class="qr-video" playsinline muted></video>
@@ -51,6 +69,6 @@
       <p id="kioskCooldown" class="muted-note" aria-live="polite"></p>
     </main>
 
-    <script src="script.js?v=20260218zq"></script>
+    <script src="script.js?v=20260219f"></script>
   </body>
 </html>
