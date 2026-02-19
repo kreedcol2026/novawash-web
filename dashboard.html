@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260218zl" />
+    <link rel="stylesheet" href="styles.css?v=20260218zm" />
   </head>
   <body>
     <header class="site-header scrolled">
@@ -184,6 +184,10 @@
                 autocomplete="off"
               />
               <p id="wompiTopUpHint" class="muted-note">Mínimo $1.000</p>
+              <div id="wompiTopUpLoading" class="wompi-topup-loading" hidden>
+                <span class="wompi-spinner" aria-hidden="true"></span>
+                <span>Conectando con Wompi...</span>
+              </div>
               <div class="dash-actions wompi-topup-actions">
                 <button id="wompiTopUpCancelBtn" class="btn btn-light" type="button" data-modal-close="1">Cancelar</button>
                 <button id="wompiTopUpConfirmBtn" class="btn btn-orange" type="button">Continuar a Wompi</button>
@@ -195,6 +199,6 @@
       </section>
     </main>
 
-    <script src="script.js?v=20260218zl"></script>
+    <script src="script.js?v=20260218zm"></script>
   </body>
 </html>

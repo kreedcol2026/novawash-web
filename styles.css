@@ -1802,6 +1802,30 @@ tr.is-editing .bo-edit-field {
   margin-top: 0.8rem;
 }
 
+.wompi-topup-loading {
+  margin-top: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #505a6b;
+  font-size: 0.84rem;
+}
+
+.wompi-spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 2px solid #ffcfb0;
+  border-top-color: #ff7a18;
+  animation: wompi-spin 0.8s linear infinite;
+}
+
+@keyframes wompi-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .thankyou-page {
   min-height: 100vh;
   background: #f5f7fb;

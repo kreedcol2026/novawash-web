@@ -794,6 +794,7 @@ function initDashboardPage() {
   const wompiTopUpModal = document.querySelector('#wompiTopUpModal');
   const wompiTopUpAmountInput = document.querySelector('#wompiTopUpAmountInput');
   const wompiTopUpHint = document.querySelector('#wompiTopUpHint');
+  const wompiTopUpLoading = document.querySelector('#wompiTopUpLoading');
   const wompiTopUpConfirmBtn = document.querySelector('#wompiTopUpConfirmBtn');
   const wompiTopUpPresetBtns = [...document.querySelectorAll('.wompi-topup-preset')];
 
@@ -850,6 +851,7 @@ function initDashboardPage() {
       btn.classList.toggle('is-active', value === Number(defaultAmount));
     });
     if (wompiTopUpHint) wompiTopUpHint.textContent = 'Mínimo $1.000';
+    if (wompiTopUpLoading) wompiTopUpLoading.hidden = true;
     wompiTopUpModal.hidden = false;
     wompiTopUpModal.setAttribute('aria-hidden', 'false');
     setTimeout(() => {
@@ -1240,12 +1242,14 @@ function initDashboardPage() {
     setResult(profileMessage, 'Generando enlace de pago Wompi...', 'success');
     if (bankTopUpBtn) bankTopUpBtn.disabled = true;
     if (wompiTopUpConfirmBtn) wompiTopUpConfirmBtn.disabled = true;
+    if (wompiTopUpLoading) wompiTopUpLoading.hidden = false;
     try {
       const resp = await requestWompiCheckout({ user, amount });
       if (!resp?.ok || !resp.checkoutUrl) {
         const reason = resp?.error || 'Respuesta inválida de Apps Script.';
         setResult(profileMessage, `No se pudo generar el pago Wompi: ${reason}`, 'error');
         window.alert(`No se pudo generar el pago Wompi.\n\nDetalle: ${reason}`);
+        if (wompiTopUpLoading) wompiTopUpLoading.hidden = true;
         return;
       }
 
@@ -1260,6 +1264,7 @@ function initDashboardPage() {
     } finally {
       if (bankTopUpBtn) bankTopUpBtn.disabled = false;
       if (wompiTopUpConfirmBtn) wompiTopUpConfirmBtn.disabled = false;
+      if (wompiTopUpLoading) wompiTopUpLoading.hidden = true;
       wompiTopUpBusy = false;
     }
   });
