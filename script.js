@@ -823,6 +823,7 @@ function initDashboardPage() {
   const profileSaveBtn = document.querySelector('#profileSaveBtn');
   const profileMessage = document.querySelector('#profileMessage');
   const userQrImage = document.querySelector('#userQrImage');
+  const qrLiveStatus = document.querySelector('#qrLiveStatus');
   const userQrCode = document.querySelector('#userQrCode');
   const loyaltyGrid = document.querySelector('#loyaltyGrid');
   const loyaltyProgressText = document.querySelector('#loyaltyProgressText');
@@ -857,6 +858,7 @@ function initDashboardPage() {
   let wompiTopUpBusy = false;
   const historyPageSize = 30;
   let historyPage = 1;
+  let lastQrNoticeAt = '';
 
   function stopDashboardSync() {
     if (dashboardSyncInterval) {
@@ -867,7 +869,7 @@ function initDashboardPage() {
 
   async function syncDashboardFromRemote() {
     if (dashboardSyncInFlight) return;
-    if (profileEditing || hasUnsyncedLocalChanges || pendingRemoteState) return;
+    if (profileEditing) return;
     dashboardSyncInFlight = true;
     try {
       const remoteData = await fetchRemoteStateAsync();
@@ -889,7 +891,36 @@ function initDashboardPage() {
     dashboardSyncInterval = setInterval(() => {
       if (document.hidden) return;
       syncDashboardFromRemote();
-    }, 12000);
+    }, 2500);
+    syncDashboardFromRemote();
+  }
+
+  function showLatestQrNotice(data, user) {
+    if (!data || !user) return;
+    const logs = Array.isArray(data.auditLogs) ? data.auditLogs : [];
+    const targetEmail = String(user.email || '').toLowerCase();
+    const qrLog = [...logs]
+      .reverse()
+      .find((log) => {
+        if (!log || !log.at) return false;
+        const action = String(log.action || '').toLowerCase();
+        const email = String(log.targetEmail || '').toLowerCase();
+        return email === targetEmail && (action === 'kiosk_qr_wash' || action === 'qr_wash_operation');
+      });
+
+    if (!qrLog) return;
+    if (lastQrNoticeAt === String(qrLog.at)) return;
+    lastQrNoticeAt = String(qrLog.at);
+
+    const amount = Number(qrLog.amount) || 0;
+    const plateMatch = String(qrLog.detail || '').match(/placa\s+([A-Z0-9-]+)/i);
+    const plate = plateMatch ? plateMatch[1] : (user.plate || '-');
+    const amountText = amount > 0 ? formatCOP(amount) : 'valor aplicado';
+    setResult(
+      qrLiveStatus || washMessage,
+      `Codigo leído. Débito ${amountText} a placa ${plate}. Saldo: ${formatCOP(user.wallet || 0)}. Lavadas disponibles: ${user.plan?.washesRemaining || 0}.`,
+      'success'
+    );
   }
 
   function openWompiTopUpModal(defaultAmount = 50000) {
@@ -1095,6 +1126,7 @@ function initDashboardPage() {
       }
     }
 
+    showLatestQrNotice(data, user);
     setProfileEditMode(false);
     renderHistory(user);
     startDashboardSync();
@@ -1389,6 +1421,18 @@ function initDashboardPage() {
   window.addEventListener('beforeunload', stopScanner);
   window.addEventListener('beforeunload', stopDashboardSync);
   window.addEventListener('nova:data-hydrated', () => {
+    render();
+  });
+  window.addEventListener('focus', () => {
+    syncDashboardFromRemote();
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) syncDashboardFromRemote();
+  });
+  window.addEventListener('storage', (event) => {
+    if (event.key !== APP_KEY) return;
+    const local = readLocalState();
+    appDataCache = local;
     render();
   });
   historyPrevBtn?.addEventListener('click', () => {

@@ -835,6 +835,12 @@ select:focus {
   font-weight: 800;
 }
 
+.qr-live-status {
+  margin-top: 0.4rem;
+  font-size: 0.82rem;
+  min-height: 1rem;
+}
+
 .user-qr-code {
   margin-top: 0.4rem;
   font-size: 0.72rem;
