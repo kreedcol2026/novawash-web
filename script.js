@@ -763,10 +763,10 @@ function initDashboardPage() {
   const subscriptionBadge = document.querySelector('#subscriptionBadge');
   const subscriptionStatus = document.querySelector('#subscriptionStatus');
   const subscriptionBenefits = document.querySelector('#subscriptionBenefits');
-  const subscriptionWashesLeft = document.querySelector('#subscriptionWashesLeft');
-  const subscriptionBalance = document.querySelector('#subscriptionBalance');
   const subscriptionCycleStart = document.querySelector('#subscriptionCycleStart');
   const subscriptionCycleEnd = document.querySelector('#subscriptionCycleEnd');
+  const qrStatBalance = document.querySelector('#qrStatBalance');
+  const qrStatWashes = document.querySelector('#qrStatWashes');
   const walletStatus = document.querySelector('#walletStatus');
   const paymentStatus = document.querySelector('#paymentStatus');
   const profileNameInput = document.querySelector('#profileNameInput');
@@ -976,12 +976,8 @@ function initDashboardPage() {
           ? '2 lavadas mensuales, descuento por lavada y renovación automática del ciclo.'
           : 'Pago por uso, control total de recargas y consumo por lavada.';
     }
-    if (subscriptionWashesLeft) {
-      subscriptionWashesLeft.textContent = `${user.plan.washesRemaining}`;
-    }
-    if (subscriptionBalance) {
-      subscriptionBalance.textContent = `${formatCOP(user.wallet)}`;
-    }
+    if (qrStatWashes) qrStatWashes.textContent = `${user.plan.washesRemaining}`;
+    if (qrStatBalance) qrStatBalance.textContent = `${formatCOP(user.wallet)}`;
     if (subscriptionCycleStart) {
       subscriptionCycleStart.textContent = `${formatShortDate(user.plan.cycleStart)}`;
     }

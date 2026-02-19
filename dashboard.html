@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260218zm" />
+    <link rel="stylesheet" href="styles.css?v=20260218zn" />
   </head>
   <body>
     <header class="site-header scrolled">
@@ -55,6 +55,16 @@
                 <img id="userQrImage" class="user-qr-image" alt="QR único del cliente" />
                 <p class="user-qr-note">Escanéalo en máquina o en backoffice.</p>
                 <p id="userQrCode" class="user-qr-code"></p>
+                <div class="qr-stats">
+                  <article class="qr-stat">
+                    <span class="qr-stat-label">Saldo actual</span>
+                    <strong id="qrStatBalance">$0</strong>
+                  </article>
+                  <article class="qr-stat">
+                    <span class="qr-stat-label">Lavadas disponibles</span>
+                    <strong id="qrStatWashes">0</strong>
+                  </article>
+                </div>
               </section>
 
               <section class="dash-card" id="suscripcion">
@@ -71,14 +81,6 @@
                   <p class="sub-detail-row">
                     <strong class="sub-detail-label">Beneficios:</strong>
                     <span id="subscriptionBenefits" class="sub-detail-value">Cobro por evento.</span>
-                  </p>
-                  <p class="sub-detail-row">
-                    <strong class="sub-detail-label">Lavadas disponibles:</strong>
-                    <span id="subscriptionWashesLeft" class="sub-detail-value">0</span>
-                  </p>
-                  <p class="sub-detail-row">
-                    <strong class="sub-detail-label">Saldo actual:</strong>
-                    <span id="subscriptionBalance" class="sub-detail-value">$0</span>
                   </p>
                   <p class="sub-detail-row">
                     <strong class="sub-detail-label">Inicio:</strong>
@@ -102,7 +104,10 @@
                 <p id="paymentStatus">Método: Efectivo en punto</p>
                 <div class="dash-actions">
                   <button id="cashTopUpBtn" class="btn btn-dark" type="button">Recargar en efectivo</button>
-                  <button id="bankTopUpBtn" class="btn btn-orange" type="button">Recargar con transferencia (Wompi)</button>
+                  <button id="bankTopUpBtn" class="btn btn-orange btn-wompi" type="button">
+                    <span>Recargar cuenta</span>
+                    <img src="Imagenes/logowompi.png" alt="Wompi" />
+                  </button>
                 </div>
               </section>
 
@@ -199,6 +204,6 @@
       </section>
     </main>
 
-    <script src="script.js?v=20260218zm"></script>
+    <script src="script.js?v=20260218zn"></script>
   </body>
 </html>

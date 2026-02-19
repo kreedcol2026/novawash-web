@@ -806,6 +806,48 @@ select:focus {
   word-break: break-all;
 }
 
+.qr-stats {
+  margin-top: 0.7rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.52rem;
+}
+
+.qr-stat {
+  border: 1px solid #d6dde8;
+  border-radius: 12px;
+  background: #f8fafc;
+  padding: 0.58rem 0.62rem;
+}
+
+.qr-stat-label {
+  display: block;
+  font-size: 0.72rem;
+  color: #5f6876;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.qr-stat strong {
+  margin-top: 0.2rem;
+  display: block;
+  color: #1d6645;
+  font-size: 1.08rem;
+  font-weight: 800;
+}
+
+.btn-wompi {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.36rem;
+}
+
+.btn-wompi img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
 .sub-badge {
   margin: 0.6rem 0;
   display: inline-flex;
