@@ -623,36 +623,6 @@ function highlightAmountsInDetail(container, detail, toneClass) {
   }
 }
 
-function compressImageFile(file, maxSize = 360, quality = 0.8) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error('No se pudo leer la imagen.'));
-    reader.onload = () => {
-      const img = new Image();
-      img.onerror = () => reject(new Error('No se pudo procesar la imagen.'));
-      img.onload = () => {
-        try {
-          const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
-          const width = Math.max(1, Math.round(img.width * scale));
-          const height = Math.max(1, Math.round(img.height * scale));
-          const canvas = document.createElement('canvas');
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) throw new Error('Sin contexto de imagen.');
-          ctx.drawImage(img, 0, 0, width, height);
-          const dataUrl = canvas.toDataURL('image/webp', quality);
-          resolve(dataUrl || '');
-        } catch (error) {
-          reject(error);
-        }
-      };
-      img.src = String(reader.result || '');
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
 function formatShortDate(iso) {
   if (!iso) return '-';
   const date = new Date(iso);
@@ -848,8 +818,6 @@ function initDashboardPage() {
   const profilePhoneInput = document.querySelector('#profilePhoneInput');
   const profilePlateInput = document.querySelector('#profilePlateInput');
   const profileVehicleModelInput = document.querySelector('#profileVehicleModelInput');
-  const profilePhotoInput = document.querySelector('#profilePhotoInput');
-  const profilePhotoPreview = document.querySelector('#profilePhotoPreview');
   const profileWashesDone = document.querySelector('#profileWashesDone');
   const profileEditBtn = document.querySelector('#profileEditBtn');
   const profileSaveBtn = document.querySelector('#profileSaveBtn');
@@ -998,7 +966,7 @@ function initDashboardPage() {
 
   function setProfileEditMode(editing) {
     profileEditing = editing;
-    [profileNameInput, profileCedulaInput, profileEmailInput, profilePhoneInput, profilePlateInput, profileVehicleModelInput, profilePhotoInput].forEach((el) => {
+    [profileNameInput, profileCedulaInput, profileEmailInput, profilePhoneInput, profilePlateInput, profileVehicleModelInput].forEach((el) => {
       if (!el) return;
       el.disabled = !editing;
     });
@@ -1075,7 +1043,6 @@ function initDashboardPage() {
     welcomeUser.textContent = `Hola, ${user.name}`;
     const photoSrc = String(user.profilePhoto || DEFAULT_PROFILE_PHOTO);
     if (dashboardAvatar) dashboardAvatar.src = photoSrc;
-    if (profilePhotoPreview) profilePhotoPreview.src = photoSrc;
 
     const plan = getPlanDescriptor(user);
     subscriptionType.textContent = plan.name;
@@ -1107,7 +1074,6 @@ function initDashboardPage() {
     if (profilePhoneInput) profilePhoneInput.value = user.phone || '';
     if (profilePlateInput) profilePlateInput.value = user.plate || '';
     if (profileVehicleModelInput) profileVehicleModelInput.value = user.vehicleModel || '';
-    if (profilePhotoInput) profilePhotoInput.value = '';
     if (profileWashesDone) profileWashesDone.textContent = `Lavadas realizadas: ${user.stats.washesDone}`;
     if (userQrImage) userQrImage.src = getQrImageUrl(getUserQrPayload(user), 170);
     if (userQrCode) userQrCode.textContent = getUserQrPayload(user);
@@ -1240,10 +1206,21 @@ function initDashboardPage() {
   });
 
   profileSaveBtn?.addEventListener('click', async () => {
+    if (profileSaveBtn.disabled) return;
+    const originalSaveText = profileSaveBtn.textContent;
+    profileSaveBtn.disabled = true;
+    profileSaveBtn.textContent = 'Guardando...';
+    profileSaveBtn.classList.add('is-loading');
+
     const data = getData();
     data.users = data.users.map((entry) => normalizeUser(entry));
     const user = getCurrentUser(data);
-    if (!user) return;
+    if (!user) {
+      profileSaveBtn.disabled = false;
+      profileSaveBtn.textContent = originalSaveText;
+      profileSaveBtn.classList.remove('is-loading');
+      return;
+    }
 
     const oldEmail = String(user.email || '').toLowerCase();
     const nextName = String(profileNameInput?.value || '').trim();
@@ -1252,20 +1229,27 @@ function initDashboardPage() {
     const nextPhone = String(profilePhoneInput?.value || '').trim();
     const nextPlate = normalizePlate(String(profilePlateInput?.value || ''));
     const nextVehicleModel = String(profileVehicleModelInput?.value || '').trim();
-    const nextPhoto = String(profilePhotoPreview?.src || user.profilePhoto || DEFAULT_PROFILE_PHOTO);
-
     if (!nextName) {
       setResult(profileMessage, 'El nombre es obligatorio.', 'error');
+      profileSaveBtn.disabled = false;
+      profileSaveBtn.textContent = originalSaveText;
+      profileSaveBtn.classList.remove('is-loading');
       return;
     }
     const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nextEmail);
     if (!emailValid) {
       setResult(profileMessage, 'Correo inválido. Verifica el formato.', 'error');
+      profileSaveBtn.disabled = false;
+      profileSaveBtn.textContent = originalSaveText;
+      profileSaveBtn.classList.remove('is-loading');
       return;
     }
     const duplicate = data.users.some((u) => String(u.email || '').toLowerCase() === nextEmail && u.userId !== user.userId);
     if (duplicate) {
       setResult(profileMessage, 'Ese correo ya está registrado.', 'error');
+      profileSaveBtn.disabled = false;
+      profileSaveBtn.textContent = originalSaveText;
+      profileSaveBtn.classList.remove('is-loading');
       return;
     }
 
@@ -1275,7 +1259,6 @@ function initDashboardPage() {
     user.phone = nextPhone;
     user.plate = nextPlate;
     user.vehicleModel = nextVehicleModel;
-    user.profilePhoto = nextPhoto;
 
     if (data.currentUserEmail && data.currentUserEmail.toLowerCase() === oldEmail) {
       data.currentUserEmail = nextEmail;
@@ -1286,30 +1269,16 @@ function initDashboardPage() {
     if (!synced) {
       setResult(profileMessage, 'Perfil guardado localmente. Sincronizando al servidor...', 'error');
       render();
+      profileSaveBtn.disabled = false;
+      profileSaveBtn.textContent = originalSaveText;
+      profileSaveBtn.classList.remove('is-loading');
       return;
     }
     setResult(profileMessage, 'Perfil actualizado correctamente.', 'success');
     render();
-  });
-
-  profilePhotoInput?.addEventListener('change', async () => {
-    const file = profilePhotoInput.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      setResult(profileMessage, 'Selecciona una imagen válida para la foto.', 'error');
-      return;
-    }
-    try {
-      const dataUrl = await compressImageFile(file);
-      if (!dataUrl) {
-        setResult(profileMessage, 'No se pudo preparar la imagen.', 'error');
-        return;
-      }
-      if (profilePhotoPreview) profilePhotoPreview.src = dataUrl;
-      setResult(profileMessage, 'Foto lista para guardar.', 'success');
-    } catch {
-      setResult(profileMessage, 'No se pudo procesar la imagen. Intenta con otra foto.', 'error');
-    }
+    profileSaveBtn.disabled = false;
+    profileSaveBtn.textContent = originalSaveText;
+    profileSaveBtn.classList.remove('is-loading');
   });
 
   cashTopUpBtn?.addEventListener('click', () => {

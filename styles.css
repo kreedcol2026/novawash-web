@@ -801,26 +801,16 @@ select:focus {
   gap: 0.35rem;
 }
 
-.profile-photo-wrap {
-  display: grid;
-  gap: 0.35rem;
-  width: 100%;
-}
-
-.profile-photo {
-  width: 64px;
-  height: 64px;
-  border-radius: 999px;
-  object-fit: cover;
-  border: 1px solid #d5dbe7;
-  background: #fff;
-}
-
 .profile-input {
   width: 100%;
   min-width: 0;
   font-size: 0.9rem;
   padding: 0.45rem 0.55rem;
+}
+
+.btn.is-loading {
+  opacity: 0.9;
+  cursor: wait;
 }
 
 .user-qr-card {
