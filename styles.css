@@ -843,8 +843,8 @@ select:focus {
 }
 
 .btn-wompi img {
-  width: 24px;
-  height: 24px;
+  width: 48px;
+  height: auto;
   object-fit: contain;
 }
 
@@ -941,6 +941,18 @@ select:focus {
   font-size: 0.88rem;
   color: var(--muted);
   background: var(--surface-soft);
+}
+
+.history-item.history-positive {
+  color: #177048;
+  border-color: #a9ddc3;
+  background: #f1fbf5;
+}
+
+.history-item.history-negative {
+  color: #b93f3f;
+  border-color: #efc0c0;
+  background: #fff3f3;
 }
 
 .site-footer {

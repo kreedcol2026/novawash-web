@@ -581,6 +581,13 @@ function addHistory(user, detail, type = 'evento') {
   });
 }
 
+function getHistoryTone(item) {
+  const text = String(item?.detail || '').toLowerCase();
+  if (text.includes('recarga') || text.includes('bono')) return 'history-positive';
+  if (text.includes('descuento') || text.includes('lavada cobrada') || text.includes('cobrada')) return 'history-negative';
+  return '';
+}
+
 function formatShortDate(iso) {
   if (!iso) return '-';
   const date = new Date(iso);
@@ -932,11 +939,14 @@ function initDashboardPage() {
       return;
     }
 
-    const sorted = [...user.history].sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 80);
+    const sorted = [...user.history]
+      .filter((item) => !String(item?.detail || '').toLowerCase().includes('recarga wompi iniciada'))
+      .sort((a, b) => (a.date < b.date ? 1 : -1))
+      .slice(0, 80);
     const fragment = document.createDocumentFragment();
     sorted.forEach((item) => {
       const row = document.createElement('div');
-      row.className = 'history-item';
+      row.className = `history-item ${getHistoryTone(item)}`.trim();
       row.textContent = `${new Date(item.date).toLocaleString('es-CO')} | ${item.detail}`;
       fragment.appendChild(row);
     });
@@ -1250,7 +1260,6 @@ function initDashboardPage() {
       }
 
       user.paymentMethod = 'Wompi';
-      addHistory(user, `Recarga Wompi iniciada por ${formatCOP(amount)}. Referencia: ${resp.reference || '-'}.`, 'pago');
       saveData(data);
       render();
       closeWompiTopUpModal();
