@@ -939,7 +939,8 @@ function initDashboardPage() {
   const profileSaveBtn = document.querySelector('#profileSaveBtn');
   const profileMessage = document.querySelector('#profileMessage');
   const userQrImage = document.querySelector('#userQrImage');
-  const qrLiveStatus = document.querySelector('#qrLiveStatus');
+  const qrToast = document.querySelector('#qrToast');
+  const qrToastText = document.querySelector('#qrToastText');
   const userQrCode = document.querySelector('#userQrCode');
   const loyaltyGrid = document.querySelector('#loyaltyGrid');
   const loyaltyProgressText = document.querySelector('#loyaltyProgressText');
@@ -976,6 +977,7 @@ function initDashboardPage() {
   let historyPage = 1;
   let lastQrNoticeAt = '';
   let qrNoticeTimeout = null;
+  let qrToastHideAnimTimeout = null;
 
   function stopDashboardSync() {
     if (dashboardSyncInterval) {
@@ -1012,6 +1014,31 @@ function initDashboardPage() {
     syncDashboardFromRemote();
   }
 
+  function hideQrToast() {
+    if (!qrToast) return;
+    qrToast.classList.remove('is-visible');
+    qrToast.classList.add('is-exit');
+    if (qrToastHideAnimTimeout) clearTimeout(qrToastHideAnimTimeout);
+    qrToastHideAnimTimeout = setTimeout(() => {
+      qrToast.hidden = true;
+      qrToast.classList.remove('is-exit');
+    }, 360);
+  }
+
+  function showQrToast(message) {
+    if (!qrToast || !qrToastText) return;
+    qrToastText.textContent = message;
+    qrToast.hidden = false;
+    qrToast.classList.remove('is-exit');
+    requestAnimationFrame(() => {
+      qrToast.classList.add('is-visible');
+    });
+    if (qrNoticeTimeout) clearTimeout(qrNoticeTimeout);
+    qrNoticeTimeout = setTimeout(() => {
+      hideQrToast();
+    }, 10000);
+  }
+
   function showLatestQrNotice(data, user) {
     if (!data || !user) return;
     const logs = Array.isArray(data.auditLogs) ? data.auditLogs : [];
@@ -1033,16 +1060,9 @@ function initDashboardPage() {
     const plateMatch = String(qrLog.detail || '').match(/placa\s+([A-Z0-9-]+)/i);
     const plate = plateMatch ? plateMatch[1] : (user.plate || '-');
     const amountText = amount > 0 ? formatCOP(amount) : 'valor aplicado';
-    setResult(
-      qrLiveStatus || washMessage,
-      `Codigo leído. Débito ${amountText} a placa ${plate}. Saldo: ${formatCOP(user.wallet || 0)}. Lavadas disponibles: ${user.plan?.washesRemaining || 0}.`,
-      'success'
+    showQrToast(
+      `Débito ${amountText} a placa ${plate}. Saldo: ${formatCOP(user.wallet || 0)}. Lavadas disponibles: ${user.plan?.washesRemaining || 0}.`
     );
-    if (qrNoticeTimeout) clearTimeout(qrNoticeTimeout);
-    qrNoticeTimeout = setTimeout(() => {
-      if (!qrLiveStatus) return;
-      setResult(qrLiveStatus, '');
-    }, 10000);
   }
 
   function openWompiTopUpModal(defaultAmount = 50000) {
