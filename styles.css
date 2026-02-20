@@ -430,8 +430,11 @@ h2 {
 }
 
 .peek-full-bleed .panel-content {
-  width: min(1300px, calc(100vw - 2rem));
+  width: 100vw;
   max-width: none;
+  margin-left: calc(50% - 50vw);
+  padding-left: 1.2rem;
+  padding-right: 0;
 }
 
 .peek-carousel {
@@ -446,6 +449,11 @@ h2 {
   border-radius: 16px;
 }
 
+.peek-full-bleed .peek-viewport {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
 .peek-track {
   display: flex;
   gap: 1rem;
@@ -457,6 +465,11 @@ h2 {
   border-radius: 16px;
   overflow: hidden;
   background: #fff;
+}
+
+.peek-full-bleed .peek-card {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .peek-card img {
@@ -2359,6 +2372,10 @@ tr.is-editing .bo-edit-field {
 
   .peek-arrow.next {
     right: 0.42rem;
+  }
+
+  .peek-full-bleed .panel-content {
+    padding-left: 0.7rem;
   }
 
   .bo-metrics {
