@@ -420,6 +420,72 @@ h2 {
   font-size: 1.02rem;
 }
 
+.peek-carousel {
+  margin-top: 1.1rem;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 42px;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.peek-viewport {
+  overflow: hidden;
+}
+
+.peek-track {
+  display: flex;
+  gap: 1rem;
+  transition: transform 0.35s ease;
+}
+
+.peek-card {
+  flex: 0 0 min(82%, 930px);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.peek-card img {
+  width: 100%;
+  height: clamp(180px, 35vw, 360px);
+  object-fit: cover;
+  display: block;
+}
+
+.peek-copy {
+  padding: 0.9rem 1rem 1rem;
+}
+
+.peek-copy h3 {
+  margin: 0;
+  font-size: clamp(1.15rem, 2.2vw, 1.7rem);
+}
+
+.peek-copy p {
+  margin: 0.45rem 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.peek-arrow {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: #293444;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.peek-arrow:hover {
+  border-color: #d6deea;
+  background: #f7f9fc;
+}
+
 label {
   display: grid;
   gap: 0.42rem;
@@ -2247,6 +2313,21 @@ tr.is-editing .bo-edit-field {
   .process-showcase,
   .process-steps {
     grid-template-columns: 1fr;
+  }
+
+  .peek-carousel {
+    grid-template-columns: 34px minmax(0, 1fr) 34px;
+    gap: 0.45rem;
+  }
+
+  .peek-card {
+    flex-basis: 90%;
+  }
+
+  .peek-arrow {
+    width: 34px;
+    height: 34px;
+    font-size: 1.08rem;
   }
 
   .bo-metrics {

@@ -70,6 +70,46 @@ function initMobileMenu() {
 
 initMobileMenu();
 
+function initPeekCarousels() {
+  const carousels = document.querySelectorAll('[data-peek-carousel]');
+  if (!carousels.length) return;
+
+  carousels.forEach((carousel) => {
+    const viewport = carousel.querySelector('.peek-viewport');
+    const track = carousel.querySelector('.peek-track');
+    const cards = [...carousel.querySelectorAll('.peek-card')];
+    const prevBtn = carousel.querySelector('[data-dir="-1"]');
+    const nextBtn = carousel.querySelector('[data-dir="1"]');
+    if (!viewport || !track || cards.length < 2) return;
+
+    let index = 0;
+    const maxIndex = cards.length - 1;
+
+    const update = () => {
+      const cardWidth = cards[0].getBoundingClientRect().width;
+      const gap = parseFloat(window.getComputedStyle(track).gap || '0') || 0;
+      const offset = (cardWidth + gap) * index;
+      track.style.transform = `translateX(${-offset}px)`;
+      if (prevBtn) prevBtn.disabled = index <= 0;
+      if (nextBtn) nextBtn.disabled = index >= maxIndex;
+    };
+
+    prevBtn?.addEventListener('click', () => {
+      index = Math.max(0, index - 1);
+      update();
+    });
+    nextBtn?.addEventListener('click', () => {
+      index = Math.min(maxIndex, index + 1);
+      update();
+    });
+
+    window.addEventListener('resize', update);
+    update();
+  });
+}
+
+initPeekCarousels();
+
 if (revealEls.length) {
   const observer = new IntersectionObserver(
     (entries) => {
