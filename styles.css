@@ -70,6 +70,33 @@ a {
   background: rgba(255, 255, 255, 0.95);
 }
 
+.home-page .site-header:not(.scrolled) {
+  background: transparent;
+  border-bottom-color: transparent;
+  backdrop-filter: none;
+}
+
+.home-page .site-header:not(.scrolled) .main-nav a {
+  color: #f2f5fb;
+}
+
+.home-page .site-header:not(.scrolled) .main-nav a:hover {
+  color: #ffffff;
+}
+
+.home-page .site-header:not(.scrolled) .menu-toggle {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.36);
+}
+
+.home-page .site-header:not(.scrolled) .menu-toggle span {
+  background: #ffffff;
+}
+
+.home-page .site-header.scrolled {
+  padding: 0.36rem 0.86rem;
+}
+
 .logo {
   display: inline-flex;
   align-items: center;
