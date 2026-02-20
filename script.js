@@ -90,11 +90,15 @@ function initPeekCarousels() {
     const update = () => {
       const viewportWidth = viewport.getBoundingClientRect().width || window.innerWidth;
       const cardWidth = viewportWidth * 0.8;
+      const gap = parseFloat(window.getComputedStyle(track).gap || '0') || 0;
       const peekWidth = viewportWidth * 0.15;
       const leftInset = Math.max(0, viewportWidth - cardWidth - peekWidth);
-      const offset = index * cardWidth - leftInset;
+      const offset = index * (cardWidth + gap) - leftInset;
       track.style.transform = `translateX(${-offset}px)`;
-      cards.forEach((card, i) => card.classList.toggle('is-active', i === index));
+      cards.forEach((card, i) => {
+        card.classList.toggle('is-active', i === index);
+        card.classList.toggle('is-next', i === index + 1);
+      });
       if (prevBtn) prevBtn.disabled = index <= 0;
       if (nextBtn) nextBtn.disabled = index >= maxIndex;
       if (captionTitle) captionTitle.textContent = cards[index].dataset.title || '';
