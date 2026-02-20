@@ -80,6 +80,8 @@ function initPeekCarousels() {
     const cards = [...carousel.querySelectorAll('.peek-card')];
     const prevBtn = carousel.querySelector('[data-dir="-1"]');
     const nextBtn = carousel.querySelector('[data-dir="1"]');
+    const captionTitle = carousel.querySelector('.peek-copy-title');
+    const captionText = carousel.querySelector('.peek-copy-text');
     if (!viewport || !track || cards.length < 2) return;
 
     let index = 0;
@@ -92,6 +94,8 @@ function initPeekCarousels() {
       track.style.transform = `translateX(${-offset}px)`;
       if (prevBtn) prevBtn.disabled = index <= 0;
       if (nextBtn) nextBtn.disabled = index >= maxIndex;
+      if (captionTitle) captionTitle.textContent = cards[index].dataset.title || '';
+      if (captionText) captionText.textContent = cards[index].dataset.text || '';
     };
 
     prevBtn?.addEventListener('click', () => {

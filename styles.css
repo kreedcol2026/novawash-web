@@ -420,16 +420,21 @@ h2 {
   font-size: 1.02rem;
 }
 
+.peek-full-bleed .panel-content {
+  width: min(1300px, calc(100vw - 2rem));
+  max-width: none;
+}
+
 .peek-carousel {
   margin-top: 1.1rem;
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) 42px;
-  align-items: center;
-  gap: 0.7rem;
+  gap: 0.75rem;
 }
 
 .peek-viewport {
   overflow: hidden;
+  position: relative;
+  border-radius: 16px;
 }
 
 .peek-track {
@@ -440,11 +445,9 @@ h2 {
 
 .peek-card {
   flex: 0 0 min(82%, 930px);
-  border: 1px solid var(--line);
   border-radius: 16px;
   overflow: hidden;
   background: #fff;
-  box-shadow: var(--shadow);
 }
 
 .peek-card img {
@@ -455,7 +458,7 @@ h2 {
 }
 
 .peek-copy {
-  padding: 0.9rem 1rem 1rem;
+  padding: 0.3rem 0.2rem 0;
 }
 
 .peek-copy h3 {
@@ -470,15 +473,27 @@ h2 {
 }
 
 .peek-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
   width: 42px;
   height: 42px;
   border-radius: 10px;
   border: 1px solid var(--line);
-  background: #fff;
+  background: rgba(255, 255, 255, 0.92);
   color: #293444;
   font-size: 1.35rem;
   line-height: 1;
   cursor: pointer;
+}
+
+.peek-arrow.prev {
+  left: 0.6rem;
+}
+
+.peek-arrow.next {
+  right: 0.6rem;
 }
 
 .peek-arrow:hover {
@@ -2316,8 +2331,7 @@ tr.is-editing .bo-edit-field {
   }
 
   .peek-carousel {
-    grid-template-columns: 34px minmax(0, 1fr) 34px;
-    gap: 0.45rem;
+    gap: 0.55rem;
   }
 
   .peek-card {
@@ -2328,6 +2342,14 @@ tr.is-editing .bo-edit-field {
     width: 34px;
     height: 34px;
     font-size: 1.08rem;
+  }
+
+  .peek-arrow.prev {
+    left: 0.42rem;
+  }
+
+  .peek-arrow.next {
+    right: 0.42rem;
   }
 
   .bo-metrics {
