@@ -20,6 +20,7 @@ let remoteHydrationPromise = null;
 let hasUnsyncedLocalChanges = false;
 let remoteSaveInFlight = false;
 let pendingRemoteState = null;
+let pendingRemoteOptions = { allowUserShrink: false };
 
 const header = document.querySelector('.site-header');
 const revealEls = document.querySelectorAll('.reveal');
@@ -260,20 +261,34 @@ async function flushPendingRemoteState() {
   remoteSaveInFlight = true;
 
   const payload = pendingRemoteState;
+  const saveOptions = pendingRemoteOptions || { allowUserShrink: false };
   pendingRemoteState = null;
+  pendingRemoteOptions = { allowUserShrink: false };
 
   try {
-    // Anti-borrado: evita subir un estado vacio si en remoto ya existen usuarios.
-    const payloadUsers = Array.isArray(payload?.users) ? payload.users.length : 0;
-    if (payloadUsers === 0) {
-      const remoteSnapshot = await fetchRemoteStateAsync();
-      const remoteUsers = Array.isArray(remoteSnapshot?.users) ? remoteSnapshot.users.length : 0;
-      if (remoteUsers > 0) {
-        appDataCache = remoteSnapshot;
-        writeLocalState(remoteSnapshot);
-        hasUnsyncedLocalChanges = false;
-        return;
-      }
+    // Anti-borrado robusto: evita sobreescribir usuarios por estado local desactualizado.
+    const remoteSnapshot = await fetchRemoteStateAsync();
+    const payloadUsers = Array.isArray(payload?.users) ? payload.users : [];
+    const remoteUsers = Array.isArray(remoteSnapshot?.users) ? remoteSnapshot.users : [];
+    const payloadCount = payloadUsers.length;
+    const remoteCount = remoteUsers.length;
+
+    if (!saveOptions.allowUserShrink && remoteCount > payloadCount) {
+      const payloadById = new Map(payloadUsers.map((u) => [String(u.userId || ''), u]));
+      const mergedUsers = [...payloadUsers];
+      remoteUsers.forEach((remoteUser) => {
+        const key = String(remoteUser.userId || '');
+        if (!payloadById.has(key)) mergedUsers.push(remoteUser);
+      });
+      payload.users = mergedUsers;
+    }
+
+    // Si el payload venía vacío y remoto tiene usuarios, evita vaciar remoto.
+    if (!saveOptions.allowUserShrink && payloadCount === 0 && remoteCount > 0) {
+      appDataCache = remoteSnapshot;
+      writeLocalState(remoteSnapshot);
+      hasUnsyncedLocalChanges = false;
+      return;
     }
 
     const response = await fetch(APPS_SCRIPT_URL, {
@@ -320,6 +335,7 @@ async function flushPendingRemoteState() {
 
 function pushRemoteState(data) {
   pendingRemoteState = normalizeAppState(data);
+  pendingRemoteOptions = { allowUserShrink: false };
   flushPendingRemoteState();
 }
 
@@ -342,12 +358,16 @@ function getData() {
   return appDataCache;
 }
 
-function saveData(data) {
+function saveData(data, options = {}) {
   appDataCache = normalizeAppState(data);
   appDataCache.stateUpdatedAt = Date.now();
   hasUnsyncedLocalChanges = true;
   writeLocalState(appDataCache);
-  pushRemoteState(appDataCache);
+  pendingRemoteState = normalizeAppState(appDataCache);
+  pendingRemoteOptions = {
+    allowUserShrink: Boolean(options.allowUserShrink),
+  };
+  flushPendingRemoteState();
 }
 
 async function saveDataAndSync(data, timeoutMs = 7000) {
@@ -2296,7 +2316,7 @@ function initBackofficePage() {
         data.currentUserEmail = null;
       }
       addAuditEntry(data, BO_USER, removedEmail, 'delete_user', 'Usuario eliminado desde backoffice.');
-      saveData(data);
+      saveData(data, { allowUserShrink: true });
       setResult(boPanelMessage, 'Usuario eliminado correctamente.', 'success');
       closeAllRowMenus();
       render();
