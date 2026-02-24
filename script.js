@@ -11,6 +11,7 @@ const WELCOME_BONUS = 10000;
 const LOYALTY_GOAL = 10;
 const LOYALTY_BONUS = 25000;
 const DEFAULT_PROFILE_PHOTO = 'Imagenes/icon-user.webp';
+const CLIENT_TOAST_MS = 3500;
 const BO_SESSION_KEY = 'novaWashBackofficeSession';
 const BO_USER = 'personal';
 const BO_PASS = 'NovaWashAdmin2026';
@@ -1052,7 +1053,8 @@ function initDashboardPage() {
 
   function showQrToast(title, message) {
     if (!qrToast || !qrToastText) return;
-    if (qrToastTitle) qrToastTitle.textContent = title || 'Notificación';
+    const titleEl = qrToastTitle || qrToast.querySelector('strong');
+    if (titleEl) titleEl.textContent = title || 'Notificación';
     qrToastText.textContent = message;
     qrToast.hidden = false;
     qrToast.classList.remove('is-exit');
@@ -1062,7 +1064,7 @@ function initDashboardPage() {
     if (qrNoticeTimeout) clearTimeout(qrNoticeTimeout);
     qrNoticeTimeout = setTimeout(() => {
       hideQrToast();
-    }, 10000);
+    }, CLIENT_TOAST_MS);
   }
 
   function showLatestClientHistoryToast(data, user) {
