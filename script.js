@@ -999,7 +999,7 @@ function initDashboardPage() {
   let wompiTopUpBusy = false;
   const historyPageSize = 30;
   let historyPage = 1;
-  let lastQrNoticeAt = '';
+  let lastClientToastKey = '';
   let qrNoticeTimeout = null;
   let qrToastHideAnimTimeout = null;
 
@@ -1034,7 +1034,7 @@ function initDashboardPage() {
     dashboardSyncInterval = setInterval(() => {
       if (document.hidden) return;
       syncDashboardFromRemote();
-    }, 2500);
+    }, 1000);
     syncDashboardFromRemote();
   }
 
@@ -1063,30 +1063,28 @@ function initDashboardPage() {
     }, 10000);
   }
 
-  function showLatestQrNotice(data, user) {
-    if (!data || !user) return;
-    const logs = Array.isArray(data.auditLogs) ? data.auditLogs : [];
-    const targetEmail = String(user.email || '').toLowerCase();
-    const qrLog = [...logs]
-      .reverse()
-      .find((log) => {
-        if (!log || !log.at) return false;
-        const action = String(log.action || '').toLowerCase();
-        const email = String(log.targetEmail || '').toLowerCase();
-        return email === targetEmail && (action === 'kiosk_qr_wash' || action === 'qr_wash_operation');
-      });
+  function showLatestClientHistoryToast(user) {
+    if (!user || !Array.isArray(user.history) || !user.history.length) return;
+    const latest = [...user.history]
+      .sort((a, b) => (String(a.date || '') < String(b.date || '') ? 1 : -1))[0];
+    if (!latest) return;
 
-    if (!qrLog) return;
-    if (lastQrNoticeAt === String(qrLog.at)) return;
-    lastQrNoticeAt = String(qrLog.at);
+    const type = String(latest.type || '').toLowerCase();
+    const text = String(latest.detail || '');
+    const shouldToast =
+      ['lavada', 'pago', 'bono', 'plan', 'renovacion'].includes(type) ||
+      /lavada|recarga|bono|premium|descuento/i.test(text);
+    if (!shouldToast) return;
 
-    const amount = Number(qrLog.amount) || 0;
-    const plateMatch = String(qrLog.detail || '').match(/placa\s+([A-Z0-9-]+)/i);
-    const plate = plateMatch ? plateMatch[1] : (user.plate || '-');
-    const amountText = amount > 0 ? formatCOP(amount) : 'valor aplicado';
-    showQrToast(
-      `Débito ${amountText} a placa ${plate}. Saldo: ${formatCOP(user.wallet || 0)}. Lavadas disponibles: ${user.plan?.washesRemaining || 0}.`
-    );
+    const key = `${latest.date || ''}|${text}`;
+    if (lastClientToastKey === key) return;
+    lastClientToastKey = key;
+
+    let message = text;
+    if (/lavada|descuento aplicado/i.test(text)) {
+      message = `${text} Saldo: ${formatCOP(user.wallet || 0)}. Lavadas disponibles: ${user.plan?.washesRemaining || 0}.`;
+    }
+    showQrToast(message);
   }
 
   function openWompiTopUpModal(defaultAmount = 50000) {
@@ -1292,7 +1290,7 @@ function initDashboardPage() {
       }
     }
 
-    showLatestQrNotice(data, user);
+    showLatestClientHistoryToast(user);
     setProfileEditMode(false);
     renderHistory(user);
     startDashboardSync();
