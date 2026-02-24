@@ -964,6 +964,7 @@ function initDashboardPage() {
   const profileMessage = document.querySelector('#profileMessage');
   const userQrImage = document.querySelector('#userQrImage');
   const qrToast = document.querySelector('#qrToast');
+  const qrToastTitle = document.querySelector('#qrToastTitle');
   const qrToastText = document.querySelector('#qrToastText');
   const userQrCode = document.querySelector('#userQrCode');
   const loyaltyGrid = document.querySelector('#loyaltyGrid');
@@ -1034,7 +1035,7 @@ function initDashboardPage() {
     dashboardSyncInterval = setInterval(() => {
       if (document.hidden) return;
       syncDashboardFromRemote();
-    }, 1000);
+    }, 700);
     syncDashboardFromRemote();
   }
 
@@ -1049,8 +1050,9 @@ function initDashboardPage() {
     }, 360);
   }
 
-  function showQrToast(message) {
+  function showQrToast(title, message) {
     if (!qrToast || !qrToastText) return;
+    if (qrToastTitle) qrToastTitle.textContent = title || 'Notificación';
     qrToastText.textContent = message;
     qrToast.hidden = false;
     qrToast.classList.remove('is-exit');
@@ -1063,28 +1065,70 @@ function initDashboardPage() {
     }, 10000);
   }
 
-  function showLatestClientHistoryToast(user) {
-    if (!user || !Array.isArray(user.history) || !user.history.length) return;
-    const latest = [...user.history]
-      .sort((a, b) => (String(a.date || '') < String(b.date || '') ? 1 : -1))[0];
-    if (!latest) return;
+  function showLatestClientHistoryToast(data, user) {
+    if (!user) return;
 
-    const type = String(latest.type || '').toLowerCase();
-    const text = String(latest.detail || '');
-    const shouldToast =
-      ['lavada', 'pago', 'bono', 'plan', 'renovacion'].includes(type) ||
-      /lavada|recarga|bono|premium|descuento/i.test(text);
-    if (!shouldToast) return;
+    const latestHistory = Array.isArray(user.history) && user.history.length
+      ? [...user.history].sort((a, b) => (String(a.date || '') < String(b.date || '') ? 1 : -1))[0]
+      : null;
 
-    const key = `${latest.date || ''}|${text}`;
+    const latestAudit = Array.isArray(data?.auditLogs)
+      ? [...data.auditLogs]
+          .reverse()
+          .find((log) => {
+            const sameClient = String(log?.targetEmail || '').toLowerCase() === String(user.email || '').toLowerCase();
+            const action = String(log?.action || '').toLowerCase();
+            return sameClient && ['kiosk_qr_insufficient_funds', 'qr_wash_failed_insufficient'].includes(action);
+          }) || null
+      : null;
+
+    let source = null;
+    const historyTime = latestHistory ? new Date(latestHistory.date || 0).getTime() : 0;
+    const auditTime = latestAudit ? new Date(latestAudit.at || 0).getTime() : 0;
+    if (latestHistory && historyTime >= auditTime) source = { kind: 'history', item: latestHistory };
+    else if (latestAudit) source = { kind: 'audit', item: latestAudit };
+    if (!source) return;
+
+    let key = '';
+    let title = 'Notificación';
+    let message = '';
+
+    if (source.kind === 'audit') {
+      const log = source.item;
+      key = `audit|${log.at || ''}|${log.action || ''}|${log.detail || ''}`;
+      title = 'Lectura Fallida';
+      message = 'Fondos insuficientes. Recarga tu cuenta para realizar el pago.';
+    } else {
+      const latest = source.item;
+      const type = String(latest.type || '').toLowerCase();
+      const text = String(latest.detail || '');
+      const shouldToast =
+        ['lavada', 'pago', 'bono', 'plan', 'renovacion'].includes(type) ||
+        /lavada|recarga|bono|premium|descuento/i.test(text);
+      if (!shouldToast) return;
+      key = `history|${latest.date || ''}|${text}`;
+
+      if (type === 'lavada' || /lavada|descuento aplicado/i.test(text)) {
+        title = 'Código Leído';
+        message = `${text} Saldo: ${formatCOP(user.wallet || 0)}. Lavadas disponibles: ${user.plan?.washesRemaining || 0}.`;
+      } else if (type === 'pago' || /recarga|wompi|efectivo/i.test(text)) {
+        title = 'Recarga Exitosa';
+        message = `${text} Saldo actual: ${formatCOP(user.wallet || 0)}. Lavadas disponibles: ${user.plan?.washesRemaining || 0}.`;
+      } else if (type === 'bono') {
+        title = 'Bono Aplicado';
+        message = `${text} Saldo actual: ${formatCOP(user.wallet || 0)}.`;
+      } else if (type === 'plan' || type === 'renovacion') {
+        title = 'Suscripción Actualizada';
+        message = text;
+      } else {
+        title = 'Notificación';
+        message = text;
+      }
+    }
+
     if (lastClientToastKey === key) return;
     lastClientToastKey = key;
-
-    let message = text;
-    if (/lavada|descuento aplicado/i.test(text)) {
-      message = `${text} Saldo: ${formatCOP(user.wallet || 0)}. Lavadas disponibles: ${user.plan?.washesRemaining || 0}.`;
-    }
-    showQrToast(message);
+    showQrToast(title, message);
   }
 
   function openWompiTopUpModal(defaultAmount = 50000) {
@@ -1290,7 +1334,7 @@ function initDashboardPage() {
       }
     }
 
-    showLatestClientHistoryToast(user);
+    showLatestClientHistoryToast(data, user);
     setProfileEditMode(false);
     renderHistory(user);
     startDashboardSync();
@@ -2473,6 +2517,17 @@ function initBackofficePage() {
     enforcePlanMode(user);
     const result = consumeWashByPlan(user, plateToUse);
     if (!result.ok) {
+      if (/saldo insuficiente/i.test(String(result.message || ''))) {
+        addAuditEntry(
+          data,
+          BO_USER,
+          user.email,
+          'qr_wash_failed_insufficient',
+          `Intento de lavada por QR operativo sin fondos suficientes para placa ${plateToUse}.`,
+          { amount: getWashUnitPriceByPlan(user) }
+        );
+        saveData(data);
+      }
       setResult(boScanMessage, result.message, 'error');
       return;
     }
@@ -3031,6 +3086,17 @@ function initKioskPage() {
     const charge = getWashUnitPriceByPlan(user);
     const result = consumeWashByPlan(user, plateToUse);
     if (!result.ok) {
+      if (/saldo insuficiente/i.test(String(result.message || ''))) {
+        addAuditEntry(
+          data,
+          'kiosk',
+          user.email,
+          'kiosk_qr_insufficient_funds',
+          `Intento de lectura en lector público sin fondos suficientes para placa ${plateToUse}.`,
+          { amount: charge }
+        );
+        saveData(data);
+      }
       kioskFeedback(result.message, 'error');
       return;
     }
