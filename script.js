@@ -139,7 +139,7 @@ if (revealEls.length) {
 }
 
 function buildDefaultData() {
-  return { users: [], currentUserEmail: null, queueNumber: 0, auditLogs: [], stateUpdatedAt: 0 };
+  return { users: [], currentUserEmail: null, queueNumber: 0, auditLogs: [], launchSubscribers: [], stateUpdatedAt: 0 };
 }
 
 function normalizeAppState(parsed) {
@@ -150,6 +150,7 @@ function normalizeAppState(parsed) {
     currentUserEmail: source.currentUserEmail || null,
     queueNumber: Number.isFinite(source.queueNumber) ? source.queueNumber : 0,
     auditLogs: Array.isArray(source.auditLogs) ? source.auditLogs : [],
+    launchSubscribers: Array.isArray(source.launchSubscribers) ? source.launchSubscribers : [],
     stateUpdatedAt,
   };
 }
@@ -291,6 +292,14 @@ async function flushPendingRemoteState() {
       hasUnsyncedLocalChanges = false;
       return;
     }
+
+    // Conserva inscripciones creadas desde otros dispositivos mientras este guardado estaba en curso.
+    const subscriberMap = new Map();
+    [...(remoteSnapshot?.launchSubscribers || []), ...(payload.launchSubscribers || [])].forEach((subscriber) => {
+      const email = String(subscriber?.email || '').trim().toLowerCase();
+      if (email) subscriberMap.set(email, { ...subscriber, email });
+    });
+    payload.launchSubscribers = [...subscriberMap.values()];
 
     const response = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
@@ -775,6 +784,8 @@ function consumeWashByPlan(user, plate) {
 function initLandingPage() {
   const arrivalForm = document.querySelector('#arrivalForm');
   const arrivalResult = document.querySelector('#arrivalResult');
+  const launchSignupForm = document.querySelector('#launchSignupForm');
+  const launchSignupMessage = document.querySelector('#launchSignupMessage');
   const signupForm = document.querySelector('#signupForm');
   const loginForm = document.querySelector('#loginForm');
   const authMessage = document.querySelector('#authMessage');
@@ -784,6 +795,61 @@ function initLandingPage() {
   const forgotEmailInput = document.querySelector('#forgotEmailInput');
   const forgotSendBtn = document.querySelector('#forgotSendBtn');
   const forgotMessage = document.querySelector('#forgotMessage');
+
+  if (launchSignupForm) {
+    launchSignupForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const email = String(new FormData(launchSignupForm).get('launchEmail') || '').trim().toLowerCase();
+      const submitBtn = launchSignupForm.querySelector('button[type="submit"]');
+      const emailIsValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+      if (!emailIsValid) {
+        setResult(launchSignupMessage, 'Ingresa un correo válido.', 'error');
+        return;
+      }
+
+      const originalText = submitBtn?.textContent || 'Quiero enterarme';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Inscribiendo...';
+      }
+      setResult(launchSignupMessage, 'Guardando tu inscripción...', 'success');
+
+      const remoteState = await fetchRemoteStateAsync();
+      const data = remoteState || getData();
+      if (!Array.isArray(data.launchSubscribers)) data.launchSubscribers = [];
+
+      const alreadySubscribed = data.launchSubscribers.some(
+        (subscriber) => String(subscriber?.email || '').trim().toLowerCase() === email
+      );
+
+      if (alreadySubscribed) {
+        appDataCache = normalizeAppState(data);
+        writeLocalState(appDataCache);
+        setResult(launchSignupMessage, 'Este correo ya está inscrito. Te avisaremos del lanzamiento.', 'success');
+      } else {
+        data.launchSubscribers.push({
+          email,
+          subscribedAt: new Date().toISOString(),
+          source: 'home_launch',
+        });
+        addAuditEntry(data, 'sitio-web', email, 'launch_signup', 'Inscripción para recibir novedades del lanzamiento.');
+        const synced = await saveDataAndSync(data, 9000);
+
+        if (synced) {
+          launchSignupForm.reset();
+          setResult(launchSignupMessage, '¡Inscripción confirmada! Te avisaremos cuando NovaWash esté listo.', 'success');
+        } else {
+          setResult(launchSignupMessage, 'Estamos guardando tu inscripción. No cierres esta página e inténtalo nuevamente en unos segundos.', 'error');
+        }
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
+    });
+  }
 
   function openForgotModal() {
     if (!forgotModal) return;

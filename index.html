@@ -16,7 +16,7 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260220f" />
+    <link rel="stylesheet" href="styles.css?v=20260716a" />
   </head>
   <body class="home-page">
     <header class="site-header" id="top">
@@ -56,6 +56,24 @@
             <li>Calidad profesional</li>
             <li>Cuidado técnico del vehículo</li>
           </ul>
+        </div>
+      </section>
+
+      <section class="launch-notice" aria-labelledby="launch-notice-title">
+        <div class="launch-notice-inner reveal">
+          <div class="launch-notice-copy">
+            <p class="launch-badge"><span aria-hidden="true"></span> Próximamente</p>
+            <h2 id="launch-notice-title">Sé de los primeros en vivir NovaWash</h2>
+            <p>Inscríbete con tu correo para conocer la fecha de lanzamiento y recibir beneficios exclusivos.</p>
+          </div>
+          <form class="launch-signup-form" id="launchSignupForm" novalidate>
+            <label class="sr-only" for="launchEmail">Correo electrónico</label>
+            <div class="launch-signup-row">
+              <input id="launchEmail" name="launchEmail" type="email" autocomplete="email" placeholder="Tu correo electrónico" required />
+              <button class="btn btn-orange" type="submit">Quiero enterarme</button>
+            </div>
+            <p class="result launch-signup-message" id="launchSignupMessage" aria-live="polite"></p>
+          </form>
         </div>
       </section>
 
@@ -304,6 +322,6 @@
       WhatsApp
     </a>
 
-    <script src="script.js?v=20260220e"></script>
+    <script src="script.js?v=20260716a"></script>
   </body>
 </html>
