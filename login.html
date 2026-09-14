@@ -16,7 +16,7 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260220a" />
+    <link rel="stylesheet" href="styles.css?v=20260914b" />
   </head>
   <body>
     <header class="site-header" id="top">
@@ -56,7 +56,13 @@
                   Contraseña
                   <span class="password-field">
                     <input id="loginPassword" name="password" type="password" autocomplete="current-password" required />
-                    <button id="toggleLoginPassword" class="password-toggle" type="button" aria-label="Mostrar contraseña" aria-pressed="false">Mostrar</button>
+                    <button id="toggleLoginPassword" class="password-toggle" type="button" aria-label="Mostrar contraseña" aria-pressed="false" title="Mostrar contraseña">
+                      <svg class="password-toggle-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path class="password-eye-shape" d="M2.2 12s3.3-5 9.8-5 9.8 5 9.8 5-3.3 5-9.8 5-9.8-5-9.8-5Z"></path>
+                        <circle class="password-eye-pupil" cx="12" cy="12" r="2.5"></circle>
+                        <path class="password-eye-slash" d="m4 4 16 16"></path>
+                      </svg>
+                    </button>
                   </span>
                 </label>
                 <button id="loginSubmitBtn" class="btn btn-dark" type="submit">Entrar al panel</button>
@@ -117,6 +123,6 @@
       <p class="copyright">Hecho por <a href="https://kreed.com.co" target="_blank" rel="noopener noreferrer">Kreed.com.co</a></p>
     </footer>
 
-    <script src="script.js?v=20260219e"></script>
+    <script src="script.js?v=20260914b"></script>
   </body>
 </html>

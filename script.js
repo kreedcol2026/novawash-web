@@ -986,8 +986,9 @@ function initLandingPage() {
     toggleLoginPassword?.addEventListener('click', () => {
       const shouldShow = loginPassword?.type === 'password';
       if (loginPassword) loginPassword.type = shouldShow ? 'text' : 'password';
-      toggleLoginPassword.textContent = shouldShow ? 'Ocultar' : 'Mostrar';
+      toggleLoginPassword.classList.toggle('is-visible', shouldShow);
       toggleLoginPassword.setAttribute('aria-label', shouldShow ? 'Ocultar contraseña' : 'Mostrar contraseña');
+      toggleLoginPassword.setAttribute('title', shouldShow ? 'Ocultar contraseña' : 'Mostrar contraseña');
       toggleLoginPassword.setAttribute('aria-pressed', shouldShow ? 'true' : 'false');
       loginPassword?.focus();
     });

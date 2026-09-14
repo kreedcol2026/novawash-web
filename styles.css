@@ -696,24 +696,54 @@ select:focus {
 
 .password-toggle {
   position: absolute;
+  z-index: 1;
   top: 50%;
   right: 0.55rem;
   transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
   border: 0;
   border-radius: 8px;
-  padding: 0.32rem 0.42rem;
+  padding: 0;
   background: #f1f4f8;
   color: #4d5d78;
   font: inherit;
-  font-size: 0.72rem;
   font-weight: 700;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .password-toggle:hover,
 .password-toggle:focus-visible {
   background: #e5eaf1;
   color: var(--text);
+}
+
+.password-toggle-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+  pointer-events: none;
+}
+
+.password-eye-pupil {
+  fill: currentColor;
+  stroke: none;
+}
+
+.password-eye-slash {
+  display: block;
+}
+
+.password-toggle.is-visible .password-eye-slash {
+  display: none;
 }
 
 .result {
