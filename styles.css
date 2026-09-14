@@ -684,6 +684,38 @@ select:focus {
   outline-offset: 1px;
 }
 
+.password-field {
+  position: relative;
+  display: block;
+}
+
+.password-field input {
+  width: 100%;
+  padding-right: 5.2rem;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.55rem;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 8px;
+  padding: 0.32rem 0.42rem;
+  background: #f1f4f8;
+  color: #4d5d78;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.password-toggle:hover,
+.password-toggle:focus-visible {
+  background: #e5eaf1;
+  color: var(--text);
+}
+
 .result {
   min-height: 1.2rem;
   margin-top: 0.8rem;

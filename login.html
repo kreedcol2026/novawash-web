@@ -50,13 +50,16 @@
               <form id="loginForm" class="stack-form">
                 <label>
                   Correo
-                  <input name="email" type="email" required />
+                  <input name="email" type="email" autocomplete="username" autocapitalize="off" spellcheck="false" inputmode="email" required />
                 </label>
                 <label>
                   Contraseña
-                  <input name="password" type="password" required />
+                  <span class="password-field">
+                    <input id="loginPassword" name="password" type="password" autocomplete="current-password" required />
+                    <button id="toggleLoginPassword" class="password-toggle" type="button" aria-label="Mostrar contraseña" aria-pressed="false">Mostrar</button>
+                  </span>
                 </label>
-                <button class="btn btn-dark" type="submit">Entrar al panel</button>
+                <button id="loginSubmitBtn" class="btn btn-dark" type="submit">Entrar al panel</button>
               </form>
               <button id="forgotPasswordBtn" class="forgot-link-btn" type="button">Olvidé mi contraseña</button>
               <p id="authMessage" class="result" aria-live="polite"></p>

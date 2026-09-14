@@ -13,6 +13,7 @@ const LOYALTY_BONUS = 25000;
 const DEFAULT_PROFILE_PHOTO = 'Imagenes/icon-user.webp';
 const CLIENT_TOAST_MS = 3500;
 const BO_SESSION_KEY = 'novaWashBackofficeSession';
+const CLIENT_SESSION_KEY = 'novaWashClientSession';
 const BO_USER = 'personal';
 const BO_PASS = 'NovaWashAdmin2026';
 let appDataCache = null;
@@ -155,6 +156,30 @@ function normalizeAppState(parsed) {
   };
 }
 
+function readClientSessionEmail() {
+  try {
+    return String(localStorage.getItem(CLIENT_SESSION_KEY) || '').trim().toLowerCase() || null;
+  } catch {
+    return null;
+  }
+}
+
+function writeClientSessionEmail(email) {
+  try {
+    localStorage.setItem(CLIENT_SESSION_KEY, String(email || '').trim().toLowerCase());
+  } catch {
+    // No-op.
+  }
+}
+
+function clearClientSession() {
+  try {
+    localStorage.removeItem(CLIENT_SESSION_KEY);
+  } catch {
+    // No-op.
+  }
+}
+
 function readLocalState() {
   try {
     const raw = localStorage.getItem(APP_KEY);
@@ -190,6 +215,19 @@ async function fetchRemoteStateAsync() {
   } finally {
     clearTimeout(timeoutId);
   }
+}
+
+async function getAuthStateAsync() {
+  const remote = await fetchRemoteStateAsync();
+  if (remote) {
+    remote.currentUserEmail = null;
+    appDataCache = remote;
+    remoteStateLoaded = true;
+    writeLocalState(remote);
+    return { data: remote, remoteAvailable: true };
+  }
+
+  return { data: getData(), remoteAvailable: false };
 }
 
 async function postAppsAction(action, payload = {}) {
@@ -249,6 +287,7 @@ function hydrateRemoteStateInBackground() {
       const localVersion = Number(local.stateUpdatedAt) || 0;
       if (remoteVersion <= localVersion) return;
 
+      remote.currentUserEmail = null;
       appDataCache = remote;
       writeLocalState(remote);
       window.dispatchEvent(new CustomEvent('nova:data-hydrated'));
@@ -287,6 +326,7 @@ async function flushPendingRemoteState() {
 
     // Si el payload venía vacío y remoto tiene usuarios, evita vaciar remoto.
     if (!saveOptions.allowUserShrink && payloadCount === 0 && remoteCount > 0) {
+      remoteSnapshot.currentUserEmail = null;
       appDataCache = remoteSnapshot;
       writeLocalState(remoteSnapshot);
       hasUnsyncedLocalChanges = false;
@@ -301,6 +341,10 @@ async function flushPendingRemoteState() {
     });
     payload.launchSubscribers = [...subscriberMap.values()];
 
+    const remotePayload = normalizeAppState(payload);
+    // La sesión es propia de cada navegador; nunca debe quedar compartida en Sheets.
+    remotePayload.currentUserEmail = null;
+
     const response = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       mode: 'cors',
@@ -309,7 +353,7 @@ async function flushPendingRemoteState() {
       },
       body: JSON.stringify({
         action: 'saveState',
-        data: normalizeAppState(payload),
+        data: remotePayload,
       }),
     });
 
@@ -566,8 +610,9 @@ function syncAvailableWashes(user) {
 }
 
 function getCurrentUser(data) {
-  if (!data.currentUserEmail) return null;
-  const user = findUserByEmail(data, data.currentUserEmail);
+  const sessionEmail = readClientSessionEmail();
+  if (!sessionEmail) return null;
+  const user = findUserByEmail(data, sessionEmail);
   if (!user) return null;
   Object.assign(user, normalizeUser(user));
   return user;
@@ -790,6 +835,9 @@ function initLandingPage() {
   const loginForm = document.querySelector('#loginForm');
   const authMessage = document.querySelector('#authMessage');
   const forgotPasswordBtn = document.querySelector('#forgotPasswordBtn');
+  const loginPassword = document.querySelector('#loginPassword');
+  const toggleLoginPassword = document.querySelector('#toggleLoginPassword');
+  const loginSubmitBtn = document.querySelector('#loginSubmitBtn');
   const forgotModal = document.querySelector('#forgotModal');
   const forgotForm = document.querySelector('#forgotForm');
   const forgotEmailInput = document.querySelector('#forgotEmailInput');
@@ -919,7 +967,8 @@ function initLandingPage() {
       syncAvailableWashes(user);
       addHistory(user, `Bono de bienvenida aplicado por ${formatCOP(WELCOME_BONUS)}.`, 'bono');
       data.users.push(user);
-      data.currentUserEmail = email;
+      writeClientSessionEmail(email);
+      data.currentUserEmail = null;
       setResult(authMessage, 'Creando cuenta y guardando en servidor...', 'success');
       const synced = await saveDataAndSync(data, 9000);
       if (!synced) {
@@ -934,20 +983,48 @@ function initLandingPage() {
   }
 
   if (loginForm) {
+    toggleLoginPassword?.addEventListener('click', () => {
+      const shouldShow = loginPassword?.type === 'password';
+      if (loginPassword) loginPassword.type = shouldShow ? 'text' : 'password';
+      toggleLoginPassword.textContent = shouldShow ? 'Ocultar' : 'Mostrar';
+      toggleLoginPassword.setAttribute('aria-label', shouldShow ? 'Ocultar contraseña' : 'Mostrar contraseña');
+      toggleLoginPassword.setAttribute('aria-pressed', shouldShow ? 'true' : 'false');
+      loginPassword?.focus();
+    });
+
     loginForm.addEventListener('submit', async (event) => {
       event.preventDefault();
       const fd = new FormData(loginForm);
       const email = String(fd.get('email') || '').trim().toLowerCase();
       const password = String(fd.get('password') || '').trim();
 
-      const data = getData();
-      const user = data.users.find((u) => u.email === email && u.password === password);
+      if (loginSubmitBtn) {
+        loginSubmitBtn.disabled = true;
+        loginSubmitBtn.textContent = 'Validando...';
+      }
+      setResult(authMessage, 'Validando tus datos...', 'success');
+
+      const { data, remoteAvailable } = await getAuthStateAsync();
+      const user = data.users.find(
+        (u) => String(u.email || '').trim().toLowerCase() === email && String(u.password || '').trim() === password
+      );
       if (!user) {
-        setResult(authMessage, 'Correo o contraseña inválidos.', 'error');
+        setResult(
+          authMessage,
+          !remoteAvailable && !data.users.length
+            ? 'No pudimos conectar con la base de datos. Revisa tu conexión e inténtalo de nuevo.'
+            : 'Correo o contraseña inválidos.',
+          'error'
+        );
+        if (loginSubmitBtn) {
+          loginSubmitBtn.disabled = false;
+          loginSubmitBtn.textContent = 'Entrar al panel';
+        }
         return;
       }
 
-      data.currentUserEmail = user.email;
+      writeClientSessionEmail(user.email);
+      data.currentUserEmail = null;
       await saveDataAndSync(data, 5000);
       setResult(authMessage, 'Sesión iniciada. Redirigiendo...', 'success');
       setTimeout(() => {
@@ -1089,6 +1166,7 @@ function initDashboardPage() {
       const remoteVersion = Number(remoteData.stateUpdatedAt) || 0;
       const localVersion = Number(localData.stateUpdatedAt) || 0;
       if (remoteVersion <= localVersion) return;
+      remoteData.currentUserEmail = null;
       appDataCache = remoteData;
       writeLocalState(remoteData);
       render();
@@ -1260,6 +1338,7 @@ function initDashboardPage() {
 
     const remote = await fetchRemoteStateAsync();
     if (remote) {
+      remote.currentUserEmail = null;
       appDataCache = remote;
       writeLocalState(remote);
       hasUnsyncedLocalChanges = false;
@@ -1469,6 +1548,7 @@ function initDashboardPage() {
     stopScanner();
     const data = getData();
     data.currentUserEmail = null;
+    clearClientSession();
     saveData(data);
     window.location.href = 'login.html';
   });
@@ -1570,6 +1650,9 @@ function initDashboardPage() {
 
     if (data.currentUserEmail && data.currentUserEmail.toLowerCase() === oldEmail) {
       data.currentUserEmail = nextEmail;
+    }
+    if (readClientSessionEmail() === oldEmail) {
+      writeClientSessionEmail(nextEmail);
     }
     addHistory(user, 'Perfil actualizado por el cliente desde panel de gestión.', 'perfil');
     saveData(data);
@@ -1833,11 +1916,12 @@ async function initWompiThankYouPage() {
 
     const remote = await fetchRemoteStateAsync();
     if (remote) {
+      remote.currentUserEmail = null;
       appDataCache = remote;
       writeLocalState(remote);
       hasUnsyncedLocalChanges = false;
       pendingRemoteState = null;
-      const currentEmail = String(remote.currentUserEmail || '').toLowerCase();
+      const currentEmail = readClientSessionEmail();
       const currentUser = remote.users.find((u) => String(u.email || '').toLowerCase() === currentEmail);
       if (amountText && currentUser) amountText.textContent = formatCOP(currentUser.wallet || 0);
     }
