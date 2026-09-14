@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="Calculadora de proyección de rentabilidad para franquicias NovaWash." />
+  <title>Proyección de Franquicia | NovaWash</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="franquicia-proyeccion.css?v=20260914f1" />
+  <script type="module" src="franquicia-proyeccion.js?v=20260914f1"></script>
+</head>
+<body>
+  <header class="fc-header">
+    <a href="index.html" class="fc-brand" aria-label="NovaWash, inicio"><img src="Imagenes/novawash-horizontal.svg" width="300" height="36" alt="NovaWash" /></a>
+    <nav aria-label="Navegación de franquicias"><a href="partners.html">Partners</a><a href="#calculadora">Proyección</a><a href="partners.html#registro" class="fc-button fc-button-orange">Agendar llamada</a></nav>
+  </header>
+
+  <main>
+    <section class="fc-hero">
+      <div class="fc-wrap fc-hero-grid">
+        <div>
+          <p class="fc-kicker">FRANQUICIA NOVAWASH</p>
+          <h1>¿Cuánto puede producir<br /><span>tu propio NovaWash?</span></h1>
+          <p>Modela una proyección mensual y anual a partir de tu terreno, líneas de lavado, volumen de vehículos y costos de operación.</p>
+          <a href="#calculadora" class="fc-button fc-button-orange">Calcular mi rentabilidad anual <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" /></svg></a>
+        </div>
+        <figure class="fc-hero-visual"><img src="Imagenes/partners-red-3d.webp" width="1024" height="1024" alt="Red conceptual de franquicias NovaWash" /><figcaption>Ilustración conceptual de expansión de la red NovaWash.</figcaption></figure>
+      </div>
+    </section>
+
+    <section class="fc-network">
+      <div class="fc-wrap fc-network-grid">
+        <div><strong>+10.000</strong><span>personas registradas en la comunidad NovaWash</span></div>
+        <div><strong>4 ciudades</strong><span>Bogotá, Chía, Cajicá y Medellín</span></div>
+        <div><strong>Pauta y red</strong><span>Apoyo comercial de NovaWash para impulsar los puntos</span></div>
+        <div><strong>Meta de referencia</strong><span>Desde 500 vehículos al mes, según capacidad y ubicación</span></div>
+      </div>
+      <p class="fc-network-note">La proyección no incluye una inversión obligatoria de pauta local para el franquiciado. El alcance comercial, inversión publicitaria y resultados dependen del plan, la ubicación y el contrato.</p>
+    </section>
+
+    <section class="fc-calculator" id="calculadora">
+      <div class="fc-wrap">
+        <div class="fc-section-heading"><p class="fc-kicker">PROYECCIÓN INTERACTIVA</p><h2>Tu punto. Tus números.</h2><p>Ajusta los campos para visualizar una estimación antes de impuestos, financiación, depreciación y contingencias.</p></div>
+        <div class="fc-calculator-grid">
+          <form class="fc-inputs" id="franchiseCalculator">
+            <fieldset>
+              <legend>1. Capacidad de tu punto</legend>
+              <div class="fc-field-grid">
+                <label>Área disponible <span>m²</span><input id="area" type="number" min="80" step="10" value="300" /></label>
+                <label>m² requeridos por línea <span>m²</span><input id="sqmPerLine" type="number" min="80" step="10" value="150" /></label>
+                <label>Líneas de lavado <span id="lineHint">máx. 2</span><input id="lines" type="number" min="1" max="2" step="1" value="2" /></label>
+                <label>Horas operativas / día <span>horas</span><input id="hours" type="number" min="1" max="24" step="1" value="10" /></label>
+                <label>Lavadas por línea / día <span id="capacityHint">cap. máx. 72</span><input id="washesPerLineDay" type="number" min="1" step="1" value="25" /></label>
+                <label>Días de operación / mes <span>días</span><input id="days" type="number" min="1" max="31" step="1" value="30" /></label>
+              </div>
+              <p class="fc-field-note">Capacidad técnica: 3 vehículos cada 25 minutos por línea. La ocupación real depende de demanda, turnos, clima y operación.</p>
+            </fieldset>
+            <fieldset>
+              <legend>2. Ventas y costos variables</legend>
+              <div class="fc-field-grid">
+                <label>Ticket promedio por lavada <span>COP</span><input id="ticket" type="number" min="10000" step="500" value="30000" /></label>
+                <label>Agua, jabón e insumos / lavada <span>COP</span><input id="consumables" type="number" min="0" step="100" value="4500" /></label>
+                <label>Sistemas de pago <span>% venta</span><input id="paymentFee" type="number" min="0" max="100" step="0.1" value="3.5" /></label>
+                <label>Comisión NovaWash <span>% venta</span><input id="novaFee" type="number" min="0" max="100" step="0.1" value="1.5" /></label>
+              </div>
+              <p class="fc-field-note">Comisiones configuradas: 3,5% de sistemas de pago + 1,5% de NovaWash = 5% sobre ventas. Puedes ajustarlas según la propuesta comercial.</p>
+            </fieldset>
+            <fieldset>
+              <legend>3. Equipo y costos mensuales</legend>
+              <div class="fc-field-grid">
+                <label>Empleados por línea <span>personas</span><input id="staffPerLine" type="number" min="0" step="1" value="3" /></label>
+                <label>Cajeros <span>personas</span><input id="cashiers" type="number" min="0" step="1" value="1" /></label>
+                <label>Costo mensual por empleado <span>COP</span><input id="staffCost" type="number" min="0" step="10000" value="2700000" /></label>
+                <label>Arriendo mensual <span>COP</span><input id="rent" type="number" min="0" step="100000" value="7000000" /></label>
+                <label>Servicios públicos <span>COP</span><input id="utilities" type="number" min="0" step="100000" value="3000000" /></label>
+                <label>Montaje estimado <span>COP</span><input id="setup" type="number" min="0" step="1000000" value="150000000" /></label>
+              </div>
+              <p class="fc-field-note">El costo laboral inicial usa un estimado editable de $2,7 M por persona (salario, auxilio y cargas aproximadas). No reemplaza una liquidación laboral.</p>
+            </fieldset>
+          </form>
+
+          <aside class="fc-results" aria-live="polite">
+            <p class="fc-kicker">RESULTADO ESTIMADO</p>
+            <div class="fc-result-primary"><span>Utilidad operativa mensual</span><strong id="monthlyProfit">$0</strong><small id="monthlyMargin">0% margen operativo estimado</small></div>
+            <div class="fc-result-grid">
+              <div><span>Vehículos al mes</span><strong id="monthlyWashes">0</strong></div>
+              <div><span>Ventas mensuales</span><strong id="monthlyRevenue">$0</strong></div>
+              <div><span>Utilidad anual</span><strong id="annualProfit">$0</strong></div>
+              <div><span>Retorno anual simple</span><strong id="annualRoi">—</strong></div>
+            </div>
+            <div class="fc-capacity-card"><div><span>Uso de capacidad</span><strong id="capacityUsage">0%</strong></div><div class="fc-bar"><i id="capacityBar"></i></div><p id="capacityCopy">—</p></div>
+            <div class="fc-breakdown">
+              <h3>Así se compone tu mes</h3>
+              <dl><div><dt>Ventas</dt><dd id="rowRevenue">$0</dd></div><div><dt>Insumos por lavada</dt><dd id="rowConsumables">− $0</dd></div><div><dt>Comisiones y pagos</dt><dd id="rowFees">− $0</dd></div><div><dt>Personal</dt><dd id="rowPayroll">− $0</dd></div><div><dt>Arriendo y servicios</dt><dd id="rowFixed">− $0</dd></div></dl>
+            </div>
+            <p class="fc-disclaimer">Esta es una herramienta de orientación, no una promesa de ventas ni de rentabilidad. Valida ubicación, licencia, impuestos, seguros, mantenimiento, nómina, demanda y condiciones de franquicia antes de decidir.</p>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="fc-next">
+      <div class="fc-wrap fc-next-inner"><div><p class="fc-kicker">SIGUIENTE PASO</p><h2>Revisemos tu terreno<br />y tu proyección.</h2><p>Agenda una conversación con NovaWash para revisar capacidad, montaje, zona y modelo de franquicia.</p></div><a class="fc-button fc-button-orange" href="partners.html#registro">Quiero hablar de mi franquicia <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" /></svg></a></div>
+    </section>
+  </main>
+
+  <footer class="fc-footer"><div class="fc-wrap"><img src="Imagenes/novawash-horizontal-light.svg" width="260" height="32" alt="NovaWash" /><p>Proyección estimada en pesos colombianos. NovaWash · 2026.</p></div></footer>
+</body>
+</html>
