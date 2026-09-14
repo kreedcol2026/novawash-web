@@ -18,7 +18,7 @@ const fixed = {
 };
 
 const scenarios = [
-  { key: 'bad', washesPerLine: 500 },
+  { key: 'bad', monthlyWashes: 2100, operators: 9 },
   { key: 'realistic', washesPerLine: 850 },
   { key: 'excellent', washesPerLine: 1200 },
 ];
@@ -35,12 +35,13 @@ function paybackLabel(months) {
   return remainingMonths ? `${years} año${years > 1 ? 's' : ''} y ${remainingMonths} meses aprox.` : `${years} año${years > 1 ? 's' : ''} aprox.`;
 }
 
-function renderScenario({ key, washesPerLine }, lines, investment, rent) {
-  const vehicles = lines * washesPerLine;
+function renderScenario({ key, washesPerLine, monthlyWashes, operators: scenarioOperators }, lines, investment, rent, monthlyCapacity) {
+  const targetWashes = monthlyWashes ?? (lines * washesPerLine);
+  const vehicles = Math.min(targetWashes, monthlyCapacity);
   const revenue = vehicles * fixed.ticket;
   const consumables = vehicles * fixed.consumables;
   const fees = revenue * fixed.feesRate;
-  const operators = lines * fixed.staffPerLine;
+  const operators = lines > 0 ? (scenarioOperators ?? (lines * fixed.staffPerLine)) : 0;
   const cashiers = lines > 0 ? Math.ceil(lines / 10) : 0;
   const payroll = (operators + cashiers) * fixed.staffCost;
   const fixedCosts = rent + fixed.utilities;
@@ -78,7 +79,7 @@ function calculate() {
   out('lines').textContent = `${integer.format(lines)} ${lines === 1 ? 'línea' : 'líneas'}`;
   out('capacityPerLine').textContent = `${integer.format(dailyPerLine)} vehículos/día por línea`;
   out('capacityTotal').textContent = `${integer.format(dailyTotal)} vehículos/día en todo el punto · ${integer.format(monthlyTotal)} al mes`;
-  scenarios.forEach((scenario) => renderScenario(scenario, lines, investment, rent));
+  scenarios.forEach((scenario) => renderScenario(scenario, lines, investment, rent, monthlyTotal));
 }
 
 function formatCopInput(input) {
