@@ -1199,7 +1199,7 @@ function initDashboardPage() {
   const dashboardPanels = [...document.querySelectorAll('[data-dashboard-panel]')];
   const dashboardTabLinks = [...document.querySelectorAll('[data-dashboard-tab-link]')];
 
-  function setDashboardTab(tabName, updateHash = true) {
+  function setDashboardTab(tabName, updateHash = true, scrollToPanel = false) {
     const nextTab = dashboardPanels.some((panel) => panel.dataset.dashboardPanel === tabName) ? tabName : 'inicio';
     dashboardTabs.forEach((tab) => {
       const active = tab.dataset.dashboardTab === nextTab;
@@ -1216,6 +1216,12 @@ function initDashboardPage() {
     if (updateHash) {
       const hash = nextTab === 'inicio' ? '#dashboardTabs' : `#${nextTab}`;
       window.history.replaceState({}, document.title, `${window.location.pathname}${window.location.search}${hash}`);
+    }
+    if (scrollToPanel) {
+      const target = dashboardPanels.find((panel) => panel.dataset.dashboardPanel === nextTab);
+      window.setTimeout(() => {
+        target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 0);
     }
   }
 
@@ -1235,12 +1241,12 @@ function initDashboardPage() {
     });
   });
   document.querySelectorAll('[data-dashboard-tab-target]').forEach((button) => {
-    button.addEventListener('click', () => setDashboardTab(button.dataset.dashboardTabTarget));
+    button.addEventListener('click', () => setDashboardTab(button.dataset.dashboardTabTarget, true, true));
   });
   dashboardTabLinks.forEach((link) => {
     link.addEventListener('click', (event) => {
       event.preventDefault();
-      setDashboardTab(link.dataset.dashboardTabLink);
+      setDashboardTab(link.dataset.dashboardTabLink, true, true);
     });
   });
   const initialDashboardTab = window.location.hash.replace('#', '') || 'inicio';
@@ -1313,7 +1319,9 @@ function initDashboardPage() {
     if (!user) return;
 
     const latestHistory = Array.isArray(user.history) && user.history.length
-      ? [...user.history].sort((a, b) => (String(a.date || '') < String(b.date || '') ? 1 : -1))[0]
+      ? [...user.history]
+          .filter((item) => !/renovación automática premium aplicada/i.test(String(item?.detail || '')))
+          .sort((a, b) => (String(a.date || '') < String(b.date || '') ? 1 : -1))[0]
       : null;
 
     const latestAudit = Array.isArray(data?.auditLogs)

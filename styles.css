@@ -3031,6 +3031,10 @@ tr.is-editing .bo-edit-field {
   animation: portalPanelIn 0.24s ease both;
 }
 
+.dashboard-tab-panel[hidden] {
+  display: none !important;
+}
+
 @keyframes portalPanelIn {
   from { opacity: 0; transform: translateY(5px); }
   to { opacity: 1; transform: none; }
@@ -3135,6 +3139,10 @@ tr.is-editing .bo-edit-field {
   line-height: 1.4;
 }
 
+.subscription-renewal-notice[hidden] {
+  display: none !important;
+}
+
 .subscription-renewal-notice strong,
 .payment-rule strong {
   color: #c4540d;
@@ -3156,6 +3164,10 @@ tr.is-editing .bo-edit-field {
 }
 
 @media (max-width: 700px) {
+  .dashboard-page .section {
+    padding-top: 4rem;
+  }
+
   .dashboard-page,
   .dashboard-page .manage,
   .dashboard-page .panel-content,
@@ -3171,10 +3183,27 @@ tr.is-editing .bo-edit-field {
     padding: 0.75rem;
   }
 
+  .dashboard-tabs {
+    position: sticky;
+    top: 64px;
+    z-index: 25;
+    margin: -0.75rem -0.75rem 0.7rem;
+    padding: 0.3rem 0.45rem;
+    border-right: 0;
+    border-left: 0;
+    border-radius: 0;
+    box-shadow: 0 8px 18px rgba(25, 33, 43, 0.08);
+  }
+
   .dashboard-heading {
     align-items: flex-start;
     flex-direction: column;
     gap: 0.55rem;
+    padding-top: 0.1rem;
+  }
+
+  .dashboard-heading .portal-subtitle {
+    display: none;
   }
 
   .dashboard-heading .dashboard-top {
@@ -3183,8 +3212,11 @@ tr.is-editing .bo-edit-field {
   }
 
   .dashboard-hero {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
     border-radius: 18px;
+    padding: 0.65rem;
   }
 
   .dashboard-hero-copy,
@@ -3194,7 +3226,7 @@ tr.is-editing .bo-edit-field {
   }
 
   .dashboard-hero-copy {
-    padding: 0.45rem 0.35rem 0.25rem;
+    display: none;
   }
 
   .dashboard-hero-copy h3 {

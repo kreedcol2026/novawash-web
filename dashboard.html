@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260914c" />
+    <link rel="stylesheet" href="styles.css?v=20260914e" />
   </head>
   <body>
     <header class="site-header scrolled">
@@ -42,6 +42,14 @@
           </article>
 
           <article id="dashboard" class="dashboard" hidden>
+            <nav id="dashboardTabs" class="dashboard-tabs" role="tablist" aria-label="Secciones de tu portal">
+              <button class="dashboard-tab is-active" type="button" role="tab" data-dashboard-tab="inicio" aria-selected="true">Inicio</button>
+              <button class="dashboard-tab" type="button" role="tab" data-dashboard-tab="suscripcion" aria-selected="false">Suscripción</button>
+              <button class="dashboard-tab" type="button" role="tab" data-dashboard-tab="pagos" aria-selected="false">Pagos</button>
+              <button class="dashboard-tab" type="button" role="tab" data-dashboard-tab="perfil" aria-selected="false">Perfil</button>
+              <button class="dashboard-tab" type="button" role="tab" data-dashboard-tab="historial" aria-selected="false">Histórico</button>
+            </nav>
+
             <div class="dashboard-heading">
               <div class="portal-title-wrap">
                 <h2 class="portal-title">Tu portal NovaWash</h2>
@@ -95,14 +103,6 @@
                 <p id="loyaltyProgressText" class="muted-note">0 de 10 lavadas para el próximo bono.</p>
               </section>
             </section>
-
-            <nav id="dashboardTabs" class="dashboard-tabs" role="tablist" aria-label="Secciones de tu portal">
-              <button class="dashboard-tab is-active" type="button" role="tab" data-dashboard-tab="inicio" aria-selected="true">Inicio</button>
-              <button class="dashboard-tab" type="button" role="tab" data-dashboard-tab="suscripcion" aria-selected="false">Suscripción</button>
-              <button class="dashboard-tab" type="button" role="tab" data-dashboard-tab="pagos" aria-selected="false">Pagos</button>
-              <button class="dashboard-tab" type="button" role="tab" data-dashboard-tab="perfil" aria-selected="false">Perfil</button>
-              <button class="dashboard-tab" type="button" role="tab" data-dashboard-tab="historial" aria-selected="false">Histórico</button>
-            </nav>
 
             <div class="dashboard-panels">
               <section class="dashboard-tab-panel dashboard-home-panel" data-dashboard-panel="inicio" role="tabpanel">
@@ -211,6 +211,6 @@
       </section>
     </main>
 
-    <script src="script.js?v=20260914c"></script>
+    <script src="script.js?v=20260914e"></script>
   </body>
 </html>
