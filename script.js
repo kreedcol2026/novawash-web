@@ -1198,9 +1198,28 @@ function initDashboardPage() {
   const dashboardTabs = [...document.querySelectorAll('[data-dashboard-tab]')];
   const dashboardPanels = [...document.querySelectorAll('[data-dashboard-panel]')];
   const dashboardTabLinks = [...document.querySelectorAll('[data-dashboard-tab-link]')];
+  const tabIcons = {
+    inicio: '<path d="m3 10 9-7 9 7v10H3Z"/><path d="M9 20v-7h6v7"/>',
+    suscripcion: '<rect x="4" y="4" width="16" height="17" rx="3"/><path d="M8 2v4m8-4v4M4 10h16m-12 5 3 3 5-5"/>',
+    pagos: '<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h3"/>',
+    perfil: '<circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>',
+    historial: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  };
+  dashboardTabs.forEach((tab) => {
+    const name = tab.dataset.dashboardTab;
+    const label = tab.textContent;
+    tab.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${tabIcons[name] || ''}</svg><span>${label}</span>`;
+    tab.id = `tab-${name}`;
+    tab.setAttribute('aria-controls', `panel-${name}`);
+    const panel = dashboardPanels.find((entry) => entry.dataset.dashboardPanel === name);
+    if (panel) { panel.id = `panel-${name}`; panel.setAttribute('aria-labelledby', tab.id); }
+  });
 
   function setDashboardTab(tabName, updateHash = true, scrollToPanel = false) {
     const nextTab = dashboardPanels.some((panel) => panel.dataset.dashboardPanel === tabName) ? tabName : 'inicio';
+    dashboard.dataset.activeTab = nextTab;
+    const overview = dashboard.querySelector('.dashboard-hero');
+    if (overview) overview.hidden = nextTab !== 'inicio';
     dashboardTabs.forEach((tab) => {
       const active = tab.dataset.dashboardTab === nextTab;
       tab.classList.toggle('is-active', active);
@@ -1217,12 +1236,7 @@ function initDashboardPage() {
       const hash = nextTab === 'inicio' ? '#dashboardTabs' : `#${nextTab}`;
       window.history.replaceState({}, document.title, `${window.location.pathname}${window.location.search}${hash}`);
     }
-    if (scrollToPanel) {
-      const target = dashboardPanels.find((panel) => panel.dataset.dashboardPanel === nextTab);
-      window.setTimeout(() => {
-        target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 0);
-    }
+    if (updateHash) window.scrollTo({ top: 0, behavior: 'instant' });
   }
 
   dashboardTabs.forEach((tab) => {
@@ -1595,6 +1609,8 @@ function initDashboardPage() {
     if (dashboardAvatar) dashboardAvatar.src = photoSrc;
 
     const plan = getPlanDescriptor(user);
+    const homePlanLink = document.querySelector('#homePlanLink');
+    if (homePlanLink) homePlanLink.textContent = `${plan.name}${user.plan.renewalDue ? ' · Pendiente' : ''} ›`;
     subscriptionType.textContent = plan.name;
     subscriptionBadge.classList.remove('sub-basic', 'sub-premium');
     subscriptionBadge.classList.add(plan.badgeClass);
