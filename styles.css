@@ -228,7 +228,7 @@ a {
 .hero {
   position: relative;
   min-height: 100svh;
-  background-image: url("Imagenes/portada-novawash-2026.jpg");
+  background-image: url("Imagenes/portada.jpg");
   background-size: cover;
   background-position: center;
 }
