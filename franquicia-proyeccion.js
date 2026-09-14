@@ -27,7 +27,7 @@ const value = (id) => Math.max(0, Number(el[id].value) || 0);
 function paybackLabel(months) {
   if (!Number.isFinite(months) || months <= 0) return 'No se recupera en este escenario';
   const roundedMonths = Math.ceil(months);
-  if (roundedMonths < 12) return `${roundedMonths} meses aprox.`;
+  if (roundedMonths < 12) return `${roundedMonths} ${roundedMonths === 1 ? 'mes' : 'meses'} aprox.`;
   const years = Math.floor(roundedMonths / 12);
   const remainingMonths = roundedMonths % 12;
   return remainingMonths ? `${years} año${years > 1 ? 's' : ''} y ${remainingMonths} meses aprox.` : `${years} año${years > 1 ? 's' : ''} aprox.`;
