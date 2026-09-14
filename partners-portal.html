@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NovaWash Partners | Mi inversión</title>
+  <meta name="description" content="Acceso privado de NovaWash Partners." /><meta name="theme-color" content="#191d22" />
+  <link rel="icon" type="image/svg+xml" href="Imagenes/novawash-icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;650;700;750&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="partners-portal.css?v=20260914p1" />
+  <script defer src="partners-portal.js?v=20260914p1"></script>
+</head>
+<body>
+  <main class="portal-shell">
+    <section class="portal-login" id="partnerLoginView" aria-labelledby="portalLoginTitle">
+      <a class="portal-brand" href="partners.html" aria-label="Volver a NovaWash Partners"><img src="Imagenes/novawash-horizontal.svg" width="276" height="34" alt="NovaWash" /><span>PARTNERS</span></a>
+      <div class="login-layout">
+        <div class="login-copy"><h1 id="portalLoginTitle">Tu inversión,<br />siempre a la vista.</h1><p>Ingresa con las credenciales autorizadas por NovaWash para consultar el estado de tu participación.</p><a href="partners.html#registro">¿Aún no eres partner? Agenda una llamada.</a></div>
+        <form id="partnerLoginForm" class="login-card"><h2>Ingresa a tu panel</h2><p>Tu información se consulta de forma privada.</p><label>Correo autorizado<input name="email" type="email" autocomplete="email" required placeholder="nombre@correo.com" /></label><label>Contraseña<input name="password" type="password" autocomplete="current-password" required placeholder="••••••••" /></label><button type="submit">Ingresar al panel <span>→</span></button><p id="partnerLoginMessage" class="portal-message" aria-live="polite"></p><small>Si necesitas acceso, solicítalo a tu ejecutivo NovaWash Partners.</small></form>
+      </div>
+    </section>
+
+    <section id="partnerPortalView" class="portal-app" hidden aria-live="polite">
+      <header class="portal-topbar"><a class="portal-brand" href="partners.html"><img src="Imagenes/novawash-horizontal.svg" width="246" height="30" alt="NovaWash" /><span>PARTNERS</span></a><div class="portal-user"><span id="portalUserName">Partner</span><button id="partnerLogout" type="button">Cerrar sesión</button></div></header>
+      <div class="portal-layout">
+        <aside class="portal-nav" aria-label="Navegación del panel"><a href="#resumen" data-portal-view="resumen" aria-current="page">Resumen</a><a href="#movimientos" data-portal-view="movimientos">Movimientos</a><a href="#proyecto" data-portal-view="proyecto">Mi proyecto</a><a href="partners.html">NovaWash Partners</a><p>Información privada<br />del partner autorizado.</p></aside>
+        <main class="portal-content">
+          <div id="portalLoading" class="portal-loading">Cargando tu información...</div>
+          <p id="portalError" class="portal-error" role="alert" hidden></p>
+          <section data-portal-panel="resumen"><p class="portal-overline">NOVA WASH PARTNERS</p><h1>Hola, <span id="portalGreetingName">Partner</span>.</h1><p class="portal-intro">Este es el seguimiento de tu participación. Las cifras se actualizan desde el registro operativo autorizado.</p><div class="portal-metrics"><article><span>Capital invertido</span><strong id="metricCapital">—</strong><small id="metricProject">—</small></article><article><span>Rendimiento acumulado</span><strong id="metricReturn">—</strong><small id="metricReturnRate">—</small></article><article><span>Próximo corte</span><strong id="metricCut">—</strong><small id="metricCutNote">Sujeto al cierre del periodo.</small></article></div><section class="portal-surface"><div class="surface-heading"><div><h2>Cómo evoluciona tu rendimiento</h2><p>Acumulado informado por periodo.</p></div><span id="chartRange">Últimos 12 meses</span></div><div id="portalChart" class="portal-chart"></div></section></section>
+          <section data-portal-panel="movimientos" hidden><div class="portal-panel-heading"><div><p class="portal-overline">REGISTRO</p><h1>Movimientos</h1><p>Ingresos, distribuciones y actualizaciones registrados para tu participación.</p></div></div><section class="portal-surface portal-table-wrap"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Proyecto</th><th>Monto</th><th>Estado</th></tr></thead><tbody id="portalMovements"></tbody></table><p id="portalEmptyMovements" class="portal-empty" hidden>Aún no hay movimientos registrados.</p></section></section>
+          <section data-portal-panel="proyecto" hidden><div class="portal-panel-heading"><div><p class="portal-overline">TU PARTICIPACIÓN</p><h1>Mi proyecto</h1><p>Información registrada para tu inversión.</p></div></div><section class="portal-surface project-details"><div><span>Proyecto vinculado</span><strong id="projectName">—</strong></div><div><span>Fecha de ingreso</span><strong id="projectDate">—</strong></div><div><span>Estado de participación</span><strong id="projectStatus">—</strong></div><div><span>Capital no disponible para retiro</span><strong id="projectCapitalStatus">Consulta tu contrato</strong></div></section></section>
+        </main>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
