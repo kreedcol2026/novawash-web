@@ -52,6 +52,11 @@ function renderScenario({ key, washesPerLine }, lines, investment) {
   out(`${key}Revenue`).textContent = money(revenue);
   out(`${key}Team`).textContent = `${operators} operarios + ${cashiers} cajero${cashiers === 1 ? '' : 's'}`;
   out(`${key}Costs`).textContent = `− ${money(costs)}`;
+  out(`${key}Consumables`).textContent = `− ${money(consumables)}`;
+  out(`${key}Fees`).textContent = `− ${money(fees)}`;
+  out(`${key}Payroll`).textContent = `− ${money(payroll)}`;
+  out(`${key}Rent`).textContent = `− ${money(fixed.rent)}`;
+  out(`${key}Utilities`).textContent = `− ${money(fixed.utilities)}`;
   out(`${key}Profit`).textContent = money(profit);
   out(`${key}Annual`).textContent = money(annual);
   out(`${key}Roi`).textContent = roi === null ? 'Rentabilidad anual por definir' : `${Math.round(roi)}% retorno anual simple sobre la inversión`;
