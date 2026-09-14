@@ -16,3 +16,9 @@
 .fc-cost-breakdown{background:#fff7f1;border-bottom:1px solid #edf0f2;padding:8px 10px 7px}
 .fc-cost-breakdown p{display:flex;justify-content:space-between;gap:10px;margin:0;padding:5px 0;color:#707a85;font-size:9px;line-height:1.4}
 .fc-cost-breakdown b{color:#4a525a;white-space:nowrap}
+.fc-config-note{grid-column:1/-1;margin:2px 0 0;padding:10px 12px;border-radius:10px;background:#fff4ea;color:#89572f;font-size:10px;line-height:1.55}
+.fc-assumptions{grid-template-columns:repeat(3,1fr)!important}
+@media(max-width:900px){.fc-assumptions{grid-template-columns:repeat(2,1fr)!important}}
+.fc-investment{border:1px solid #ffe0c8;background:#fff8f2;border-radius:10px;padding:11px;margin-bottom:16px}
+.fc-investment span{margin-bottom:4px}
+.fc-investment strong{font-size:14px;color:#b64f00;letter-spacing:-.3px}
