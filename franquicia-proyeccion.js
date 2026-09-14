@@ -13,7 +13,7 @@ const fixed = {
   staffCost: 2700000,
   rentPerTenSqm: 800000,
   utilities: 2000000,
-  minutesPerVehicle: 15,
+  vehiclesPerLinePerHour: 8,
   operatingDaysPerMonth: 30,
 };
 
@@ -73,7 +73,7 @@ function calculate() {
   const lines = Math.floor(area / fixed.sqmPerLine);
   const investment = value('setup') + value('franchiseFee');
   const rent = Math.ceil(area / 10) * fixed.rentPerTenSqm;
-  const dailyPerLine = Math.floor((hours * 60) / fixed.minutesPerVehicle);
+  const dailyPerLine = hours * fixed.vehiclesPerLinePerHour;
   const dailyTotal = dailyPerLine * lines;
   const monthlyTotal = dailyTotal * fixed.operatingDaysPerMonth;
   out('lines').textContent = `${integer.format(lines)} ${lines === 1 ? 'línea' : 'líneas'}`;
