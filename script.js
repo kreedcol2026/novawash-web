@@ -14,6 +14,7 @@ const DEFAULT_PROFILE_PHOTO = 'Imagenes/icon-user.webp';
 const CLIENT_TOAST_MS = 3500;
 const BO_SESSION_KEY = 'novaWashBackofficeSession';
 const CLIENT_SESSION_KEY = 'novaWashClientSession';
+const PENDING_SUBSCRIPTION_KEY = 'novaWashPendingSubscriptionRenewal';
 const BO_USER = 'personal';
 const BO_PASS = 'NovaWashAdmin2026';
 let appDataCache = null;
@@ -588,6 +589,8 @@ function normalizeUser(user) {
       washesRemaining: Number.isFinite(plan.washesRemaining) ? plan.washesRemaining : 0,
       cycleStart: plan.cycleStart || null,
       cycleEnd: plan.cycleEnd || null,
+      renewalDue: Boolean(plan.renewalDue),
+      renewalDueAt: plan.renewalDueAt || null,
       usedPlates: Array.isArray(plan.usedPlates) ? plan.usedPlates : [],
     },
   };
@@ -604,6 +607,10 @@ function enforcePlanMode(user) {
 }
 
 function syncAvailableWashes(user) {
+  if (user.plan.mode === 'premium_monthly' && user.plan.renewalDue) {
+    user.plan.washesRemaining = 0;
+    return 0;
+  }
   const price = getWashUnitPriceByPlan(user);
   user.plan.washesRemaining = Math.max(0, Math.floor((Number(user.wallet) || 0) / price));
   return user.plan.washesRemaining;
@@ -632,14 +639,16 @@ function applyMonthlyReset(user, data = null, actor = 'sistema') {
   if (Number.isNaN(cycleEndDate.getTime())) return false;
   if (Date.now() < cycleEndDate.getTime()) return false;
 
-  user.wallet = PRICES.premiumMonthlyFee;
+  if (user.plan.renewalDue) return false;
+  user.wallet = 0;
   user.plan.usedPlates = [];
-  user.plan.cycleStart = nowISO();
-  user.plan.cycleEnd = oneMonthFromNowISO();
+  user.plan.washesRemaining = 0;
+  user.plan.renewalDue = true;
+  user.plan.renewalDueAt = nowISO();
   syncAvailableWashes(user);
   addHistory(
     user,
-    `Renovación automática Premium aplicada por ${formatCOP(PRICES.premiumMonthlyFee)}. Se reinicia saldo y cupos.`,
+    `Ciclo Premium vencido. El saldo no utilizado se cerró. Renueva por ${formatCOP(PRICES.premiumMonthlyFee)} para activar 2 lavadas.`,
     'renovacion'
   );
   if (data) {
@@ -647,9 +656,9 @@ function applyMonthlyReset(user, data = null, actor = 'sistema') {
       data,
       actor,
       user.email,
-      'subscription_renewal',
-      `Renovación premium aplicada. Nuevo saldo ${formatCOP(PRICES.premiumMonthlyFee)} y 2 lavadas disponibles.`,
-      { amount: PRICES.premiumMonthlyFee }
+      'expiry_update',
+      `Ciclo Premium vencido. Se requiere un pago exacto de ${formatCOP(PRICES.premiumMonthlyFee)} para renovar 2 lavadas.`,
+      { amount: 0 }
     );
   }
   return true;
@@ -660,7 +669,9 @@ function getPlanDescriptor(user) {
     return {
       name: 'Plan Premium',
       badgeClass: 'sub-premium',
-      status: `Descuento activo por lavada: ${formatCOP(PRICES.premiumPerWash)}.`,
+      status: user.plan.renewalDue
+        ? `Renovación pendiente: paga ${formatCOP(PRICES.premiumMonthlyFee)} para activar 2 lavadas.`
+        : `Activo: ${formatCOP(PRICES.premiumMonthlyFee)} al mes y lavadas a ${formatCOP(PRICES.premiumPerWash)}.`,
     };
   }
 
@@ -695,6 +706,8 @@ function createUser({ name, email, password }) {
       washesRemaining: 0,
       cycleStart: null,
       cycleEnd: null,
+      renewalDue: false,
+      renewalDueAt: null,
       usedPlates: [],
     },
     history: [],
@@ -786,20 +799,50 @@ function addAuditEntry(data, actor, targetEmail, action, detail, meta = {}) {
   });
 }
 
+function renewPremiumWithPayment(user, method = 'Efectivo en punto', data = null, actor = 'sistema') {
+  user.wallet = PRICES.premiumMonthlyFee;
+  user.paymentMethod = method;
+  user.plan.mode = 'premium_monthly';
+  user.plan.renewalDue = false;
+  user.plan.renewalDueAt = null;
+  user.plan.cycleStart = nowISO();
+  user.plan.cycleEnd = oneMonthFromNowISO();
+  user.plan.usedPlates = [];
+  syncAvailableWashes(user);
+  addHistory(user, `Renovación Premium pagada por ${formatCOP(PRICES.premiumMonthlyFee)}. Se activaron 2 lavadas.`, 'renovacion');
+  if (data) {
+    addAuditEntry(
+      data,
+      actor,
+      user.email,
+      'subscription_renewal',
+      `Renovación Premium confirmada por ${formatCOP(PRICES.premiumMonthlyFee)}. Se activaron 2 lavadas.`,
+      { amount: PRICES.premiumMonthlyFee, paymentMethod: method }
+    );
+  }
+}
+
 function applyRechargeToUser(user, amount) {
+  if (user.plan.mode === 'premium_monthly') {
+    if (amount !== PRICES.premiumMonthlyFee) return { ok: false, addedWashes: 0 };
+    renewPremiumWithPayment(user);
+    return { ok: true, addedWashes: user.plan.washesRemaining };
+  }
   const before = Number(user.plan?.washesRemaining) || 0;
   user.wallet += amount;
-  if (user.plan.mode === 'premium_monthly' && !user.plan.cycleEnd) {
-    user.plan.cycleStart = nowISO();
-    user.plan.cycleEnd = oneMonthFromNowISO();
-  }
   const nowAvailable = syncAvailableWashes(user);
-  return Math.max(0, nowAvailable - before);
+  return { ok: true, addedWashes: Math.max(0, nowAvailable - before) };
 }
 
 function consumeWashByPlan(user, plate) {
   enforcePlanMode(user);
   applyMonthlyReset(user);
+  if (user.plan.mode === 'premium_monthly' && user.plan.renewalDue) {
+    return {
+      ok: false,
+      message: `Tu Premium venció. Renueva por ${formatCOP(PRICES.premiumMonthlyFee)} para activar 2 lavadas, o pasa a Básico por ${formatCOP(PRICES.basicSingle)} por lavada.`,
+    };
+  }
   const charge = getWashUnitPriceByPlan(user);
   if (user.wallet < charge) {
     return { ok: false, message: `Saldo insuficiente. Se requieren ${formatCOP(charge)}.` };
@@ -1091,6 +1134,7 @@ function initDashboardPage() {
   const subscriptionBadge = document.querySelector('#subscriptionBadge');
   const subscriptionStatus = document.querySelector('#subscriptionStatus');
   const subscriptionBenefits = document.querySelector('#subscriptionBenefits');
+  const subscriptionRenewalNotice = document.querySelector('#subscriptionRenewalNotice');
   const subscriptionCycleStart = document.querySelector('#subscriptionCycleStart');
   const subscriptionCycleEnd = document.querySelector('#subscriptionCycleEnd');
   const qrStatBalance = document.querySelector('#qrStatBalance');
@@ -1123,6 +1167,7 @@ function initDashboardPage() {
 
   const logoutBtn = document.querySelector('#logoutBtn');
   const setPremiumMonthlyBtn = document.querySelector('#setPremiumMonthlyBtn');
+  const renewPremiumBtn = document.querySelector('#renewPremiumBtn');
   const cancelPremiumBtn = document.querySelector('#cancelPremiumBtn');
   const cashTopUpBtn = document.querySelector('#cashTopUpBtn');
   const bankTopUpBtn = document.querySelector('#bankTopUpBtn');
@@ -1143,11 +1188,63 @@ function initDashboardPage() {
   let dashboardSyncInterval = null;
   let dashboardSyncInFlight = false;
   let wompiTopUpBusy = false;
+  let wompiTopUpPurpose = 'topup';
   const historyPageSize = 30;
   let historyPage = 1;
   let lastClientToastKey = '';
   let qrNoticeTimeout = null;
   let qrToastHideAnimTimeout = null;
+
+  const dashboardTabs = [...document.querySelectorAll('[data-dashboard-tab]')];
+  const dashboardPanels = [...document.querySelectorAll('[data-dashboard-panel]')];
+  const dashboardTabLinks = [...document.querySelectorAll('[data-dashboard-tab-link]')];
+
+  function setDashboardTab(tabName, updateHash = true) {
+    const nextTab = dashboardPanels.some((panel) => panel.dataset.dashboardPanel === tabName) ? tabName : 'inicio';
+    dashboardTabs.forEach((tab) => {
+      const active = tab.dataset.dashboardTab === nextTab;
+      tab.classList.toggle('is-active', active);
+      tab.setAttribute('aria-selected', active ? 'true' : 'false');
+      tab.tabIndex = active ? 0 : -1;
+    });
+    dashboardPanels.forEach((panel) => {
+      panel.hidden = panel.dataset.dashboardPanel !== nextTab;
+    });
+    dashboardTabLinks.forEach((link) => {
+      link.setAttribute('aria-current', link.dataset.dashboardTabLink === nextTab ? 'page' : 'false');
+    });
+    if (updateHash) {
+      const hash = nextTab === 'inicio' ? '#dashboardTabs' : `#${nextTab}`;
+      window.history.replaceState({}, document.title, `${window.location.pathname}${window.location.search}${hash}`);
+    }
+  }
+
+  dashboardTabs.forEach((tab) => {
+    tab.addEventListener('click', () => setDashboardTab(tab.dataset.dashboardTab));
+    tab.addEventListener('keydown', (event) => {
+      if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      const index = dashboardTabs.indexOf(tab);
+      const nextIndex = event.key === 'Home'
+        ? 0
+        : event.key === 'End'
+          ? dashboardTabs.length - 1
+          : (index + (event.key === 'ArrowRight' ? 1 : -1) + dashboardTabs.length) % dashboardTabs.length;
+      dashboardTabs[nextIndex]?.focus();
+      setDashboardTab(dashboardTabs[nextIndex]?.dataset.dashboardTab || 'inicio');
+    });
+  });
+  document.querySelectorAll('[data-dashboard-tab-target]').forEach((button) => {
+    button.addEventListener('click', () => setDashboardTab(button.dataset.dashboardTabTarget));
+  });
+  dashboardTabLinks.forEach((link) => {
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      setDashboardTab(link.dataset.dashboardTabLink);
+    });
+  });
+  const initialDashboardTab = window.location.hash.replace('#', '') || 'inicio';
+  setDashboardTab(initialDashboardTab, false);
 
   function stopDashboardSync() {
     if (dashboardSyncInterval) {
@@ -1278,14 +1375,27 @@ function initDashboardPage() {
     showQrToast(title, message);
   }
 
-  function openWompiTopUpModal(defaultAmount = 50000) {
+  function openWompiTopUpModal(defaultAmount = 50000, purpose = 'topup') {
     if (!wompiTopUpModal || !wompiTopUpAmountInput) return;
+    wompiTopUpPurpose = purpose;
     wompiTopUpAmountInput.value = formatThousands(defaultAmount);
     wompiTopUpPresetBtns.forEach((btn) => {
       const value = Number(btn.dataset.amount || 0);
       btn.classList.toggle('is-active', value === Number(defaultAmount));
     });
-    if (wompiTopUpHint) wompiTopUpHint.textContent = 'Mínimo $1.000';
+    const isRenewal = purpose === 'premium_renewal';
+    wompiTopUpAmountInput.readOnly = isRenewal;
+    wompiTopUpPresetBtns.forEach((btn) => {
+      btn.hidden = isRenewal;
+    });
+    const title = document.querySelector('#wompiTopUpTitle');
+    const intro = wompiTopUpModal.querySelector('.wompi-modal-intro');
+    if (title) title.textContent = isRenewal ? 'Renovar Plan Premium' : 'Recargar con Wompi';
+    if (intro) intro.textContent = isRenewal
+      ? 'Paga exactamente $50.000 para activar las 2 lavadas de tu nuevo ciclo.'
+      : 'Ingresa el monto a recargar en tu cuenta NovaWash.';
+    if (wompiTopUpHint) wompiTopUpHint.textContent = isRenewal ? 'Monto fijo de renovación: $50.000' : 'Mínimo $1.000';
+    if (wompiTopUpConfirmBtn) wompiTopUpConfirmBtn.textContent = isRenewal ? 'Pagar renovación' : 'Continuar a Wompi';
     if (wompiTopUpLoading) wompiTopUpLoading.hidden = true;
     wompiTopUpModal.hidden = false;
     wompiTopUpModal.setAttribute('aria-hidden', 'false');
@@ -1299,6 +1409,49 @@ function initDashboardPage() {
     if (!wompiTopUpModal) return;
     wompiTopUpModal.hidden = true;
     wompiTopUpModal.setAttribute('aria-hidden', 'true');
+    wompiTopUpPurpose = 'topup';
+    wompiTopUpAmountInput.readOnly = false;
+    wompiTopUpPresetBtns.forEach((btn) => { btn.hidden = false; });
+    if (wompiTopUpConfirmBtn) wompiTopUpConfirmBtn.textContent = 'Continuar a Wompi';
+  }
+
+  function writePendingSubscriptionRenewal(user, amount) {
+    localStorage.setItem(PENDING_SUBSCRIPTION_KEY, JSON.stringify({
+      email: String(user.email || '').toLowerCase(),
+      userId: user.userId || '',
+      amount,
+      createdAt: nowISO(),
+    }));
+  }
+
+  function readPendingSubscriptionRenewal() {
+    try {
+      const raw = localStorage.getItem(PENDING_SUBSCRIPTION_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function clearPendingSubscriptionRenewal() {
+    localStorage.removeItem(PENDING_SUBSCRIPTION_KEY);
+  }
+
+  function applyConfirmedWompiRenewal(remote) {
+    const pending = readPendingSubscriptionRenewal();
+    if (!pending || Number(pending.amount) !== PRICES.premiumMonthlyFee) return false;
+    const currentEmail = readClientSessionEmail();
+    const user = remote?.users?.find((entry) => {
+      const sameEmail = String(entry.email || '').toLowerCase() === String(pending.email || currentEmail || '').toLowerCase();
+      const sameId = !pending.userId || String(entry.userId || '') === String(pending.userId);
+      return sameEmail && sameId;
+    });
+    if (!user) return false;
+    const normalized = normalizeUser(user);
+    Object.assign(user, normalized);
+    renewPremiumWithPayment(user, 'Wompi', remote, 'cliente');
+    clearPendingSubscriptionRenewal();
+    return true;
   }
 
   function clearWompiReturnParams() {
@@ -1339,11 +1492,13 @@ function initDashboardPage() {
 
     const remote = await fetchRemoteStateAsync();
     if (remote) {
+      const renewed = applyConfirmedWompiRenewal(remote);
       remote.currentUserEmail = null;
       appDataCache = remote;
       writeLocalState(remote);
       hasUnsyncedLocalChanges = false;
       pendingRemoteState = null;
+      if (renewed) saveData(remote);
     }
 
     render();
@@ -1418,7 +1573,7 @@ function initDashboardPage() {
     }
 
     Object.assign(user, normalizeUser(user));
-    const didReset = applyMonthlyReset(user);
+    const didReset = applyMonthlyReset(user, data);
     const beforeWashes = Number(user.plan?.washesRemaining) || 0;
     const nextWashes = syncAvailableWashes(user);
     if (didReset || beforeWashes !== nextWashes) {
@@ -1439,8 +1594,16 @@ function initDashboardPage() {
     if (subscriptionBenefits) {
       subscriptionBenefits.textContent =
         user.plan.mode === 'premium_monthly'
-          ? '2 lavadas mensuales, descuento por lavada y renovación automática del ciclo.'
+          ? user.plan.renewalDue
+            ? `Ciclo vencido. Paga exactamente ${formatCOP(PRICES.premiumMonthlyFee)} para activar 2 lavadas.`
+            : `2 lavadas mensuales a ${formatCOP(PRICES.premiumMonthlyFee)}. Cada lavada equivale a ${formatCOP(PRICES.premiumPerWash)}.`
           : 'Pago por uso, control total de recargas y consumo por lavada.';
+    }
+    if (subscriptionRenewalNotice) {
+      subscriptionRenewalNotice.hidden = !(user.plan.mode === 'premium_monthly' && user.plan.renewalDue);
+      subscriptionRenewalNotice.innerHTML = user.plan.renewalDue
+        ? `<strong>Renovación pendiente</strong><span>El ciclo anterior terminó y el saldo no utilizado se cerró. Paga exactamente ${formatCOP(PRICES.premiumMonthlyFee)} para activar 2 lavadas.</span>`
+        : '';
     }
     if (qrStatWashes) qrStatWashes.textContent = `${user.plan.washesRemaining}`;
     if (qrStatBalance) qrStatBalance.textContent = `${formatCOP(user.wallet)}`;
@@ -1451,6 +1614,7 @@ function initDashboardPage() {
       subscriptionCycleEnd.textContent = `${formatShortDate(user.plan.cycleEnd)}`;
     }
     if (setPremiumMonthlyBtn) setPremiumMonthlyBtn.hidden = user.plan.mode === 'premium_monthly';
+    if (renewPremiumBtn) renewPremiumBtn.hidden = !(user.plan.mode === 'premium_monthly' && user.plan.renewalDue);
     if (cancelPremiumBtn) cancelPremiumBtn.hidden = user.plan.mode !== 'premium_monthly';
 
     walletStatus.textContent = `Saldo: ${formatCOP(user.wallet)} COP`;
@@ -1556,17 +1720,26 @@ function initDashboardPage() {
 
   setPremiumMonthlyBtn?.addEventListener('click', () => {
     mutateCurrentUser((user) => {
-      if ((Number(user.wallet) || 0) < PRICES.premiumMonthlyFee) {
-        window.alert('Recarga tu saldo con al menos $50.000 para pagar la suscripción.');
+      if ((Number(user.wallet) || 0) !== PRICES.premiumMonthlyFee) {
+        window.alert('Premium requiere un pago exacto de $50.000 para activar las 2 lavadas del mes.');
         return;
       }
       user.plan.mode = 'premium_monthly';
+      user.plan.renewalDue = false;
+      user.plan.renewalDueAt = null;
       user.plan.cycleStart = nowISO();
       user.plan.cycleEnd = oneMonthFromNowISO();
       user.plan.usedPlates = [];
       syncAvailableWashes(user);
       addHistory(user, `Suscripción Premium activada por ${formatCOP(PRICES.premiumMonthlyFee)}.`, 'plan');
     });
+  });
+
+  renewPremiumBtn?.addEventListener('click', () => {
+    const data = getData();
+    const user = getCurrentUser(data);
+    if (!user || user.plan.mode !== 'premium_monthly' || !user.plan.renewalDue) return;
+    openWompiTopUpModal(PRICES.premiumMonthlyFee, 'premium_renewal');
   });
 
   cancelPremiumBtn?.addEventListener('click', () => {
@@ -1582,6 +1755,8 @@ function initDashboardPage() {
       user.plan.mode = 'basic_single';
       user.plan.cycleStart = null;
       user.plan.cycleEnd = null;
+      user.plan.renewalDue = false;
+      user.plan.renewalDueAt = null;
       user.plan.usedPlates = [];
       syncAvailableWashes(user);
       addHistory(user, 'Plan Premium cancelado. Se activa Plan Básico.', 'plan');
@@ -1680,7 +1855,11 @@ function initDashboardPage() {
   });
 
   bankTopUpBtn?.addEventListener('click', () => {
-    openWompiTopUpModal(50000);
+    const user = getCurrentUser(getData());
+    openWompiTopUpModal(
+      user?.plan?.mode === 'premium_monthly' ? PRICES.premiumMonthlyFee : 50000,
+      user?.plan?.mode === 'premium_monthly' ? 'premium_renewal' : 'topup'
+    );
   });
 
   wompiTopUpAmountInput?.addEventListener('input', () => {
@@ -1730,6 +1909,10 @@ function initDashboardPage() {
 
     const rawAmount = wompiTopUpAmountInput?.value || '';
     const amount = parseMoneyInput(rawAmount);
+    if (wompiTopUpPurpose === 'premium_renewal' && amount !== PRICES.premiumMonthlyFee) {
+      if (wompiTopUpHint) wompiTopUpHint.textContent = 'La renovación Premium exige exactamente $50.000.';
+      return;
+    }
     if (amount < 1000) {
       if (wompiTopUpHint) wompiTopUpHint.textContent = 'Ingresa un valor válido de al menos $1.000.';
       wompiTopUpAmountInput?.focus();
@@ -1752,6 +1935,9 @@ function initDashboardPage() {
       }
 
       user.paymentMethod = 'Wompi';
+      if (wompiTopUpPurpose === 'premium_renewal') {
+        writePendingSubscriptionRenewal(user, amount);
+      }
       saveData(data);
       render();
       closeWompiTopUpModal();
@@ -1917,11 +2103,33 @@ async function initWompiThankYouPage() {
 
     const remote = await fetchRemoteStateAsync();
     if (remote) {
+      const renewed = (() => {
+        const pending = (() => {
+          try {
+            const raw = localStorage.getItem(PENDING_SUBSCRIPTION_KEY);
+            return raw ? JSON.parse(raw) : null;
+          } catch {
+            return null;
+          }
+        })();
+        if (!pending || Number(pending.amount) !== PRICES.premiumMonthlyFee) return false;
+        const currentEmail = readClientSessionEmail();
+        const user = remote.users.find((entry) =>
+          String(entry.email || '').toLowerCase() === String(pending.email || currentEmail || '').toLowerCase() &&
+          (!pending.userId || String(entry.userId || '') === String(pending.userId))
+        );
+        if (!user) return false;
+        Object.assign(user, normalizeUser(user));
+        renewPremiumWithPayment(user, 'Wompi', remote, 'cliente');
+        localStorage.removeItem(PENDING_SUBSCRIPTION_KEY);
+        return true;
+      })();
       remote.currentUserEmail = null;
       appDataCache = remote;
       writeLocalState(remote);
       hasUnsyncedLocalChanges = false;
       pendingRemoteState = null;
+      if (renewed) saveData(remote);
       const currentEmail = readClientSessionEmail();
       const currentUser = remote.users.find((u) => String(u.email || '').toLowerCase() === currentEmail);
       if (amountText && currentUser) amountText.textContent = formatCOP(currentUser.wallet || 0);
@@ -2427,18 +2635,39 @@ function initBackofficePage() {
     if (btn.dataset.action === 'cash') {
       const amount = Math.max(0, parseMoneyInput(input('cashAmount')?.value || ''));
       if (amount <= 0) return;
-      const addedWashes = applyRechargeToUser(user, amount);
+      if (user.plan.mode === 'premium_monthly' && amount !== PRICES.premiumMonthlyFee) {
+        setResult(boPanelMessage, `Premium requiere un pago exacto de ${formatCOP(PRICES.premiumMonthlyFee)} para activar 2 lavadas.`, 'error');
+        return;
+      }
+      let recharge;
+      if (user.plan.mode === 'premium_monthly') {
+        renewPremiumWithPayment(user, 'Efectivo en punto', data, BO_USER);
+        addAuditEntry(
+          data,
+          BO_USER,
+          user.email,
+          'manual_cash_payment',
+          `Pago Premium en efectivo por ${formatCOP(amount)}. Se activaron 2 lavadas.`,
+          { amount, addedWashes: user.plan.washesRemaining }
+        );
+        recharge = { ok: true, addedWashes: user.plan.washesRemaining };
+      } else {
+        recharge = applyRechargeToUser(user, amount);
+      }
+      const addedWashes = recharge.addedWashes;
       user.paymentMethod = 'Efectivo en punto';
-      const suffix = addedWashes > 0 ? ` + ${addedWashes} lavadas premium.` : '';
-      addHistory(user, `Backoffice: pago en efectivo registrado por ${formatCOP(amount)}.${suffix}`, 'pago');
-      addAuditEntry(
-        data,
-        BO_USER,
-        user.email,
-        'manual_cash_payment',
-        `Recarga manual en efectivo por ${formatCOP(amount)}.${suffix}`,
-        { amount, addedWashes }
-      );
+      const suffix = addedWashes > 0 ? ` + ${addedWashes} lavadas disponibles.` : '';
+      if (user.plan.mode !== 'premium_monthly') {
+        addHistory(user, `Backoffice: pago en efectivo registrado por ${formatCOP(amount)}.${suffix}`, 'pago');
+        addAuditEntry(
+          data,
+          BO_USER,
+          user.email,
+          'manual_cash_payment',
+          `Recarga manual en efectivo por ${formatCOP(amount)}.${suffix}`,
+          { amount, addedWashes }
+        );
+      }
       saveData(data);
       const rechargeField = input('cashAmount');
       if (rechargeField) rechargeField.value = '';
@@ -2849,13 +3078,22 @@ function initBackofficePage() {
       user.wallet = Math.max(0, Number(boModalWallet?.value || 0));
       user.paymentMethod = String(boModalPaymentMethod?.value || 'Efectivo en punto');
 
+      if (user.plan.mode === 'premium_monthly' && user.wallet !== PRICES.premiumMonthlyFee) {
+        setResult(boModalMessage, `Premium requiere un saldo/pago exacto de ${formatCOP(PRICES.premiumMonthlyFee)}.`, 'error');
+        return;
+      }
+
       if (user.plan.mode === 'premium_monthly' && !user.plan.cycleEnd) {
+        user.plan.renewalDue = false;
+        user.plan.renewalDueAt = null;
         user.plan.cycleStart = nowISO();
         user.plan.cycleEnd = oneMonthFromNowISO();
       }
       if (user.plan.mode === 'basic_single') {
         user.plan.cycleStart = null;
         user.plan.cycleEnd = null;
+        user.plan.renewalDue = false;
+        user.plan.renewalDueAt = null;
         user.plan.usedPlates = [];
       }
       syncAvailableWashes(user);
@@ -3061,10 +3299,12 @@ function initBackofficePage() {
       setResult(boModalMessage, 'El cliente ya está en plan básico.', 'error');
       return;
     }
-    user.plan.mode = 'basic_single';
-    user.plan.cycleStart = null;
-    user.plan.cycleEnd = null;
-    user.plan.usedPlates = [];
+      user.plan.mode = 'basic_single';
+      user.plan.cycleStart = null;
+      user.plan.cycleEnd = null;
+      user.plan.renewalDue = false;
+      user.plan.renewalDueAt = null;
+      user.plan.usedPlates = [];
     syncAvailableWashes(user);
     addHistory(user, 'Suscripción premium cancelada desde modal de edición.', 'plan');
     addAuditEntry(data, BO_USER, user.email, 'cancel_subscription', 'Suscripción cancelada desde modal de edición.');

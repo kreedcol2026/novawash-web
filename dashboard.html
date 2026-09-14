@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260220d" />
+    <link rel="stylesheet" href="styles.css?v=20260914c" />
   </head>
   <body>
     <header class="site-header scrolled">
@@ -20,8 +20,8 @@
         <img class="logo-mark" src="Imagenes/logo_largo.png" onerror="this.onerror=null;this.src='logo-novawash.svg';" alt="Nova Wash" />
       </a>
       <nav class="main-nav" aria-label="Navegación gestión">
-        <a href="#suscripcion">Suscripción</a>
-        <a href="#historial">Histórico</a>
+        <a href="#inicio" data-dashboard-tab-link="inicio">Inicio</a>
+        <a href="#historial" data-dashboard-tab-link="historial">Histórico</a>
         <a class="mobile-only-nav-link" href="index.html">Inicio</a>
       </nav>
       <button class="menu-toggle" type="button" aria-label="Abrir menú" aria-expanded="false">
@@ -42,20 +42,34 @@
           </article>
 
           <article id="dashboard" class="dashboard" hidden>
-            <div class="portal-title-wrap">
-              <h2 class="portal-title">Tu portal Novawash</h2>
-              <p class="portal-subtitle">Aqui gestionas y admisnitras tu perfil y lavadas.</p>
-            </div>
-            <div class="dashboard-top">
-              <h3 id="welcomeUser">Hola</h3>
-              <img id="dashboardAvatar" class="dashboard-avatar" src="Imagenes/icon-user.webp" alt="Foto de perfil" />
+            <div class="dashboard-heading">
+              <div class="portal-title-wrap">
+                <h2 class="portal-title">Tu portal NovaWash</h2>
+                <p class="portal-subtitle">Aquí gestionas tu suscripción, pagos, perfil y lavadas.</p>
+              </div>
+              <div class="dashboard-top">
+                <h3 id="welcomeUser">Hola</h3>
+                <img id="dashboardAvatar" class="dashboard-avatar" src="Imagenes/icon-user.webp" alt="Foto de perfil" />
+              </div>
             </div>
 
-            <div class="dashboard-grid">
+            <section class="dashboard-hero" aria-label="Resumen de tu cuenta">
+              <div class="dashboard-hero-copy">
+                <span class="dashboard-hero-label">Tu cuenta en un vistazo</span>
+                <h3>Tu código te acompaña en cada lavado.</h3>
+                <p>Usa tu QR en la máquina NovaWash y revisa aquí tus lavadas disponibles, saldo y beneficios.</p>
+                <button class="btn btn-light dashboard-hero-action" type="button" data-dashboard-tab-target="suscripcion">Ver mi plan</button>
+              </div>
               <section class="dash-card user-qr-card">
-                <h4>Mi QR único</h4>
+                <div class="card-heading-row">
+                  <div>
+                    <span class="card-eyebrow">Acceso rápido</span>
+                    <h4>Mi QR único</h4>
+                  </div>
+                  <span class="qr-live-dot">Activo</span>
+                </div>
                 <img id="userQrImage" class="user-qr-image" alt="QR único del cliente" />
-                <p class="user-qr-note user-qr-note-strong">Escanea el Código en la Maquina de Novawash</p>
+                <p class="user-qr-note user-qr-note-strong">Escanea este código en la máquina NovaWash</p>
                 <p id="userQrCode" class="user-qr-code"></p>
                 <div class="qr-stats">
                   <article class="qr-stat">
@@ -68,112 +82,90 @@
                   </article>
                 </div>
               </section>
-
               <section class="dash-card loyalty-card">
-                <h4>Bono por fidelidad</h4>
+                <div class="card-heading-row">
+                  <div>
+                    <span class="card-eyebrow">Beneficio NovaWash</span>
+                    <h4>Bono por fidelidad</h4>
+                  </div>
+                  <span class="loyalty-badge">$25.000</span>
+                </div>
                 <p class="muted-note">Por cada 10 lavadas, recibes un bono de $25.000 en tu cuenta.</p>
                 <div id="loyaltyGrid" class="loyalty-grid" aria-label="Progreso de fidelidad"></div>
                 <p id="loyaltyProgressText" class="muted-note">0 de 10 lavadas para el próximo bono.</p>
               </section>
+            </section>
 
-              <section class="dash-card" id="suscripcion">
-                <h4>Tipo de suscripción</h4>
-                <div id="subscriptionBadge" class="sub-badge sub-basic">
-                  <span class="sub-icon"></span>
-                  <strong id="subscriptionType">Básico</strong>
+            <nav id="dashboardTabs" class="dashboard-tabs" role="tablist" aria-label="Secciones de tu portal">
+              <button class="dashboard-tab is-active" type="button" role="tab" data-dashboard-tab="inicio" aria-selected="true">Inicio</button>
+              <button class="dashboard-tab" type="button" role="tab" data-dashboard-tab="suscripcion" aria-selected="false">Suscripción</button>
+              <button class="dashboard-tab" type="button" role="tab" data-dashboard-tab="pagos" aria-selected="false">Pagos</button>
+              <button class="dashboard-tab" type="button" role="tab" data-dashboard-tab="perfil" aria-selected="false">Perfil</button>
+              <button class="dashboard-tab" type="button" role="tab" data-dashboard-tab="historial" aria-selected="false">Histórico</button>
+            </nav>
+
+            <div class="dashboard-panels">
+              <section class="dashboard-tab-panel dashboard-home-panel" data-dashboard-panel="inicio" role="tabpanel">
+                <div class="dashboard-home-copy">
+                  <span class="card-eyebrow">Bienvenido a tu espacio</span>
+                  <h3>Todo lo que necesitas para cuidar tu vehículo.</h3>
+                  <p>Consulta tu plan, revisa tus pagos, actualiza tus datos y sigue tu progreso de fidelidad desde un solo lugar.</p>
                 </div>
-                <div class="sub-details">
-                  <p class="sub-detail-row">
-                    <strong class="sub-detail-label">Estado:</strong>
-                    <span id="subscriptionStatus" class="sub-detail-value">Sin suscripción activa.</span>
-                  </p>
-                  <p class="sub-detail-row">
-                    <strong class="sub-detail-label">Beneficios:</strong>
-                    <span id="subscriptionBenefits" class="sub-detail-value">Cobro por evento.</span>
-                  </p>
-                  <p class="sub-detail-row">
-                    <strong class="sub-detail-label">Inicio:</strong>
-                    <span id="subscriptionCycleStart" class="sub-detail-value">-</span>
-                  </p>
-                  <p class="sub-detail-row">
-                    <strong class="sub-detail-label">Vencimiento:</strong>
-                    <span id="subscriptionCycleEnd" class="sub-detail-value">-</span>
-                  </p>
+                <div class="dashboard-shortcuts">
+                  <button class="dashboard-shortcut" type="button" data-dashboard-tab-target="suscripcion"><span>01</span><strong>Revisar suscripción</strong><small>Consulta tu ciclo y beneficios.</small></button>
+                  <button class="dashboard-shortcut" type="button" data-dashboard-tab-target="pagos"><span>02</span><strong>Ver pagos</strong><small>Revisa tu saldo y recarga.</small></button>
+                  <button class="dashboard-shortcut" type="button" data-dashboard-tab-target="historial"><span>03</span><strong>Ver histórico</strong><small>Encuentra tus lavadas.</small></button>
                 </div>
-                <div class="dash-actions">
-                  <button id="setPremiumMonthlyBtn" class="btn btn-orange" type="button">Suscribirse $50.000</button>
-                  <button id="cancelPremiumBtn" class="btn btn-dark" type="button">Cancelar plan</button>
-                </div>
-                <p class="muted-note">Premium: 2 lavadas al mes, no acumulables, con renovación automática del ciclo.</p>
               </section>
 
-              <section class="dash-card">
-                <h4>Pagos</h4>
+              <section class="dashboard-tab-panel dash-card" id="suscripcion" data-dashboard-panel="suscripcion" role="tabpanel" hidden>
+                <div class="panel-title-row"><div><span class="card-eyebrow">Tu plan actual</span><h4>Tipo de suscripción</h4></div><span class="panel-index">01</span></div>
+                <div id="subscriptionBadge" class="sub-badge sub-basic"><span class="sub-icon"></span><strong id="subscriptionType">Básico</strong></div>
+                <div id="subscriptionRenewalNotice" class="subscription-renewal-notice" hidden></div>
+                <div class="sub-details">
+                  <p class="sub-detail-row"><strong class="sub-detail-label">Estado:</strong><span id="subscriptionStatus" class="sub-detail-value">Sin suscripción activa.</span></p>
+                  <p class="sub-detail-row"><strong class="sub-detail-label">Beneficios:</strong><span id="subscriptionBenefits" class="sub-detail-value">Cobro por evento.</span></p>
+                  <p class="sub-detail-row"><strong class="sub-detail-label">Inicio:</strong><span id="subscriptionCycleStart" class="sub-detail-value">-</span></p>
+                  <p class="sub-detail-row"><strong class="sub-detail-label">Vencimiento:</strong><span id="subscriptionCycleEnd" class="sub-detail-value">-</span></p>
+                </div>
+                <div class="dash-actions">
+                  <button id="setPremiumMonthlyBtn" class="btn btn-orange" type="button">Activar Premium · $50.000</button>
+                  <button id="renewPremiumBtn" class="btn btn-orange" type="button" hidden>Renovar Premium · $50.000</button>
+                  <button id="cancelPremiumBtn" class="btn btn-dark" type="button">Pasar a Básico · $35.000/lavada</button>
+                </div>
+                <p class="muted-note">Premium exige un pago exacto de $50.000 por ciclo y activa 2 lavadas. Básico cobra $35.000 por lavada.</p>
+              </section>
+
+              <section class="dashboard-tab-panel dash-card" data-dashboard-panel="pagos" role="tabpanel" hidden>
+                <div class="panel-title-row"><div><span class="card-eyebrow">Movimientos de cuenta</span><h4>Pagos y saldo</h4></div><span class="panel-index">02</span></div>
                 <p id="walletStatus">Saldo: $0 COP</p>
                 <p id="paymentStatus">Método: Efectivo en punto</p>
-                <div class="dash-actions">
-                  <button id="cashTopUpBtn" class="btn btn-dark" type="button">Recargar en efectivo</button>
-                  <button id="bankTopUpBtn" class="btn btn-orange btn-wompi" type="button">
-                    <span>Recargar cuenta</span>
-                    <img src="Imagenes/logowompi.png" alt="Wompi" />
-                  </button>
-                </div>
+                <div class="payment-rule"><strong>Regla Premium</strong><span>La renovación mensual es de $50.000 exactos para 2 lavadas. No se aceptan recargas parciales en Premium.</span></div>
+                <div class="dash-actions"><button id="cashTopUpBtn" class="btn btn-dark" type="button">Recargar en efectivo</button><button id="bankTopUpBtn" class="btn btn-orange btn-wompi" type="button"><span>Recargar con Wompi</span><img src="Imagenes/logowompi.png" alt="Wompi" /></button></div>
               </section>
 
-              <section class="dash-card">
-                <h4>Perfil</h4>
+              <section class="dashboard-tab-panel dash-card" data-dashboard-panel="perfil" role="tabpanel" hidden>
+                <div class="panel-title-row"><div><span class="card-eyebrow">Tus datos</span><h4>Perfil</h4></div><span class="panel-index">03</span></div>
                 <div class="profile-details">
-                  <p class="sub-detail-row">
-                    <strong class="sub-detail-label">Nombre:</strong>
-                    <input id="profileNameInput" class="profile-input" type="text" disabled />
-                  </p>
-                  <p class="sub-detail-row">
-                    <strong class="sub-detail-label">Cédula:</strong>
-                    <input id="profileCedulaInput" class="profile-input" type="text" disabled />
-                  </p>
-                  <p class="sub-detail-row">
-                    <strong class="sub-detail-label">Correo:</strong>
-                    <input id="profileEmailInput" class="profile-input" type="email" disabled />
-                  </p>
-                  <p class="sub-detail-row">
-                    <strong class="sub-detail-label">Teléfono:</strong>
-                    <input id="profilePhoneInput" class="profile-input" type="text" disabled />
-                  </p>
-                  <p class="sub-detail-row">
-                    <strong class="sub-detail-label">Placa principal:</strong>
-                    <input id="profilePlateInput" class="profile-input" type="text" disabled />
-                  </p>
-                  <p class="sub-detail-row">
-                    <strong class="sub-detail-label">Marca y modelo:</strong>
-                    <input id="profileVehicleModelInput" class="profile-input" type="text" disabled placeholder="Opcional" />
-                  </p>
-                  <p class="sub-detail-row">
-                    <strong class="sub-detail-label">Lavadas realizadas:</strong>
-                    <span id="profileWashesDone" class="sub-detail-value">0</span>
-                  </p>
+                  <p class="sub-detail-row"><strong class="sub-detail-label">Nombre:</strong><input id="profileNameInput" class="profile-input" type="text" disabled /></p>
+                  <p class="sub-detail-row"><strong class="sub-detail-label">Cédula:</strong><input id="profileCedulaInput" class="profile-input" type="text" disabled /></p>
+                  <p class="sub-detail-row"><strong class="sub-detail-label">Correo:</strong><input id="profileEmailInput" class="profile-input" type="email" disabled /></p>
+                  <p class="sub-detail-row"><strong class="sub-detail-label">Teléfono:</strong><input id="profilePhoneInput" class="profile-input" type="text" disabled /></p>
+                  <p class="sub-detail-row"><strong class="sub-detail-label">Placa principal:</strong><input id="profilePlateInput" class="profile-input" type="text" disabled /></p>
+                  <p class="sub-detail-row"><strong class="sub-detail-label">Marca y modelo:</strong><input id="profileVehicleModelInput" class="profile-input" type="text" disabled placeholder="Opcional" /></p>
+                  <p class="sub-detail-row"><strong class="sub-detail-label">Lavadas realizadas:</strong><span id="profileWashesDone" class="sub-detail-value">0</span></p>
                 </div>
-                <div class="dash-actions">
-                  <button id="profileEditBtn" class="btn btn-dark" type="button">Editar</button>
-                  <button id="profileSaveBtn" class="btn btn-orange" type="button" hidden>Guardar cambios</button>
-                  <button id="logoutBtn" class="btn btn-danger-mini" type="button">Cerrar sesión</button>
-                </div>
+                <div class="dash-actions"><button id="profileEditBtn" class="btn btn-dark" type="button">Editar</button><button id="profileSaveBtn" class="btn btn-orange" type="button" hidden>Guardar cambios</button><button id="logoutBtn" class="btn btn-danger-mini" type="button">Cerrar sesión</button></div>
                 <p id="profileMessage" class="result" aria-live="polite"></p>
               </section>
-            </div>
 
-            <section class="history-block" id="historial">
-              <h4>Histórico de lavados</h4>
-              <p id="washMessage" class="result" aria-live="polite"></p>
-              <div class="history-toolbar">
-                <p id="historyCount">Mostrando 0 de 0</p>
-                <div class="bo-audit-pager">
-                  <button id="historyPrevBtn" class="btn btn-light" type="button">Anterior</button>
-                  <span id="historyPageText">Página 1</span>
-                  <button id="historyNextBtn" class="btn btn-light" type="button">Siguiente</button>
-                </div>
-              </div>
-              <div id="historyList" class="history-list"></div>
-            </section>
+              <section class="dashboard-tab-panel history-block" id="historial" data-dashboard-panel="historial" role="tabpanel" hidden>
+                <div class="panel-title-row"><div><span class="card-eyebrow">Actividad de tu cuenta</span><h4>Histórico de lavados</h4></div><span class="panel-index">04</span></div>
+                <p id="washMessage" class="result" aria-live="polite"></p>
+                <div class="history-toolbar"><p id="historyCount">Mostrando 0 de 0</p><div class="bo-audit-pager"><button id="historyPrevBtn" class="btn btn-light" type="button">Anterior</button><span id="historyPageText">Página 1</span><button id="historyNextBtn" class="btn btn-light" type="button">Siguiente</button></div></div>
+                <div id="historyList" class="history-list"></div>
+              </section>
+            </div>
           </article>
 
           <aside id="qrToast" class="qr-toast" hidden aria-live="polite">
@@ -188,7 +180,7 @@
                 <h4 id="wompiTopUpTitle">Recargar con Wompi</h4>
                 <button id="wompiTopUpCloseBtn" type="button" class="btn btn-light wompi-close-x" data-modal-close="1">X</button>
               </div>
-              <p class="muted-note">Ingresa el monto a recargar en tu cuenta NovaWash.</p>
+              <p class="muted-note wompi-modal-intro">Ingresa el monto a recargar en tu cuenta NovaWash.</p>
               <label class="wompi-topup-label" for="wompiTopUpAmountInput">Valor a recargar (COP)</label>
               <div class="wompi-topup-presets" role="group" aria-label="Montos rápidos">
                 <button class="wompi-topup-preset is-active" type="button" data-amount="35000">$35.000</button>
@@ -219,6 +211,6 @@
       </section>
     </main>
 
-    <script src="script.js?v=20260220g"></script>
+    <script src="script.js?v=20260914c"></script>
   </body>
 </html>
