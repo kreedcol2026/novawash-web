@@ -1,4 +1,4 @@
-const inputs = ['area', 'setup', 'franchiseFee'];
+const inputs = ['area', 'hours', 'setup', 'franchiseFee'];
 const el = Object.fromEntries(inputs.map((id) => [id, document.getElementById(id)]));
 const out = (id) => document.getElementById(id);
 const cop = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
@@ -13,6 +13,8 @@ const fixed = {
   staffCost: 2700000,
   rentPerTenSqm: 800000,
   utilities: 2000000,
+  minutesPerVehicle: 15,
+  operatingDaysPerMonth: 30,
 };
 
 const scenarios = [
@@ -66,10 +68,16 @@ function renderScenario({ key, washesPerLine }, lines, investment, rent) {
 
 function calculate() {
   const area = value('area');
+  const hours = value('hours');
   const lines = Math.floor(area / fixed.sqmPerLine);
   const investment = value('setup') + value('franchiseFee');
   const rent = Math.ceil(area / 10) * fixed.rentPerTenSqm;
+  const dailyPerLine = Math.floor((hours * 60) / fixed.minutesPerVehicle);
+  const dailyTotal = dailyPerLine * lines;
+  const monthlyTotal = dailyTotal * fixed.operatingDaysPerMonth;
   out('lines').textContent = `${integer.format(lines)} ${lines === 1 ? 'línea' : 'líneas'}`;
+  out('capacityPerLine').textContent = `${integer.format(dailyPerLine)} vehículos/día por línea`;
+  out('capacityTotal').textContent = `${integer.format(dailyTotal)} vehículos/día en todo el punto · ${integer.format(monthlyTotal)} al mes`;
   scenarios.forEach((scenario) => renderScenario(scenario, lines, investment, rent));
 }
 
@@ -79,6 +87,7 @@ function formatCopInput(input) {
 }
 
 el.area.addEventListener('input', calculate);
+el.hours.addEventListener('input', calculate);
 ['setup', 'franchiseFee'].forEach((id) => el[id].addEventListener('input', (event) => {
   formatCopInput(event.target);
   calculate();

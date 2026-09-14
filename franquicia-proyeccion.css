@@ -22,3 +22,15 @@
 .fc-investment{border:1px solid #ffe0c8;background:#fff8f2;border-radius:10px;padding:11px;margin-bottom:16px}
 .fc-investment span{margin-bottom:4px}
 .fc-investment strong{font-size:14px;color:#b64f00;letter-spacing:-.3px}
+.fc-inputs{grid-template-columns:repeat(2,1fr)!important}
+@media(max-width:800px){.fc-inputs{grid-template-columns:1fr!important}}
+.fc-throughput{margin-top:16px;padding-top:14px;border-top:1px solid #3a4149}
+.fc-throughput span{display:block;color:#bac1c9;font-size:9px}
+.fc-throughput b{display:block;margin:7px 0 4px;color:#fff;font-size:13px;line-height:1.35}
+.fc-throughput p{margin:0;color:#ffad69;font-size:9px;line-height:1.5}
+.fc-process-stages{display:flex;align-items:center;gap:9px;margin:15px 0 0;padding:12px 16px;border:1px solid var(--line);border-radius:13px;background:#fff;color:#65707b;font-size:10px}
+.fc-process-stages span{display:inline-flex;align-items:baseline;gap:5px}
+.fc-process-stages span b{color:#b64f00;font-size:12px}
+.fc-process-stages i{font-style:normal;color:#ff9b58;font-weight:800}
+.fc-process-stages strong{margin-left:auto;color:#1c2228;font-size:10px}
+@media(max-width:800px){.fc-process-stages{flex-wrap:wrap;gap:7px}.fc-process-stages strong{width:100%;margin:4px 0 0;padding-top:8px;border-top:1px solid var(--line)}}

@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="franquicia-proyeccion.css?v=20260914f5" />
-  <script type="module" src="franquicia-proyeccion.js?v=20260914f5"></script>
+  <link rel="stylesheet" href="franquicia-proyeccion.css?v=20260914f6" />
+  <script type="module" src="franquicia-proyeccion.js?v=20260914f6"></script>
 </head>
 <body>
   <main>
@@ -43,11 +43,16 @@
         <div class="fc-config-card">
           <form id="franchiseCalculator" class="fc-inputs">
             <label>Terreno disponible <span>m²</span><input id="area" type="text" value="150" inputmode="numeric" /></label>
+            <label>Horas abiertas / día <span>horas</span><input id="hours" type="text" value="10" inputmode="numeric" /></label>
             <label>Costo de montaje <span>COP $</span><input id="setup" class="fc-cop-input" type="text" value="$ 150.000.000" inputmode="numeric" /></label>
             <label>Costo de franquicia <span>COP $</span><input id="franchiseFee" class="fc-cop-input" type="text" value="$ 0" inputmode="numeric" /></label>
             <p class="fc-config-note">El costo de montaje y el valor de franquicia se definen según tu terreno y condiciones en la llamada con un ejecutivo de inversión.</p>
           </form>
-          <div class="fc-lines-card"><span>Capacidad estimada</span><strong id="lines">0 líneas</strong><p>1 línea por cada 35 m² de terreno disponible.</p></div>
+          <div class="fc-lines-card"><span>Capacidad estimada</span><strong id="lines">0 líneas</strong><p>1 línea por cada 35 m² de terreno disponible.</p><div class="fc-throughput"><span>Capacidad máxima de atención</span><b id="capacityPerLine">0 vehículos/día por línea</b><p id="capacityTotal">0 vehículos/día en todo el punto · 0 al mes</p></div></div>
+        </div>
+
+        <div class="fc-process-stages" aria-label="Proceso por vehículo: 15 minutos">
+          <span><b>8 min</b>Enjuague</span><i>+</i><span><b>5 min</b>Aspirado</span><i>+</i><span><b>2 min</b>Alistamiento</span><i>=</i><strong>15 min por vehículo · 4 carros/hora por línea</strong>
         </div>
 
         <p class="fc-assumptions-title">Criterios incluidos en la proyección</p>
