@@ -2477,6 +2477,7 @@ tr.is-editing .bo-edit-field {
     padding: 0.45rem 0.72rem;
     font-size: 0.62rem;
     letter-spacing: 0.06em;
+    white-space: nowrap;
   }
 
   .menu-toggle {
@@ -2842,6 +2843,17 @@ tr.is-editing .bo-edit-field {
   .section {
     padding-top: 5.5rem;
     padding-bottom: 2.5rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .home-page .site-header .logo-mark {
+    width: min(180px, 46vw);
+  }
+
+  .home-page .site-header > .btn.mobile-auth-btn {
+    padding-inline: 0.64rem;
+    font-size: 0.59rem;
   }
 }
 
