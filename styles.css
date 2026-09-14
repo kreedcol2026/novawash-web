@@ -340,7 +340,7 @@ h2 {
 }
 
 .launch-notice {
-  padding: 1.15rem 1.2rem 0;
+  padding: 1.65rem 1.2rem 2.4rem;
 }
 
 .launch-notice-inner {
@@ -2528,7 +2528,7 @@ tr.is-editing .bo-edit-field {
   }
 
   .launch-notice {
-    padding: 0.8rem 0.8rem 0;
+    padding: 1rem 0.8rem 1.7rem;
   }
 
   .launch-notice-inner {
