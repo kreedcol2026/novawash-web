@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="franquicia-proyeccion.css?v=20260914f2" />
-  <script type="module" src="franquicia-proyeccion.js?v=20260914f2"></script>
+  <link rel="stylesheet" href="franquicia-proyeccion.css?v=20260914f3" />
+  <script type="module" src="franquicia-proyeccion.js?v=20260914f3"></script>
 </head>
 <body>
   <main>
@@ -46,14 +46,14 @@
             <label>Costo de montaje <span>COP</span><input id="setup" type="number" min="0" step="1000000" value="150000000" inputmode="numeric" /></label>
             <label>Costo de franquicia <span>COP</span><input id="franchiseFee" type="number" min="0" step="1000000" value="0" inputmode="numeric" /></label>
           </form>
-          <div class="fc-lines-card"><span>Capacidad estimada</span><strong id="lines">0 líneas</strong><p>1 línea por cada 25 m² de terreno disponible.</p></div>
+          <div class="fc-lines-card"><span>Capacidad estimada</span><strong id="lines">0 líneas</strong><p>1 línea por cada 35 m² de terreno disponible.</p></div>
         </div>
 
         <p class="fc-assumptions-title">Criterios incluidos en la proyección</p>
         <div class="fc-assumptions">
           <span><b>$2.500</b> agua, jabón e insumos por lavada</span>
           <span><b>5%</b> pagos y comisión NovaWash sobre ventas</span>
-          <span><b>3 empleados</b> por línea + 1 cajero</span>
+          <span><b>3 empleados</b> por línea + 1 cajero cada 10 líneas</span>
           <span><b>$30.000</b> ticket promedio por lavada</span>
         </div>
 
@@ -64,10 +64,11 @@
             <p class="fc-volume-copy">vehículos estimados por mes</p>
             <dl>
               <div><dt>Ventas mensuales</dt><dd id="badRevenue">—</dd></div>
+              <div><dt>Equipo estimado</dt><dd id="badTeam">—</dd></div>
               <div><dt>Costos operativos</dt><dd id="badCosts">—</dd></div>
               <div class="fc-profit-row"><dt>Utilidad operativa mensual</dt><dd id="badProfit">—</dd></div>
             </dl>
-            <div class="fc-annual"><span>Proyección anual</span><strong id="badAnnual">—</strong><small id="badRoi">—</small></div>
+            <div class="fc-annual"><span>Utilidad anual estimada</span><strong id="badAnnual">—</strong><small id="badRoi">—</small><div class="fc-payback"><span>Recuperación estimada</span><strong id="badPayback">—</strong></div></div>
           </article>
           <article class="fc-scenario fc-scenario-featured">
             <div class="fc-scenario-top"><div><p class="fc-kicker">ESCENARIO 02</p><h3>Realista</h3></div><span class="fc-tag">Recomendado</span></div>
@@ -75,10 +76,11 @@
             <p class="fc-volume-copy">vehículos estimados por mes</p>
             <dl>
               <div><dt>Ventas mensuales</dt><dd id="realisticRevenue">—</dd></div>
+              <div><dt>Equipo estimado</dt><dd id="realisticTeam">—</dd></div>
               <div><dt>Costos operativos</dt><dd id="realisticCosts">—</dd></div>
               <div class="fc-profit-row"><dt>Utilidad operativa mensual</dt><dd id="realisticProfit">—</dd></div>
             </dl>
-            <div class="fc-annual"><span>Proyección anual</span><strong id="realisticAnnual">—</strong><small id="realisticRoi">—</small></div>
+            <div class="fc-annual"><span>Utilidad anual estimada</span><strong id="realisticAnnual">—</strong><small id="realisticRoi">—</small><div class="fc-payback"><span>Recuperación estimada</span><strong id="realisticPayback">—</strong></div></div>
           </article>
           <article class="fc-scenario">
             <div class="fc-scenario-top"><div><p class="fc-kicker">ESCENARIO 03</p><h3>Excelente</h3></div><span class="fc-tag">Alta demanda</span></div>
@@ -86,10 +88,11 @@
             <p class="fc-volume-copy">vehículos estimados por mes</p>
             <dl>
               <div><dt>Ventas mensuales</dt><dd id="excellentRevenue">—</dd></div>
+              <div><dt>Equipo estimado</dt><dd id="excellentTeam">—</dd></div>
               <div><dt>Costos operativos</dt><dd id="excellentCosts">—</dd></div>
               <div class="fc-profit-row"><dt>Utilidad operativa mensual</dt><dd id="excellentProfit">—</dd></div>
             </dl>
-            <div class="fc-annual"><span>Proyección anual</span><strong id="excellentAnnual">—</strong><small id="excellentRoi">—</small></div>
+            <div class="fc-annual"><span>Utilidad anual estimada</span><strong id="excellentAnnual">—</strong><small id="excellentRoi">—</small><div class="fc-payback"><span>Recuperación estimada</span><strong id="excellentPayback">—</strong></div></div>
           </article>
         </div>
         <p class="fc-disclaimer">Estimación orientativa antes de impuestos, financiación, depreciación, seguros, mantenimiento y contingencias. Los resultados cambian según ubicación, demanda, operación y las condiciones definitivas de la franquicia.</p>

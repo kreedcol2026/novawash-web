@@ -5,12 +5,11 @@ const cop = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP',
 const integer = new Intl.NumberFormat('es-CO');
 
 const fixed = {
-  sqmPerLine: 25,
+  sqmPerLine: 35,
   ticket: 30000,
   consumables: 2500,
   feesRate: 0.05,
   staffPerLine: 3,
-  cashiers: 1,
   staffCost: 2700000,
   rent: 7000000,
   utilities: 3000000,
@@ -25,24 +24,38 @@ const scenarios = [
 const money = (amount) => cop.format(Math.round(amount));
 const value = (id) => Math.max(0, Number(el[id].value) || 0);
 
+function paybackLabel(months) {
+  if (!Number.isFinite(months) || months <= 0) return 'No se recupera en este escenario';
+  const roundedMonths = Math.ceil(months);
+  if (roundedMonths < 12) return `${roundedMonths} meses aprox.`;
+  const years = Math.floor(roundedMonths / 12);
+  const remainingMonths = roundedMonths % 12;
+  return remainingMonths ? `${years} año${years > 1 ? 's' : ''} y ${remainingMonths} meses aprox.` : `${years} año${years > 1 ? 's' : ''} aprox.`;
+}
+
 function renderScenario({ key, washesPerLine }, lines, investment) {
   const vehicles = lines * washesPerLine;
   const revenue = vehicles * fixed.ticket;
   const consumables = vehicles * fixed.consumables;
   const fees = revenue * fixed.feesRate;
-  const payroll = (lines * fixed.staffPerLine + fixed.cashiers) * fixed.staffCost;
+  const operators = lines * fixed.staffPerLine;
+  const cashiers = lines > 0 ? Math.ceil(lines / 10) : 0;
+  const payroll = (operators + cashiers) * fixed.staffCost;
   const fixedCosts = fixed.rent + fixed.utilities;
   const costs = consumables + fees + payroll + fixedCosts;
   const profit = revenue - costs;
   const annual = profit * 12;
   const roi = investment > 0 ? (annual / investment) * 100 : null;
+  const payback = investment > 0 && profit > 0 ? investment / profit : null;
 
   out(`${key}Volume`).textContent = integer.format(vehicles);
   out(`${key}Revenue`).textContent = money(revenue);
+  out(`${key}Team`).textContent = `${operators} operarios + ${cashiers} cajero${cashiers === 1 ? '' : 's'}`;
   out(`${key}Costs`).textContent = `− ${money(costs)}`;
   out(`${key}Profit`).textContent = money(profit);
   out(`${key}Annual`).textContent = money(annual);
   out(`${key}Roi`).textContent = roi === null ? 'Rentabilidad anual por definir' : `${Math.round(roi)}% retorno anual simple sobre la inversión`;
+  out(`${key}Payback`).textContent = investment === 0 ? 'Define la inversión inicial' : paybackLabel(payback);
 }
 
 function calculate() {
