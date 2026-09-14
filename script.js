@@ -1659,7 +1659,7 @@ function initDashboardPage() {
         const cell = document.createElement('div');
         cell.className = `loyalty-cell${i < filled ? ' filled' : ''}`;
         const icon = document.createElement('img');
-        icon.src = 'Imagenes/favicon.png';
+        icon.src = 'Imagenes/novawash-icon.png';
         icon.alt = '';
         icon.loading = 'lazy';
         cell.appendChild(icon);

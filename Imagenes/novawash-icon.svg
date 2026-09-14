@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+  <title id="title">NovaWash NW</title>
+  <rect width="256" height="256" rx="54" fill="#fff"/>
+  <defs>
+    <mask id="water" maskUnits="userSpaceOnUse" x="0" y="0" width="550" height="240">
+      <path fill="#fff" d="M0 0h550v240H0z"/>
+      <path d="M165 190C235 110 295 230 365 190C295 270 235 150 165 190Z" fill="#000" stroke="#000" stroke-width="20" stroke-linejoin="round"/>
+    </mask>
+  </defs>
+  <g transform="translate(16 82) scale(.41)">
+    <g mask="url(#water)">
+      <path fill="#191d22" d="M0 0H62C83 0 102 10 115 27L207 142L164 180L99 104Q96 100 96 107V225H38V77C38 42 23 20 0 0Z"/>
+      <path fill="#ff8000" d="M151 0H211Q226 0 235 15L308 126L359 56L408 126Q411 132 414 125L466 16Q474 0 491 0H546Q525 17 511 44L418 225L380 205L359 157L338 191L273 162Z"/>
+    </g>
+    <path fill="#ff8000" d="M165 190C235 110 295 230 365 190C295 270 235 150 165 190Z"/>
+  </g>
+</svg>

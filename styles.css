@@ -105,11 +105,16 @@ a {
 
 .logo-mark {
   display: block;
-  width: auto;
-  height: 63px;
-  transform: scale(1.5);
-  transform-origin: left center;
+  width: 300px;
+  max-width: 100%;
+  height: auto;
+  transform: none;
 }
+
+.logo-mark-inverse { display: none; }
+.footer-logo { display: block; width: min(280px, 100%); height: auto; }
+.home-page .site-header:not(.scrolled) .logo-mark { display: none; }
+.home-page .site-header:not(.scrolled) .logo-mark-inverse { display: block; }
 
 .main-nav {
   display: flex;
@@ -2513,9 +2518,9 @@ tr.is-editing .bo-edit-field {
   }
 
   .logo-mark {
-    height: 42px;
-    transform: scale(1.2);
-    transform-origin: left center;
+    width: min(250px, 65vw);
+    height: auto;
+    transform: none;
   }
 
   .hero-content {
@@ -3312,7 +3317,7 @@ tr.is-editing .bo-edit-field {
 @media (max-width: 700px) {
   .client-app .site-header { height: 58px; padding: 8px 18px; background: #f4f5f7; border: 0; }
   .client-app .site-header .menu-toggle, .client-app .main-nav { display: none; }
-  .client-app .logo-mark { height: 32px; transform: none; }
+  .client-app .logo-mark { width: min(260px, 76vw); height: auto; transform: none; }
   .client-app .dashboard-page .section { display: block; padding: 58px 16px calc(100px + env(safe-area-inset-bottom)); }
   .client-app .dashboard { margin: 0; }
   .client-app .dashboard-heading { padding: 10px 2px 16px; gap: 8px; }
