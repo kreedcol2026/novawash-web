@@ -132,18 +132,18 @@
                   <p class="sub-detail-row"><strong class="sub-detail-label">Vencimiento:</strong><span id="subscriptionCycleEnd" class="sub-detail-value">-</span></p>
                 </div>
                 <div class="dash-actions">
-                  <button id="setPremiumMonthlyBtn" class="btn btn-orange" type="button">Activar Premium · $50.000</button>
-                  <button id="renewPremiumBtn" class="btn btn-orange" type="button" hidden>Renovar Premium · $50.000</button>
+                  <button id="setPremiumMonthlyBtn" class="btn btn-orange" type="button">Activar Premium · $60.000</button>
+                  <button id="renewPremiumBtn" class="btn btn-orange" type="button" hidden>Renovar Premium · $60.000</button>
                   <button id="cancelPremiumBtn" class="btn btn-dark" type="button">Pasar a Básico · $35.000/lavada</button>
                 </div>
-                <p class="muted-note">Premium exige un pago exacto de $50.000 por ciclo y activa 2 lavadas. Básico cobra $35.000 por lavada.</p>
+                <p class="muted-note">Premium exige un pago exacto de $60.000 por ciclo y activa 2 lavadas. Básico cobra $35.000 por lavada.</p>
               </section>
 
               <section class="dashboard-tab-panel dash-card" data-dashboard-panel="pagos" role="tabpanel" hidden>
                 <div class="panel-title-row"><div><span class="card-eyebrow">Movimientos de cuenta</span><h4>Pagos y saldo</h4></div><span class="panel-index">02</span></div>
                 <p id="walletStatus">Saldo: $0 COP</p>
                 <p id="paymentStatus">Método: Efectivo en punto</p>
-                <div class="payment-rule"><strong>Regla Premium</strong><span>La renovación mensual es de $50.000 exactos para 2 lavadas. No se aceptan recargas parciales en Premium.</span></div>
+                <div class="payment-rule"><strong>Regla Premium</strong><span>La renovación mensual es de $60.000 exactos para 2 lavadas. No se aceptan recargas parciales en Premium.</span></div>
                 <div class="dash-actions"><button id="cashTopUpBtn" class="btn btn-dark" type="button">Recargar en efectivo</button><button id="bankTopUpBtn" class="btn btn-orange btn-wompi" type="button"><span>Recargar con Wompi</span><img src="Imagenes/logowompi.png" alt="Wompi" /></button></div>
               </section>
 
@@ -187,7 +187,7 @@
               <label class="wompi-topup-label" for="wompiTopUpAmountInput">Valor a recargar (COP)</label>
               <div class="wompi-topup-presets" role="group" aria-label="Montos rápidos">
                 <button class="wompi-topup-preset is-active" type="button" data-amount="35000">$35.000</button>
-                <button class="wompi-topup-preset" type="button" data-amount="50000">$50.000</button>
+                <button class="wompi-topup-preset" type="button" data-amount="60000">$60.000</button>
                 <button class="wompi-topup-preset" type="button" data-amount="100000">$100.000</button>
               </div>
               <input
@@ -195,7 +195,7 @@
                 class="wompi-topup-input"
                 type="text"
                 inputmode="numeric"
-                placeholder="50.000"
+                placeholder="35.000"
                 autocomplete="off"
               />
               <p id="wompiTopUpHint" class="muted-note">Mínimo $1.000</p>
@@ -214,6 +214,6 @@
       </section>
     </main>
 
-    <script src="script.js?v=20260914nw"></script>
+    <script src="script.js?v=20260914price"></script>
   </body>
 </html>

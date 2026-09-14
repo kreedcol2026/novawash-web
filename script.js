@@ -3,9 +3,9 @@ const APPS_SCRIPT_URL =
   'https://script.google.com/macros/s/AKfycbxlF0G6qgbr4We9HK5EthJ0slWw90JYZtbjJk9j65KIDV88SmMoI4_nYmTLKVLVRHj6Mg/exec';
 const PRICES = {
   basicSingle: 35000,
-  premiumPerWash: 25000,
-  premiumMonthlyFee: 50000,
-  cashTopUpDefault: 50000,
+  premiumPerWash: 30000,
+  premiumMonthlyFee: 60000,
+  cashTopUpDefault: 35000,
 };
 const WELCOME_BONUS = 10000;
 const LOYALTY_GOAL = 10;
@@ -1397,7 +1397,7 @@ function initDashboardPage() {
     showQrToast(title, message);
   }
 
-  function openWompiTopUpModal(defaultAmount = 50000, purpose = 'topup') {
+  function openWompiTopUpModal(defaultAmount = PRICES.cashTopUpDefault, purpose = 'topup') {
     if (!wompiTopUpModal || !wompiTopUpAmountInput) return;
     wompiTopUpPurpose = purpose;
     wompiTopUpAmountInput.value = formatThousands(defaultAmount);
@@ -1414,9 +1414,9 @@ function initDashboardPage() {
     const intro = wompiTopUpModal.querySelector('.wompi-modal-intro');
     if (title) title.textContent = isRenewal ? 'Renovar Plan Premium' : 'Recargar con Wompi';
     if (intro) intro.textContent = isRenewal
-      ? 'Paga exactamente $50.000 para activar las 2 lavadas de tu nuevo ciclo.'
+      ? `Paga exactamente ${formatCOP(PRICES.premiumMonthlyFee)} para activar las 2 lavadas de tu nuevo ciclo.`
       : 'Ingresa el monto a recargar en tu cuenta NovaWash.';
-    if (wompiTopUpHint) wompiTopUpHint.textContent = isRenewal ? 'Monto fijo de renovación: $50.000' : 'Mínimo $1.000';
+    if (wompiTopUpHint) wompiTopUpHint.textContent = isRenewal ? `Monto fijo de renovación: ${formatCOP(PRICES.premiumMonthlyFee)}` : 'Mínimo $1.000';
     if (wompiTopUpConfirmBtn) wompiTopUpConfirmBtn.textContent = isRenewal ? 'Pagar renovación' : 'Continuar a Wompi';
     if (wompiTopUpLoading) wompiTopUpLoading.hidden = true;
     wompiTopUpModal.hidden = false;
@@ -1745,7 +1745,7 @@ function initDashboardPage() {
   setPremiumMonthlyBtn?.addEventListener('click', () => {
     mutateCurrentUser((user) => {
       if ((Number(user.wallet) || 0) !== PRICES.premiumMonthlyFee) {
-        window.alert('Premium requiere un pago exacto de $50.000 para activar las 2 lavadas del mes.');
+        window.alert(`Premium requiere un pago exacto de ${formatCOP(PRICES.premiumMonthlyFee)} para activar las 2 lavadas del mes.`);
         return;
       }
       user.plan.mode = 'premium_monthly';
@@ -1881,7 +1881,7 @@ function initDashboardPage() {
   bankTopUpBtn?.addEventListener('click', () => {
     const user = getCurrentUser(getData());
     openWompiTopUpModal(
-      user?.plan?.mode === 'premium_monthly' ? PRICES.premiumMonthlyFee : 50000,
+      user?.plan?.mode === 'premium_monthly' ? PRICES.premiumMonthlyFee : PRICES.cashTopUpDefault,
       user?.plan?.mode === 'premium_monthly' ? 'premium_renewal' : 'topup'
     );
   });
@@ -1934,7 +1934,7 @@ function initDashboardPage() {
     const rawAmount = wompiTopUpAmountInput?.value || '';
     const amount = parseMoneyInput(rawAmount);
     if (wompiTopUpPurpose === 'premium_renewal' && amount !== PRICES.premiumMonthlyFee) {
-      if (wompiTopUpHint) wompiTopUpHint.textContent = 'La renovación Premium exige exactamente $50.000.';
+      if (wompiTopUpHint) wompiTopUpHint.textContent = `La renovación Premium exige exactamente ${formatCOP(PRICES.premiumMonthlyFee)}.`;
       return;
     }
     if (amount < 1000) {
