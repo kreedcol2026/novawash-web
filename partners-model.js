@@ -1,4 +1,4 @@
-// Modelo ilustrativo. No es un registro contable ni una valoración de acciones.
+// Modelo ilustrativo ES module. No es un registro contable ni una valoración de acciones.
 export const DEFAULTS = Object.freeze({ investment: 10000000, sites: 1, setup: 150000000, working: 50000000, investorShare: 40, provision: 30, reserve: 25, scenario: 'base' });
 export const SCENARIOS = Object.freeze({ stress: { label: 'Estrés', profit: -5000000 }, prudent: { label: 'Prudente', profit: 15000000 }, base: { label: 'Base', profit: 20000000 }, favorable: { label: 'Favorable', profit: 25000000 } });
 export const RAMP = Object.freeze([.55, .65, .75, .85, .9, .95, 1, 1, 1, 1, 1, 1]);

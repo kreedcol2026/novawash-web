@@ -1,4 +1,4 @@
-import { DEFAULTS, SCENARIOS, project, csv } from './partners-model.mjs';
+import { DEFAULTS, SCENARIOS, project, csv } from './partners-model.js';
 
 const money = new Intl.NumberFormat('es-CO', { style:'currency', currency:'COP', maximumFractionDigits:0 });
 const percent = new Intl.NumberFormat('es-CO', { style:'percent', maximumFractionDigits:2 });
@@ -34,7 +34,7 @@ function chart(rows, label = 'Utilidades acumuladas simuladas') {
   return `<svg class="p-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${label}: ${cop(rows.at(-1).accrued)} al mes ${rows.length}">${grid}<path d="${path}" fill="none" stroke="#e87900" stroke-width="3" stroke-linejoin="round"/><circle cx="${x(rows.length)}" cy="${y(rows.at(-1).accrued)}" r="4" fill="#e87900"/><text x="${left}" y="${height-6}">Mes 0</text><text x="${width-right}" y="${height-6}" text-anchor="end">Mes ${rows.length}</text></svg>`;
 }
 function fundingRisk(model) {
-  return model.shortfall > 0 ? `<p class="p-error"><strong>Capital de trabajo insuficiente en este escenario.</strong> Déficit operativo máximo estimado: ${cop(model.shortfall)} en la red. Requeriría más financiación o ajustes; la proyección no supone que alguien cubra ese déficit.</p>` : '<p class="p-small">La caja operativa modelada se mantiene positiva. Esto no cubre desviaciones del presupuesto, retrasos ni riesgos no modelados.</p>';
+  return model.shortfall > 0 ? `<p class="p-error"><strong>Capital de trabajo insuficiente en este escenario.</strong> Déficit operativo máximo estimado: ${cop(model.shortfall)} en la red. Los resultados posteriores son teóricos y no serían viables sin cubrir ese déficit. No hay financiación adicional confirmada.</p>` : '<p class="p-small">La caja operativa modelada se mantiene positiva. Esto no cubre desviaciones del presupuesto, retrasos ni riesgos no modelados.</p>';
 }
 const form = $('projectionForm');
 if (form) {

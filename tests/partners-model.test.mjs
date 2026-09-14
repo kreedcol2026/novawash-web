@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { project, csv } from '../partners-model.mjs';
+import { project, csv } from '../partners-model.js';
 const close = (a,b) => assert.ok(Math.abs(a-b)<.001, `${a} != ${b}`);
 test('200 M round, 10 M contribution, 40% investor waterfall', () => {
   const p=project(); close(p.funding,200000000);close(p.weight,.05);close(p.effectiveShare,.02);
