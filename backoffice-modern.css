@@ -352,17 +352,36 @@
 }
 
 .backoffice-page .bo-users-table .bo-col-name {
-  min-width: 225px;
+  width: 175px;
+  min-width: 175px;
+  max-width: 175px;
+  padding-right: 0.55rem;
 }
 
 .backoffice-page .bo-users-table .bo-col-email {
-  min-width: 235px;
+  width: 210px;
+  min-width: 210px;
+  max-width: 210px;
+  padding-left: 0.55rem;
+}
+
+.backoffice-page .bo-users-table {
+  width: max-content;
+  min-width: 1405px;
+  table-layout: fixed;
+}
+
+.backoffice-page .bo-users-table .bo-col-id,
+.backoffice-page .bo-users-table td:first-child {
+  width: 104px;
+  min-width: 104px;
+  max-width: 104px;
 }
 
 .backoffice-page .bo-users-table .bo-col-plate {
-  width: 94px;
-  min-width: 94px;
-  max-width: none;
+  width: 88px;
+  min-width: 88px;
+  max-width: 88px;
 }
 
 .backoffice-page .bo-users-table .bo-col-plate input {
@@ -377,18 +396,29 @@
 }
 
 .backoffice-page .bo-users-table td:nth-child(6) {
-  min-width: 116px;
+  width: 112px;
+  min-width: 112px;
+  max-width: 112px;
 }
 
-.backoffice-page .bo-users-table td:nth-child(6) input {
+.backoffice-page .bo-users-table td:nth-child(6) input,
+.backoffice-page .bo-users-table th:nth-child(6) {
   width: 100%;
-  min-width: 100px !important;
+  min-width: 0 !important;
+  max-width: none;
+}
+
+.backoffice-page .bo-users-table td:nth-child(7),
+.backoffice-page .bo-users-table th:nth-child(7) {
+  width: 108px;
+  min-width: 108px;
+  max-width: 108px;
 }
 
 .backoffice-page .bo-users-table .bo-col-mini {
-  width: 70px;
-  min-width: 70px;
-  max-width: 70px;
+  width: 66px;
+  min-width: 66px;
+  max-width: 66px;
 }
 
 .backoffice-page .bo-users-table .bo-col-mini input {
@@ -397,9 +427,9 @@
 }
 
 .backoffice-page .bo-users-table .bo-col-wallet {
-  width: 102px;
-  min-width: 102px;
-  max-width: none;
+  width: 100px;
+  min-width: 100px;
+  max-width: 100px;
 }
 
 .backoffice-page .bo-users-table .bo-col-wallet input {
@@ -410,7 +440,7 @@
 .backoffice-page .bo-users-table .bo-col-payment {
   width: 116px;
   min-width: 116px;
-  max-width: none;
+  max-width: 116px;
 }
 
 .backoffice-page .bo-users-table .bo-col-payment select {
@@ -419,14 +449,21 @@
 }
 
 .backoffice-page .bo-users-table .bo-col-recharge {
-  width: 105px;
-  min-width: 105px;
-  max-width: none;
+  width: 100px;
+  min-width: 100px;
+  max-width: 100px;
 }
 
 .backoffice-page .bo-users-table .bo-recharge-input {
   width: 100%;
   min-width: 0 !important;
+}
+
+.backoffice-page .bo-users-table td.bo-actions-cell,
+.backoffice-page .bo-users-table th:last-child {
+  width: 156px;
+  min-width: 156px;
+  max-width: 156px;
 }
 
 .backoffice-page .bo-table th,
