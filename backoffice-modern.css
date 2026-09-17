@@ -340,6 +340,95 @@
   box-shadow: 0 8px 26px rgba(26, 38, 54, 0.045);
 }
 
+@media (min-width: 901px) {
+  .backoffice-page .bo-users-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .backoffice-page .bo-users-table {
+    min-width: 0;
+  }
+}
+
+.backoffice-page .bo-users-table .bo-col-name {
+  min-width: 225px;
+}
+
+.backoffice-page .bo-users-table .bo-col-email {
+  min-width: 235px;
+}
+
+.backoffice-page .bo-users-table .bo-col-plate {
+  width: 94px;
+  min-width: 94px;
+  max-width: none;
+}
+
+.backoffice-page .bo-users-table .bo-col-plate input {
+  width: 100%;
+  min-width: 0 !important;
+  max-width: none;
+}
+
+.backoffice-page .bo-users-table td:not(.bo-col-name):not(.bo-col-email) input,
+.backoffice-page .bo-users-table td select {
+  min-width: 0 !important;
+}
+
+.backoffice-page .bo-users-table td:nth-child(6) {
+  min-width: 116px;
+}
+
+.backoffice-page .bo-users-table td:nth-child(6) input {
+  width: 100%;
+  min-width: 100px !important;
+}
+
+.backoffice-page .bo-users-table .bo-col-mini {
+  width: 70px;
+  min-width: 70px;
+  max-width: 70px;
+}
+
+.backoffice-page .bo-users-table .bo-col-mini input {
+  width: 100%;
+  min-width: 0 !important;
+}
+
+.backoffice-page .bo-users-table .bo-col-wallet {
+  width: 102px;
+  min-width: 102px;
+  max-width: none;
+}
+
+.backoffice-page .bo-users-table .bo-col-wallet input {
+  width: 100%;
+  min-width: 0 !important;
+}
+
+.backoffice-page .bo-users-table .bo-col-payment {
+  width: 116px;
+  min-width: 116px;
+  max-width: none;
+}
+
+.backoffice-page .bo-users-table .bo-col-payment select {
+  width: 100%;
+  min-width: 0 !important;
+}
+
+.backoffice-page .bo-users-table .bo-col-recharge {
+  width: 105px;
+  min-width: 105px;
+  max-width: none;
+}
+
+.backoffice-page .bo-users-table .bo-recharge-input {
+  width: 100%;
+  min-width: 0 !important;
+}
+
 .backoffice-page .bo-table th,
 .backoffice-page .bo-table td {
   border-bottom-color: #edf0f4;

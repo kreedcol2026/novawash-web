@@ -2289,6 +2289,7 @@ function initBackofficePage() {
     type: '',
     userIndex: -1,
   };
+  const rechargeDrafts = new Map();
 
   function auditKey(log) {
     return `${log?.at || ''}|${log?.action || ''}|${log?.targetEmail || ''}|${log?.detail || ''}|${log?.amount || ''}`;
@@ -2521,6 +2522,30 @@ function initBackofficePage() {
     if (boMetricWallets) boMetricWallets.textContent = formatCOP(totalWalletBalance);
   }
 
+  function captureRechargeDrafts() {
+    const seen = new Set();
+    [boUsersBody, boUsersMobile].forEach((container) => {
+      if (!container) return;
+      container.querySelectorAll('[data-user-id] .bo-recharge-input').forEach((input) => {
+        const userId = String(input.closest('[data-user-id]')?.dataset.userId || '');
+        if (!userId || seen.has(userId)) return;
+        seen.add(userId);
+        const value = String(input.value || '').trim();
+        if (value) rechargeDrafts.set(userId, value);
+        else rechargeDrafts.delete(userId);
+      });
+    });
+  }
+
+  function clearRechargeDraft(userId) {
+    const key = String(userId || '');
+    rechargeDrafts.delete(key);
+    document.querySelectorAll('.bo-recharge-input').forEach((input) => {
+      const row = input.closest('[data-user-id]');
+      if (String(row?.dataset.userId || '') === key) input.value = '';
+    });
+  }
+
   function renderUsers() {
     const esc = (value) =>
       String(value ?? '')
@@ -2530,6 +2555,7 @@ function initBackofficePage() {
         .replaceAll('"', '&quot;')
         .replaceAll("'", '&#39;');
 
+    captureRechargeDrafts();
     const data = getData();
     data.users = data.users.map((user) => normalizeUser(user));
     const didReset = applyBackofficeMonthlyResets(data, BO_USER);
@@ -2573,6 +2599,7 @@ function initBackofficePage() {
       const idx = data.users.findIndex((u) => u.userId === user.userId);
       const row = document.createElement('tr');
       row.dataset.userIndex = String(idx);
+      row.dataset.userId = String(user.userId || '');
       row.innerHTML = `
         <td class="bo-col-id bo-id-cell">${esc(user.userId || '-')}</td>
         <td class="bo-col-name">
@@ -2601,7 +2628,7 @@ function initBackofficePage() {
             <option value="Nequi" ${user.paymentMethod === 'Nequi' ? 'selected' : ''}>Nequi</option>
           </select>
         </td>
-        <td class="bo-col-recharge"><input class="bo-recharge-input" name="cashAmount" type="text" inputmode="numeric" value="" placeholder="$" /></td>
+        <td class="bo-col-recharge"><input class="bo-recharge-input" name="cashAmount" type="text" inputmode="numeric" value="${esc(rechargeDrafts.get(String(user.userId || '')) || '')}" placeholder="$" /></td>
         <td class="bo-actions-cell">
           <button class="btn btn-orange bo-btn" type="button" data-action="cash">Recarga</button>
           <div class="bo-menu">
@@ -2621,6 +2648,7 @@ function initBackofficePage() {
         const card = document.createElement('article');
         card.className = 'bo-mobile-card';
         card.dataset.userIndex = String(idx);
+        card.dataset.userId = String(user.userId || '');
         card.innerHTML = `
           <div class="bo-mobile-head">
             <h5>${esc(user.name || 'Cliente')}</h5>
@@ -2634,7 +2662,7 @@ function initBackofficePage() {
           <p><strong>Saldo:</strong> ${formatCOP(Number(user.wallet) || 0)}</p>
           <label class="bo-mobile-recharge-label">
             Recarga
-            <input class="bo-recharge-input" name="cashAmount" type="text" inputmode="numeric" value="" placeholder="$" />
+            <input class="bo-recharge-input" name="cashAmount" type="text" inputmode="numeric" value="${esc(rechargeDrafts.get(String(user.userId || '')) || '')}" placeholder="$" />
           </label>
           <div class="bo-actions-cell">
             <button class="btn btn-orange bo-btn" type="button" data-action="cash">Recarga</button>
@@ -2709,8 +2737,7 @@ function initBackofficePage() {
         );
       }
       saveData(data);
-      const rechargeField = input('cashAmount');
-      if (rechargeField) rechargeField.value = '';
+      clearRechargeDraft(user.userId);
       const notice = `Recarga manual aplicada: ${formatCOP(amount)} a ${user.name}.`;
       showFloatingNotice(notice);
       pushBrowserPaymentNotification(notice);
@@ -3086,6 +3113,7 @@ function initBackofficePage() {
     }
 
     if (modalState.type === 'edit') {
+      const previousPlanMode = String(user.plan.mode || 'basic_single');
       const newName = String(boModalName?.value || '').trim();
       const newCedula = String(boModalCedula?.value || '').trim();
       const newEmail = String(boModalEmail?.value || '')
@@ -3109,21 +3137,24 @@ function initBackofficePage() {
       }
 
       const oldEmail = String(user.email || '').toLowerCase();
+      const nextPlanMode = String(boModalMode?.value || 'basic_single');
+      const nextWallet = Math.max(0, Number(boModalWallet?.value || 0));
+      const isActivatingPremium = nextPlanMode === 'premium_monthly' && previousPlanMode !== 'premium_monthly';
+      if (isActivatingPremium && nextWallet < PRICES.premiumMonthlyFee) {
+        setResult(boModalMessage, `Para activar Premium necesitas al menos ${formatCOP(PRICES.premiumMonthlyFee)} de saldo disponible.`, 'error');
+        return;
+      }
+
       user.name = newName;
       user.cedula = newCedula;
       user.email = newEmail;
       user.phone = String(boModalPhone?.value || '').trim();
       user.plate = normalizePlate(String(boModalPlate?.value || ''));
-      user.plan.mode = String(boModalMode?.value || 'basic_single');
-      user.wallet = Math.max(0, Number(boModalWallet?.value || 0));
+      user.plan.mode = nextPlanMode;
+      user.wallet = nextWallet;
       user.paymentMethod = String(boModalPaymentMethod?.value || 'Efectivo en punto');
 
-      if (user.plan.mode === 'premium_monthly' && user.wallet !== PRICES.premiumMonthlyFee) {
-        setResult(boModalMessage, `Premium requiere un saldo/pago exacto de ${formatCOP(PRICES.premiumMonthlyFee)}.`, 'error');
-        return;
-      }
-
-      if (user.plan.mode === 'premium_monthly' && !user.plan.cycleEnd) {
+      if (user.plan.mode === 'premium_monthly' && (isActivatingPremium || user.plan.renewalDue || !user.plan.cycleEnd)) {
         user.plan.renewalDue = false;
         user.plan.renewalDueAt = null;
         user.plan.cycleStart = nowISO();
@@ -3303,6 +3334,16 @@ function initBackofficePage() {
     if (!target || target.name !== 'cashAmount') return;
     const amount = parseMoneyInput(target.value);
     target.value = amount > 0 ? formatThousands(amount) : '';
+
+    const row = target.closest('[data-user-id]');
+    const userId = String(row?.dataset.userId || '');
+    if (!userId) return;
+    if (target.value) rechargeDrafts.set(userId, target.value);
+    else rechargeDrafts.delete(userId);
+    document.querySelectorAll('.bo-recharge-input').forEach((field) => {
+      const fieldUserId = String(field.closest('[data-user-id]')?.dataset.userId || '');
+      if (field !== target && fieldUserId === userId) field.value = target.value;
+    });
   }
 
   boUsersBody.addEventListener('input', handleMoneyInputFormatting);
