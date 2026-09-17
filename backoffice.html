@@ -13,6 +13,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css?v=20260914nw" />
+    <link rel="stylesheet" href="backoffice-modern.css?v=20260917bo" />
   </head>
   <body class="backoffice-page">
     <header class="site-header scrolled">
@@ -20,7 +21,7 @@
         <img class="logo-mark" src="Imagenes/novawash-horizontal.svg" alt="Nova Wash" />
       </a>
       <nav class="main-nav" aria-label="Navegación personal">
-        <a href="#backofficePanel">Clientes</a>
+        <a href="#backofficePanel">Personal</a>
         <a class="mobile-only-nav-link" href="index.html">Inicio</a>
       </nav>
       <button class="menu-toggle" type="button" aria-label="Abrir menú" aria-expanded="false">
@@ -36,6 +37,11 @@
         <div class="panel-content reveal visible bo-full">
           <h1 id="bo-title" class="dash-title">Backoffice Nova Wash</h1>
           <p class="manage-subtitle">Gestión de clientes, suscripciones, lavadas y pagos manuales.</p>
+          <div class="bo-page-summary" aria-label="Estado del backoffice">
+            <span class="bo-live-status"><span aria-hidden="true"></span>Panel en línea</span>
+            <span class="bo-summary-separator" aria-hidden="true"></span>
+            <span>Sincronización automática activa</span>
+          </div>
 
           <article id="boLoginCard" class="account-card bo-login">
             <h3>Ingreso Personal</h3>
@@ -55,16 +61,25 @@
 
           <article id="backofficePanel" class="dashboard" hidden>
             <div class="dashboard-top">
-              <h3>Clientes y Usuarios</h3>
+              <div>
+                <p class="bo-section-kicker">Centro de operación</p>
+                <h3>Clientes y usuarios</h3>
+              </div>
               <div class="dash-actions">
-                <button id="boAddUserBtn" class="btn btn-orange" type="button">Añadir usuario</button>
+                <button id="boAddUserBtn" class="btn btn-orange" type="button">Nuevo usuario</button>
                 <button id="boLogoutBtn" class="btn btn-dark" type="button">Cerrar sesión personal</button>
               </div>
             </div>
             <p class="manage-subtitle">Edita datos, plan, número de lavadas, y registra pagos en efectivo manuales.</p>
             <p id="boPanelMessage" class="result" aria-live="polite"></p>
 
-            <section class="bo-top-layout">
+            <nav class="bo-workspace-nav" aria-label="Secciones del backoffice">
+              <a class="is-active" href="#boOverview">Resumen</a>
+              <a href="#boUsersSection">Usuarios</a>
+              <a href="#boAuditSection">Auditoría</a>
+            </nav>
+
+            <section id="boOverview" class="bo-top-layout">
               <div class="bo-left-panel">
                 <section class="bo-filters bo-filters-dates">
                   <label>
@@ -166,40 +181,49 @@
               </section>
             </section>
 
-            <div class="bo-users-toolbar">
-              <p id="boUsersCount" class="bo-users-count">Mostrando 0 de 0</p>
-              <div class="bo-audit-pager bo-users-pager">
-                <button id="boUsersPrevBtn" class="btn btn-light" type="button">Anterior</button>
-                <span id="boUsersPageText">Página 1</span>
-                <button id="boUsersNextBtn" class="btn btn-light" type="button">Siguiente</button>
+            <div id="boUsersSection" class="bo-users-section">
+              <div class="bo-users-toolbar">
+                <div class="bo-section-heading">
+                  <p class="bo-section-kicker">Directorio</p>
+                  <h4>Usuarios activos</h4>
+                  <p>Consulta, edita y recarga cuentas sin perder el contexto.</p>
+                </div>
+                <div class="bo-users-toolbar-right">
+                  <p id="boUsersCount" class="bo-users-count">Mostrando 0 de 0</p>
+                  <div class="bo-audit-pager bo-users-pager">
+                    <button id="boUsersPrevBtn" class="btn btn-light" type="button">Anterior</button>
+                    <span id="boUsersPageText">Página 1</span>
+                    <button id="boUsersNextBtn" class="btn btn-light" type="button">Siguiente</button>
+                  </div>
+                </div>
               </div>
+
+              <div class="bo-table-wrap bo-users-wrap">
+                <table class="bo-table bo-users-table">
+                  <thead>
+                    <tr>
+                      <th class="bo-col-id">ID</th>
+                      <th class="bo-col-name">Cliente</th>
+                      <th class="bo-col-cedula">Cédula</th>
+                      <th class="bo-col-email">Correo</th>
+                      <th class="bo-col-plate">Placa</th>
+                      <th>Teléfono</th>
+                      <th>Plan</th>
+                      <th class="bo-col-mini">Disp.</th>
+                      <th class="bo-col-mini">Realiz.</th>
+                      <th class="bo-col-wallet">Saldo</th>
+                      <th class="bo-col-payment">Pago</th>
+                      <th class="bo-col-recharge">Recarga</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="boUsersBody"></tbody>
+                </table>
+              </div>
+              <div id="boUsersMobile" class="bo-users-mobile"></div>
             </div>
 
-            <div class="bo-table-wrap bo-users-wrap">
-              <table class="bo-table bo-users-table">
-                <thead>
-                  <tr>
-                    <th class="bo-col-id">ID</th>
-                    <th class="bo-col-name">Cliente</th>
-                    <th class="bo-col-cedula">Cédula</th>
-                    <th class="bo-col-email">Correo</th>
-                    <th class="bo-col-plate">Placa</th>
-                    <th>Teléfono</th>
-                    <th>Plan</th>
-                    <th class="bo-col-mini">Disp.</th>
-                    <th class="bo-col-mini">Realiz.</th>
-                    <th class="bo-col-wallet">Saldo</th>
-                    <th class="bo-col-payment">Pago</th>
-                    <th class="bo-col-recharge">Recarga</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody id="boUsersBody"></tbody>
-              </table>
-            </div>
-            <div id="boUsersMobile" class="bo-users-mobile"></div>
-
-            <section class="history-block bo-audit">
+            <section id="boAuditSection" class="history-block bo-audit">
               <h4>Registro de Auditoría</h4>
               <div class="bo-audit-filters">
                 <label>

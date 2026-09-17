@@ -2252,6 +2252,22 @@ function initBackofficePage() {
   const boLogoutBtn = document.querySelector('#boLogoutBtn');
   if (!boLoginForm || !backofficePanel || !boUsersBody || !boAuditBody) return;
 
+  const boSectionNavLinks = [...document.querySelectorAll('.bo-workspace-nav a')];
+  function syncBackofficeSectionNav() {
+    const currentHash = window.location.hash || '#boOverview';
+    boSectionNavLinks.forEach((link) => {
+      const active = link.getAttribute('href') === currentHash;
+      link.classList.toggle('is-active', active);
+      if (active) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+    });
+  }
+  boSectionNavLinks.forEach((link) => link.addEventListener('click', () => {
+    window.requestAnimationFrame(syncBackofficeSectionNav);
+  }));
+  window.addEventListener('hashchange', syncBackofficeSectionNav);
+  syncBackofficeSectionNav();
+
   const filters = {
     query: '',
     plan: 'all',
