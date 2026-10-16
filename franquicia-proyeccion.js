@@ -129,10 +129,11 @@ function calculate() {
   const dailyPerLine = hours * fixed.vehiclesPerLinePerHour;
   const dailyTotal = dailyPerLine * lines;
   const monthlyTotal = dailyTotal * fixed.operatingDaysPerMonth;
+  const lineLabel = lines === 1 ? 'línea' : 'líneas';
   out('lines').textContent = `${integer.format(lines)} ${lines === 1 ? 'línea' : 'líneas'}`;
   el.setup.value = `$ ${integer.format(setup)}`;
-  out('capacityPerLine').textContent = `${integer.format(dailyPerLine)} vehículos/día por línea`;
-  out('capacityTotal').textContent = `${integer.format(dailyTotal)} vehículos/día en todo el punto · ${integer.format(monthlyTotal)} al mes`;
+  out('capacityPerLine').textContent = `${integer.format(dailyTotal)} vehículos/día en todo el punto`;
+  out('capacityTotal').textContent = `${integer.format(dailyPerLine)} por línea × ${integer.format(lines)} ${lineLabel} · ${integer.format(monthlyTotal)} al mes`;
   scenarios.forEach((scenario) => renderScenario(scenario, lines, investment, rent, monthlyTotal, cashierType));
 }
 
