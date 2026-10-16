@@ -5,7 +5,8 @@ const cop = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP',
 const integer = new Intl.NumberFormat('es-CO');
 
 const fixed = {
-  sqmPerLine: 35,
+  minimumSqmForLine: 60,
+  sqmPerAdditionalLine: 35,
   ticket: 30000,
   consumables: 2500,
   feesRate: 0.05,
@@ -18,7 +19,7 @@ const fixed = {
 };
 
 const scenarios = [
-  { key: 'bad', monthlyWashes: 2100, operators: 9 },
+  { key: 'bad', washesPerLine: 700 },
   { key: 'realistic', washesPerLine: 850 },
   { key: 'excellent', washesPerLine: 1200 },
 ];
@@ -35,13 +36,13 @@ function paybackLabel(months) {
   return remainingMonths ? `${years} año${years > 1 ? 's' : ''} y ${remainingMonths} meses aprox.` : `${years} año${years > 1 ? 's' : ''} aprox.`;
 }
 
-function renderScenario({ key, washesPerLine, monthlyWashes, operators: scenarioOperators }, lines, investment, rent, monthlyCapacity) {
-  const targetWashes = monthlyWashes ?? (lines * washesPerLine);
+function renderScenario({ key, washesPerLine }, lines, investment, rent, monthlyCapacity) {
+  const targetWashes = lines * washesPerLine;
   const vehicles = Math.min(targetWashes, monthlyCapacity);
   const revenue = vehicles * fixed.ticket;
   const consumables = vehicles * fixed.consumables;
   const fees = revenue * fixed.feesRate;
-  const operators = lines > 0 ? (scenarioOperators ?? (lines * fixed.staffPerLine)) : 0;
+  const operators = lines > 0 ? lines * fixed.staffPerLine : 0;
   const cashiers = lines > 0 ? Math.ceil(lines / 10) : 0;
   const payroll = (operators + cashiers) * fixed.staffCost;
   const fixedCosts = rent + fixed.utilities;
@@ -70,7 +71,9 @@ function renderScenario({ key, washesPerLine, monthlyWashes, operators: scenario
 function calculate() {
   const area = value('area');
   const hours = value('hours');
-  const lines = Math.floor(area / fixed.sqmPerLine);
+  const lines = area < fixed.minimumSqmForLine
+    ? 0
+    : 1 + Math.floor((area - fixed.minimumSqmForLine) / fixed.sqmPerAdditionalLine);
   const investment = value('setup') + value('franchiseFee');
   const rent = Math.ceil(area / 10) * fixed.rentPerTenSqm;
   const dailyPerLine = hours * fixed.vehiclesPerLinePerHour;
