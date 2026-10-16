@@ -1,4 +1,4 @@
-const inputs = ['area', 'hours', 'setup', 'franchiseFee'];
+const inputs = ['area', 'hours', 'setup', 'franchiseFee', 'linesInput', 'cashierType'];
 const el = Object.fromEntries(inputs.map((id) => [id, document.getElementById(id)]));
 const out = (id) => document.getElementById(id);
 const cop = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
@@ -7,11 +7,15 @@ const integer = new Intl.NumberFormat('es-CO');
 const fixed = {
   minimumSqmForLine: 60,
   sqmPerAdditionalLine: 35,
+  firstLineInvestment: 120000000,
+  additionalLineInvestment: 75000000,
+  automaticCashierInvestment: 18000000,
   ticket: 30000,
   consumables: 2500,
   feesRate: 0.05,
-  staffPerLine: 3,
+  staffPerLine: 2,
   staffCost: 2700000,
+  manualCashierCost: 2700000,
   rentPerTenSqm: 800000,
   utilities: 2000000,
   vehiclesPerLinePerHour: 8,
@@ -36,15 +40,15 @@ function paybackLabel(months) {
   return remainingMonths ? `${years} año${years > 1 ? 's' : ''} y ${remainingMonths} meses aprox.` : `${years} año${years > 1 ? 's' : ''} aprox.`;
 }
 
-function renderScenario({ key, washesPerLine }, lines, investment, rent, monthlyCapacity) {
+function renderScenario({ key, washesPerLine }, lines, investment, rent, monthlyCapacity, cashierType) {
   const targetWashes = lines * washesPerLine;
   const vehicles = Math.min(targetWashes, monthlyCapacity);
   const revenue = vehicles * fixed.ticket;
   const consumables = vehicles * fixed.consumables;
   const fees = revenue * fixed.feesRate;
   const operators = lines > 0 ? lines * fixed.staffPerLine : 0;
-  const cashiers = lines > 0 ? Math.ceil(lines / 10) : 0;
-  const payroll = (operators + cashiers) * fixed.staffCost;
+  const cashiers = lines > 0 && cashierType === 'manual' ? 1 : 0;
+  const payroll = (operators * fixed.staffCost) + (cashiers * fixed.manualCashierCost);
   const fixedCosts = rent + fixed.utilities;
   const costs = consumables + fees + payroll + fixedCosts;
   const profit = revenue - costs;
@@ -54,7 +58,10 @@ function renderScenario({ key, washesPerLine }, lines, investment, rent, monthly
 
   out(`${key}Volume`).textContent = integer.format(vehicles);
   out(`${key}Revenue`).textContent = money(revenue);
-  out(`${key}Team`).textContent = `${operators} operarios + ${cashiers} cajero${cashiers === 1 ? '' : 's'}`;
+  const cashierLabel = cashierType === 'automatic'
+    ? ' + cajero automático'
+    : cashiers === 1 ? ' + 1 cajero manual' : '';
+  out(`${key}Team`).textContent = `${operators} operarios${cashierLabel}`;
   out(`${key}Investment`).textContent = money(investment);
   out(`${key}Costs`).textContent = `− ${money(costs)}`;
   out(`${key}Consumables`).textContent = `− ${money(consumables)}`;
@@ -68,21 +75,45 @@ function renderScenario({ key, washesPerLine }, lines, investment, rent, monthly
   out(`${key}Payback`).textContent = investment === 0 ? 'Define la inversión inicial' : paybackLabel(payback);
 }
 
+function maxLinesForArea(area) {
+  if (area < fixed.minimumSqmForLine) return 0;
+  return 1 + Math.floor((area - fixed.minimumSqmForLine) / fixed.sqmPerAdditionalLine);
+}
+
+function updateLineOptions(maxLines) {
+  const previous = Number(el.linesInput.value) || maxLines;
+  el.linesInput.replaceChildren();
+  if (maxLines === 0) {
+    el.linesInput.add(new Option('0 líneas disponibles', '0'));
+    return;
+  }
+  for (let count = 1; count <= maxLines; count += 1) {
+    el.linesInput.add(new Option(`${count} ${count === 1 ? 'línea' : 'líneas'}`, String(count)));
+  }
+  el.linesInput.value = String(Math.min(previous, maxLines));
+}
+
 function calculate() {
   const area = value('area');
   const hours = value('hours');
-  const lines = area < fixed.minimumSqmForLine
-    ? 0
-    : 1 + Math.floor((area - fixed.minimumSqmForLine) / fixed.sqmPerAdditionalLine);
-  const investment = value('setup') + value('franchiseFee');
+  const maxLines = maxLinesForArea(area);
+  updateLineOptions(maxLines);
+  const lines = Math.min(value('linesInput'), maxLines);
+  const cashierType = el.cashierType.value;
+  const setup = lines > 0
+    ? fixed.firstLineInvestment + ((lines - 1) * fixed.additionalLineInvestment)
+    : 0;
+  const automaticCashier = cashierType === 'automatic' ? fixed.automaticCashierInvestment : 0;
+  const investment = setup + automaticCashier + value('franchiseFee');
   const rent = Math.ceil(area / 10) * fixed.rentPerTenSqm;
   const dailyPerLine = hours * fixed.vehiclesPerLinePerHour;
   const dailyTotal = dailyPerLine * lines;
   const monthlyTotal = dailyTotal * fixed.operatingDaysPerMonth;
   out('lines').textContent = `${integer.format(lines)} ${lines === 1 ? 'línea' : 'líneas'}`;
+  el.setup.value = `$ ${integer.format(setup)}`;
   out('capacityPerLine').textContent = `${integer.format(dailyPerLine)} vehículos/día por línea`;
   out('capacityTotal').textContent = `${integer.format(dailyTotal)} vehículos/día en todo el punto · ${integer.format(monthlyTotal)} al mes`;
-  scenarios.forEach((scenario) => renderScenario(scenario, lines, investment, rent, monthlyTotal));
+  scenarios.forEach((scenario) => renderScenario(scenario, lines, investment, rent, monthlyTotal, cashierType));
 }
 
 function formatCopInput(input) {
@@ -92,9 +123,11 @@ function formatCopInput(input) {
 
 el.area.addEventListener('input', calculate);
 el.hours.addEventListener('input', calculate);
-['setup', 'franchiseFee'].forEach((id) => el[id].addEventListener('input', (event) => {
+el.linesInput.addEventListener('change', calculate);
+el.cashierType.addEventListener('change', calculate);
+el.franchiseFee.addEventListener('input', (event) => {
   formatCopInput(event.target);
   calculate();
-}));
+});
 document.getElementById('franchiseCalculator').addEventListener('submit', (event) => event.preventDefault());
 calculate();

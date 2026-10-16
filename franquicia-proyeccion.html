@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="franquicia-proyeccion.css?v=20260914f6" />
-  <script type="module" src="franquicia-proyeccion.js?v=20261016f1"></script>
+  <script type="module" src="franquicia-proyeccion.js?v=20261016f2"></script>
 </head>
 <body>
   <main>
@@ -43,10 +43,12 @@
         <div class="fc-config-card">
           <form id="franchiseCalculator" class="fc-inputs">
             <label>Terreno disponible <span>m²</span><input id="area" type="text" value="150" inputmode="numeric" /></label>
+            <label>Número de líneas <span>elige cuántas deseas operar</span><select id="linesInput"><option value="1">1 línea</option><option value="2">2 líneas</option><option value="3" selected>3 líneas</option></select></label>
             <label>Horas abiertas / día <span>horas</span><input id="hours" type="text" value="10" inputmode="numeric" /></label>
-            <label>Costo de montaje <span>COP $</span><input id="setup" class="fc-cop-input" type="text" value="$ 150.000.000" inputmode="numeric" /></label>
+            <label>Inversión de montaje <span>calculada por líneas</span><input id="setup" class="fc-cop-input" type="text" value="$ 120.000.000" readonly /></label>
             <label>Costo de franquicia <span>COP $</span><input id="franchiseFee" class="fc-cop-input" type="text" value="$ 0" inputmode="numeric" /></label>
-            <p class="fc-config-note">El costo de montaje y el valor de franquicia se definen según tu terreno y condiciones en la llamada con un ejecutivo de inversión.</p>
+            <label>Recurso de caja <span>opcional</span><select id="cashierType"><option value="none" selected>Sin cajero</option><option value="automatic">Cajero automático · +$18.000.000 único</option><option value="manual">Cajero manual · 1 persona</option></select></label>
+            <p class="fc-config-note">Montaje calculado: $120.000.000 por la primera línea + $75.000.000 por cada línea adicional. El cajero automático suma $18.000.000 una única vez; el cajero manual es opcional y se refleja como costo mensual.</p>
           </form>
           <div class="fc-lines-card"><span>Capacidad estimada</span><strong id="lines">0 líneas</strong><p>1.ª línea desde 60 m² · cada línea adicional requiere 35 m² más.</p><div class="fc-throughput"><span>Capacidad máxima de atención</span><b id="capacityPerLine">0 vehículos/día por línea</b><p id="capacityTotal">0 vehículos/día en todo el punto · 0 al mes</p></div></div>
         </div>
@@ -61,7 +63,8 @@
           <span><b>5%</b> pagos y comisión NovaWash sobre ventas</span>
           <span><b>Arriendo</b> $800.000 por cada 10 m²</span>
           <span><b>$2.000.000</b> servicios públicos: luz</span>
-          <span><b>3 empleados</b> por línea + 1 cajero cada 10 líneas</span>
+          <span><b>2 operarios</b> por línea</span>
+          <span><b>Cajero opcional</b> automático por $18.000.000 único o manual</span>
           <span><b>$30.000</b> ticket promedio por lavada</span>
         </div>
 
