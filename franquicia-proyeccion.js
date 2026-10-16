@@ -15,7 +15,7 @@ const fixed = {
   consumables: 2500,
   feesRate: 0.05,
   staffPerLine: 2,
-  staffCost: 2700000,
+  staffRate: 0.07,
   manualCashierCost: 2700000,
   rentPerSqm: 150000,
   utilities: 2000000,
@@ -47,15 +47,16 @@ function renderScenario({ key, capacityRate }, lines, investment, rent, monthlyC
   const targetWashes = Math.round(monthlyCapacity * capacityRate);
   const operators = lines > 0 ? lines * fixed.staffPerLine : 0;
   const cashiers = lines > 0 && cashierType === 'manual' ? 1 : 0;
-  const payroll = (operators * fixed.staffCost) + (cashiers * fixed.manualCashierCost);
   const fixedCosts = rent + fixed.utilities;
-  const contributionMargin = fixed.ticket - fixed.consumables - (fixed.ticket * fixed.feesRate);
-  const breakEvenVehicles = contributionMargin > 0 ? Math.ceil((payroll + fixedCosts) / contributionMargin) : Infinity;
+  const contributionMargin = fixed.ticket - fixed.consumables - (fixed.ticket * fixed.feesRate) - (fixed.ticket * fixed.staffRate);
+  const breakEvenFixedCosts = fixedCosts + (cashiers * fixed.manualCashierCost);
+  const breakEvenVehicles = contributionMargin > 0 ? Math.ceil(breakEvenFixedCosts / contributionMargin) : Infinity;
   const breakEvenApplied = key === 'bad' && targetWashes < breakEvenVehicles && breakEvenVehicles <= monthlyCapacity;
   const vehicles = breakEvenApplied ? breakEvenVehicles : Math.min(targetWashes, monthlyCapacity);
   const capacityPercentage = monthlyCapacity > 0 ? ((vehicles / monthlyCapacity) * 100) : 0;
   const averageDailyWashes = vehicles / fixed.operatingDaysPerMonth;
   const revenue = vehicles * fixed.ticket;
+  const payroll = (revenue * fixed.staffRate) + (cashiers * fixed.manualCashierCost);
   const consumables = vehicles * fixed.consumables;
   const fees = revenue * fixed.feesRate;
   const costs = consumables + fees + payroll + fixedCosts;
