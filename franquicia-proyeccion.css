@@ -46,3 +46,5 @@
 .fc-process-card .fc-process-stages b{color:var(--ink);font-size:10px}
 .fc-process-card .fc-process-stages strong{margin:0;color:#b64f00;font-size:12px}
 @media(max-width:800px){.fc-process-card{grid-template-columns:1fr;gap:14px;padding:16px}.fc-process-card .fc-process-stages{grid-template-columns:1fr}.fc-process-card .fc-process-stages li{justify-content:space-between}}
+.fc-field-note{font-size:9px;line-height:1.4;color:var(--muted)}
+.fc-field-note a{color:#b64f00;font-weight:700;text-decoration:underline;text-underline-offset:2px}
