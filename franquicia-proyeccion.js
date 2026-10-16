@@ -44,15 +44,20 @@ function paybackLabel(months) {
 }
 
 function renderScenario({ key, capacityRate }, lines, investment, rent, monthlyCapacity, cashierType) {
-  const vehicles = Math.round(monthlyCapacity * capacityRate);
-  const averageDailyWashes = vehicles / fixed.operatingDaysPerMonth;
-  const revenue = vehicles * fixed.ticket;
-  const consumables = vehicles * fixed.consumables;
-  const fees = revenue * fixed.feesRate;
+  const targetWashes = Math.round(monthlyCapacity * capacityRate);
   const operators = lines > 0 ? lines * fixed.staffPerLine : 0;
   const cashiers = lines > 0 && cashierType === 'manual' ? 1 : 0;
   const payroll = (operators * fixed.staffCost) + (cashiers * fixed.manualCashierCost);
   const fixedCosts = rent + fixed.utilities;
+  const contributionMargin = fixed.ticket - fixed.consumables - (fixed.ticket * fixed.feesRate);
+  const breakEvenVehicles = contributionMargin > 0 ? Math.ceil((payroll + fixedCosts) / contributionMargin) : Infinity;
+  const breakEvenApplied = key === 'bad' && targetWashes < breakEvenVehicles && breakEvenVehicles <= monthlyCapacity;
+  const vehicles = breakEvenApplied ? breakEvenVehicles : Math.min(targetWashes, monthlyCapacity);
+  const capacityPercentage = monthlyCapacity > 0 ? ((vehicles / monthlyCapacity) * 100) : 0;
+  const averageDailyWashes = vehicles / fixed.operatingDaysPerMonth;
+  const revenue = vehicles * fixed.ticket;
+  const consumables = vehicles * fixed.consumables;
+  const fees = revenue * fixed.feesRate;
   const costs = consumables + fees + payroll + fixedCosts;
   const profit = revenue - costs;
   const annual = profit * 12;
@@ -60,7 +65,10 @@ function renderScenario({ key, capacityRate }, lines, investment, rent, monthlyC
   const payback = investment > 0 && profit > 0 ? investment / profit : null;
 
   out(`${key}Volume`).textContent = integer.format(vehicles);
-  out(`${key}VolumeCopy`).textContent = `${Math.round(capacityRate * 100)}% de capacidad · vehículos estimados por mes`;
+  out(`${key}VolumeCopy`).textContent = breakEvenApplied
+    ? `Punto de equilibrio · ${decimal.format(capacityPercentage)}% de capacidad · vehículos estimados por mes`
+    : `${Math.round(capacityRate * 100)}% de capacidad · vehículos estimados por mes`;
+  if (key === 'bad') out('badTag').textContent = breakEvenApplied ? 'Punto de equilibrio' : 'Inicio';
   out(`${key}DailyWashes`).textContent = decimal.format(averageDailyWashes);
   out(`${key}Revenue`).textContent = money(revenue);
   const cashierLabel = cashierType === 'automatic'
