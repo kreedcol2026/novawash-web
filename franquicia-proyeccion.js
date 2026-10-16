@@ -24,9 +24,9 @@ const fixed = {
 };
 
 const scenarios = [
-  { key: 'bad', washesPerLine: 700 },
-  { key: 'realistic', washesPerLine: 850 },
-  { key: 'excellent', washesPerLine: 1200 },
+  { key: 'bad', capacityRate: 0.30 },
+  { key: 'realistic', capacityRate: 0.50 },
+  { key: 'excellent', capacityRate: 0.75 },
 ];
 
 let rentCustomized = false;
@@ -43,9 +43,8 @@ function paybackLabel(months) {
   return remainingMonths ? `${years} año${years > 1 ? 's' : ''} y ${remainingMonths} meses aprox.` : `${years} año${years > 1 ? 's' : ''} aprox.`;
 }
 
-function renderScenario({ key, washesPerLine }, lines, investment, rent, monthlyCapacity, cashierType) {
-  const targetWashes = lines * washesPerLine;
-  const vehicles = Math.min(targetWashes, monthlyCapacity);
+function renderScenario({ key, capacityRate }, lines, investment, rent, monthlyCapacity, cashierType) {
+  const vehicles = Math.round(monthlyCapacity * capacityRate);
   const averageDailyWashes = vehicles / fixed.operatingDaysPerMonth;
   const revenue = vehicles * fixed.ticket;
   const consumables = vehicles * fixed.consumables;
@@ -61,6 +60,7 @@ function renderScenario({ key, washesPerLine }, lines, investment, rent, monthly
   const payback = investment > 0 && profit > 0 ? investment / profit : null;
 
   out(`${key}Volume`).textContent = integer.format(vehicles);
+  out(`${key}VolumeCopy`).textContent = `${Math.round(capacityRate * 100)}% de capacidad · vehículos estimados por mes`;
   out(`${key}DailyWashes`).textContent = decimal.format(averageDailyWashes);
   out(`${key}Revenue`).textContent = money(revenue);
   const cashierLabel = cashierType === 'automatic'
