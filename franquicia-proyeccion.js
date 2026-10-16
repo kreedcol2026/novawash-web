@@ -11,7 +11,7 @@ const fixed = {
   firstLineInvestment: 120000000,
   additionalLineInvestment: 75000000,
   automaticCashierInvestment: 18000000,
-  ticket: 30000,
+  ticket: 35000,
   consumables: 2500,
   feesRate: 0.05,
   staffPerLine: 2,
