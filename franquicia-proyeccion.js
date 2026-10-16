@@ -17,7 +17,7 @@ const fixed = {
   staffPerLine: 2,
   staffCost: 2700000,
   manualCashierCost: 2700000,
-  rentPerTenSqm: 800000,
+  rentPerSqm: 150000,
   utilities: 2000000,
   vehiclesPerLinePerHour: 8,
   operatingDaysPerMonth: 30,
@@ -99,7 +99,7 @@ function updateLineOptions(maxLines) {
 }
 
 function defaultRentForArea(area) {
-  return Math.ceil(area / 10) * fixed.rentPerTenSqm;
+  return area * fixed.rentPerSqm;
 }
 
 function syncRentField(area) {
