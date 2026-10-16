@@ -1,8 +1,9 @@
-const inputs = ['area', 'hours', 'setup', 'franchiseFee', 'linesInput', 'cashierType'];
+const inputs = ['area', 'hours', 'setup', 'franchiseFee', 'linesInput', 'cashierType', 'propertyType', 'rent'];
 const el = Object.fromEntries(inputs.map((id) => [id, document.getElementById(id)]));
 const out = (id) => document.getElementById(id);
 const cop = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
 const integer = new Intl.NumberFormat('es-CO');
+const decimal = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 1 });
 
 const fixed = {
   minimumSqmForLine: 60,
@@ -28,6 +29,8 @@ const scenarios = [
   { key: 'excellent', washesPerLine: 1200 },
 ];
 
+let rentCustomized = false;
+
 const money = (amount) => cop.format(Math.round(amount));
 const value = (id) => Math.max(0, Number(String(el[id].value).replace(/\D/g, '')) || 0);
 
@@ -43,6 +46,7 @@ function paybackLabel(months) {
 function renderScenario({ key, washesPerLine }, lines, investment, rent, monthlyCapacity, cashierType) {
   const targetWashes = lines * washesPerLine;
   const vehicles = Math.min(targetWashes, monthlyCapacity);
+  const averageDailyWashes = vehicles / fixed.operatingDaysPerMonth;
   const revenue = vehicles * fixed.ticket;
   const consumables = vehicles * fixed.consumables;
   const fees = revenue * fixed.feesRate;
@@ -57,6 +61,7 @@ function renderScenario({ key, washesPerLine }, lines, investment, rent, monthly
   const payback = investment > 0 && profit > 0 ? investment / profit : null;
 
   out(`${key}Volume`).textContent = integer.format(vehicles);
+  out(`${key}DailyWashes`).textContent = decimal.format(averageDailyWashes);
   out(`${key}Revenue`).textContent = money(revenue);
   const cashierLabel = cashierType === 'automatic'
     ? ' + cajero automático'
@@ -93,9 +98,24 @@ function updateLineOptions(maxLines) {
   el.linesInput.value = String(Math.min(previous, maxLines));
 }
 
+function defaultRentForArea(area) {
+  return Math.ceil(area / 10) * fixed.rentPerTenSqm;
+}
+
+function syncRentField(area) {
+  const isOwned = el.propertyType.value === 'owned';
+  el.rent.disabled = isOwned;
+  if (isOwned) {
+    el.rent.value = '$ 0';
+  } else if (!rentCustomized) {
+    el.rent.value = money(defaultRentForArea(area));
+  }
+}
+
 function calculate() {
   const area = value('area');
   const hours = value('hours');
+  syncRentField(area);
   const maxLines = maxLinesForArea(area);
   updateLineOptions(maxLines);
   const lines = Math.min(value('linesInput'), maxLines);
@@ -105,7 +125,7 @@ function calculate() {
     : 0;
   const automaticCashier = cashierType === 'automatic' ? fixed.automaticCashierInvestment : 0;
   const investment = setup + automaticCashier + value('franchiseFee');
-  const rent = Math.ceil(area / 10) * fixed.rentPerTenSqm;
+  const rent = value('rent');
   const dailyPerLine = hours * fixed.vehiclesPerLinePerHour;
   const dailyTotal = dailyPerLine * lines;
   const monthlyTotal = dailyTotal * fixed.operatingDaysPerMonth;
@@ -125,6 +145,15 @@ el.area.addEventListener('input', calculate);
 el.hours.addEventListener('input', calculate);
 el.linesInput.addEventListener('change', calculate);
 el.cashierType.addEventListener('change', calculate);
+el.propertyType.addEventListener('change', () => {
+  rentCustomized = false;
+  calculate();
+});
+el.rent.addEventListener('input', (event) => {
+  rentCustomized = true;
+  formatCopInput(event.target);
+  calculate();
+});
 el.franchiseFee.addEventListener('input', (event) => {
   formatCopInput(event.target);
   calculate();

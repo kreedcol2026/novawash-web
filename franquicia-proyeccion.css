@@ -34,3 +34,15 @@
 .fc-process-stages i{font-style:normal;color:#ff9b58;font-weight:800}
 .fc-process-stages strong{margin-left:auto;color:#1c2228;font-size:10px}
 @media(max-width:800px){.fc-process-stages{flex-wrap:wrap;gap:7px}.fc-process-stages strong{width:100%;margin:4px 0 0;padding-top:8px;border-top:1px solid var(--line)}}
+.fc-process-card{display:grid;grid-template-columns:220px 1fr;gap:22px;align-items:center;margin:15px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:16px;background:#fff}
+.fc-process-heading{display:grid;gap:5px}
+.fc-process-heading .fc-kicker{margin:0;font-size:9px}
+.fc-process-heading>strong{font-size:19px;letter-spacing:-.5px}
+.fc-process-heading>span{font-size:10px;line-height:1.45;color:var(--muted)}
+.fc-process-card .fc-process-stages{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0;padding:0;border:0;background:transparent}
+.fc-process-card .fc-process-stages li{display:flex;align-items:center;gap:10px;min-width:0;padding:12px;border:1px solid #edf0f2;border-radius:12px;background:#fbfcfd;list-style:none}
+.fc-process-card .fc-process-stages li>span{display:grid;place-items:center;width:27px;height:27px;flex:0 0 27px;border-radius:50%;background:#fff0e4;color:#b64f00;font-size:9px;font-weight:800}
+.fc-process-card .fc-process-stages li>div{display:grid;gap:2px;min-width:0}
+.fc-process-card .fc-process-stages b{color:var(--ink);font-size:10px}
+.fc-process-card .fc-process-stages strong{margin:0;color:#b64f00;font-size:12px}
+@media(max-width:800px){.fc-process-card{grid-template-columns:1fr;gap:14px;padding:16px}.fc-process-card .fc-process-stages{grid-template-columns:1fr}.fc-process-card .fc-process-stages li{justify-content:space-between}}

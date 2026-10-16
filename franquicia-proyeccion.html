@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="franquicia-proyeccion.css?v=20260914f6" />
-  <script type="module" src="franquicia-proyeccion.js?v=20261016f2"></script>
+  <link rel="stylesheet" href="franquicia-proyeccion.css?v=20261016f2" />
+  <script type="module" src="franquicia-proyeccion.js?v=20261016f3"></script>
 </head>
 <body>
   <main>
@@ -43,25 +43,32 @@
         <div class="fc-config-card">
           <form id="franchiseCalculator" class="fc-inputs">
             <label>Terreno disponible <span>m²</span><input id="area" type="text" value="150" inputmode="numeric" /></label>
+            <label>Tipo de terreno <span>configuración del arriendo</span><select id="propertyType"><option value="rented" selected>Arrendado</option><option value="owned">Propio · $0 arriendo</option></select></label>
             <label>Número de líneas <span>elige cuántas deseas operar</span><select id="linesInput"><option value="1">1 línea</option><option value="2">2 líneas</option><option value="3" selected>3 líneas</option></select></label>
             <label>Horas abiertas / día <span>horas</span><input id="hours" type="text" value="10" inputmode="numeric" /></label>
             <label>Inversión de montaje <span>calculada por líneas</span><input id="setup" class="fc-cop-input" type="text" value="$ 120.000.000" readonly /></label>
+            <label>Arriendo mensual <span>COP $ · editable</span><input id="rent" class="fc-cop-input" type="text" value="$ 12.000.000" inputmode="numeric" /></label>
             <label>Costo de franquicia <span>COP $</span><input id="franchiseFee" class="fc-cop-input" type="text" value="$ 0" inputmode="numeric" /></label>
             <label>Recurso de caja <span>opcional</span><select id="cashierType"><option value="none" selected>Sin cajero</option><option value="automatic">Cajero automático · +$18.000.000 único</option><option value="manual">Cajero manual · 1 persona</option></select></label>
-            <p class="fc-config-note">Montaje calculado: $120.000.000 por la primera línea + $75.000.000 por cada línea adicional. El cajero automático suma $18.000.000 una única vez; el cajero manual es opcional y se refleja como costo mensual.</p>
+            <p class="fc-config-note">Montaje calculado: $120.000.000 por la primera línea + $75.000.000 por cada línea adicional. El cajero automático suma $18.000.000 una única vez; el cajero manual es opcional y se refleja como costo mensual. Si el terreno es propio, el arriendo queda en $0 y baja el costo operativo mensual.</p>
           </form>
           <div class="fc-lines-card"><span>Capacidad estimada</span><strong id="lines">0 líneas</strong><p>1.ª línea desde 60 m² · cada línea adicional requiere 35 m² más.</p><div class="fc-throughput"><span>Capacidad máxima de atención</span><b id="capacityPerLine">0 vehículos/día por línea</b><p id="capacityTotal">0 vehículos/día en todo el punto · 0 al mes</p></div></div>
         </div>
 
-        <div class="fc-process-stages" aria-label="Proceso por vehículo: 15 minutos">
-          <span><b>8 min</b>Enjuague</span><i>+</i><span><b>5 min</b>Aspirado</span><i>+</i><span><b>2 min</b>Alistamiento</span><i>=</i><strong>15 min por vehículo · flujo continuo: hasta 8 carros/hora por línea</strong>
+        <div class="fc-process-card" aria-label="Proceso por vehículo: 15 minutos">
+          <div class="fc-process-heading"><p class="fc-kicker">PROCESO OPERATIVO</p><strong>15 min por vehículo</strong><span>Flujo continuo: hasta 8 carros por hora y por línea.</span></div>
+          <ol class="fc-process-stages">
+            <li><span>01</span><div><b>Enjuague</b><strong>8 min</strong></div></li>
+            <li><span>02</span><div><b>Aspirado</b><strong>5 min</strong></div></li>
+            <li><span>03</span><div><b>Alistamiento</b><strong>2 min</strong></div></li>
+          </ol>
         </div>
 
         <p class="fc-assumptions-title">Criterios incluidos en la proyección</p>
         <div class="fc-assumptions">
           <span><b>$2.500</b> agua, jabón e insumos por lavada</span>
           <span><b>5%</b> pagos y comisión NovaWash sobre ventas</span>
-          <span><b>Arriendo</b> $800.000 por cada 10 m²</span>
+          <span><b>Arriendo</b> configurable o $0 si el terreno es propio</span>
           <span><b>$2.000.000</b> servicios públicos: luz</span>
           <span><b>2 operarios</b> por línea</span>
           <span><b>Cajero opcional</b> automático por $18.000.000 único o manual</span>
@@ -75,6 +82,7 @@
             <p class="fc-volume-copy">vehículos estimados por mes</p>
             <div class="fc-metrics">
               <div><dt>Ventas mensuales</dt><dd id="badRevenue">—</dd></div>
+              <div><dt>Lavadas promedio al día</dt><dd id="badDailyWashes">—</dd></div>
               <div><dt>Equipo estimado</dt><dd id="badTeam">—</dd></div>
               <details class="fc-costs"><summary><span>Costos operativos</span><strong id="badCosts">—</strong></summary><div class="fc-cost-breakdown"><p><span>Agua, jabón e insumos</span><b id="badConsumables">—</b></p><p><span>Pagos y comisión</span><b id="badFees">—</b></p><p><span>Personal</span><b id="badPayroll">—</b></p><p><span>Arriendo</span><b id="badRent">—</b></p><p><span>Servicios públicos</span><b id="badUtilities">—</b></p></div></details>
               <div class="fc-profit-row"><dt>Utilidad operativa mensual</dt><dd id="badProfit">—</dd></div>
@@ -87,6 +95,7 @@
             <p class="fc-volume-copy">vehículos estimados por mes</p>
             <div class="fc-metrics">
               <div><dt>Ventas mensuales</dt><dd id="realisticRevenue">—</dd></div>
+              <div><dt>Lavadas promedio al día</dt><dd id="realisticDailyWashes">—</dd></div>
               <div><dt>Equipo estimado</dt><dd id="realisticTeam">—</dd></div>
               <details class="fc-costs"><summary><span>Costos operativos</span><strong id="realisticCosts">—</strong></summary><div class="fc-cost-breakdown"><p><span>Agua, jabón e insumos</span><b id="realisticConsumables">—</b></p><p><span>Pagos y comisión</span><b id="realisticFees">—</b></p><p><span>Personal</span><b id="realisticPayroll">—</b></p><p><span>Arriendo</span><b id="realisticRent">—</b></p><p><span>Servicios públicos</span><b id="realisticUtilities">—</b></p></div></details>
               <div class="fc-profit-row"><dt>Utilidad operativa mensual</dt><dd id="realisticProfit">—</dd></div>
@@ -99,6 +108,7 @@
             <p class="fc-volume-copy">vehículos estimados por mes</p>
             <div class="fc-metrics">
               <div><dt>Ventas mensuales</dt><dd id="excellentRevenue">—</dd></div>
+              <div><dt>Lavadas promedio al día</dt><dd id="excellentDailyWashes">—</dd></div>
               <div><dt>Equipo estimado</dt><dd id="excellentTeam">—</dd></div>
               <details class="fc-costs"><summary><span>Costos operativos</span><strong id="excellentCosts">—</strong></summary><div class="fc-cost-breakdown"><p><span>Agua, jabón e insumos</span><b id="excellentConsumables">—</b></p><p><span>Pagos y comisión</span><b id="excellentFees">—</b></p><p><span>Personal</span><b id="excellentPayroll">—</b></p><p><span>Arriendo</span><b id="excellentRent">—</b></p><p><span>Servicios públicos</span><b id="excellentUtilities">—</b></p></div></details>
               <div class="fc-profit-row"><dt>Utilidad operativa mensual</dt><dd id="excellentProfit">—</dd></div>
